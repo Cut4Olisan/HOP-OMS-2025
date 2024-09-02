@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "16.16.0",
+    "sdksVersions": {
+      "@microsoft/microsoft-graph-client": "3.0.2",
+      "@microsoft/teams-js": "2.12.0"
+    },
+    "version": "1.19.0",
+    "libraryName": "ressourcestyring",
+    "libraryId": "f6e55cf3-137c-4956-88c8-9ef0183bfc91",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "ressourcestyring",
+    "solutionShortDescription": "ressourcestyring description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}

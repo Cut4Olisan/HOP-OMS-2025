@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "ressourcestyring-client-side-solution",
+    "id": "f6e55cf3-137c-4956-88c8-9ef0183bfc91",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.19.0"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "ressourcestyring description"
+      },
+      "longDescription": {
+        "default": "ressourcestyring description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "ressourcestyring Feature",
+        "description": "The feature that activates elements of the ressourcestyring solution.",
+        "id": "10a3b91d-361d-49ba-a421-fb08ff482d55",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/ressourcestyring.sppkg"
+  }
+}

@@ -12,6 +12,8 @@ import * as strings from "ResourceManagementWebPartStrings";
 import ResourceManagement, {
   IResourceManagementProps,
 } from "./components/ResourceManagement";
+import BackEndService from "./services/BackEnd";
+
 
 export interface IResourceManagementWebPartProps {
   description: string;
@@ -53,6 +55,7 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
   }
 
   protected onInit(): Promise<void> {
+    BackEndService.Init();
     return this._getEnvironmentMessage().then((message) => {
       this._environmentMessage = message;
     });

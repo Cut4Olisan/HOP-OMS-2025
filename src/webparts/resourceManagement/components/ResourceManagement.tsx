@@ -1,5 +1,5 @@
 import * as React from 'react';
-import BookingComponent from './booking/BookingComponent'; // Adjust path if necessary
+import BookingComponent from './booking/BookingComponent';
 
 export interface IResourceManagementProps {
   isDarkTheme: boolean;
@@ -20,7 +20,6 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
   return (
     <div>
       <BookingComponent
-        customers={customers}
         coworkers={coworkers}
         projects={projects}
       />

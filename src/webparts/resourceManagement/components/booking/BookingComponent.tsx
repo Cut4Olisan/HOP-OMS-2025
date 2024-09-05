@@ -1,9 +1,10 @@
 import * as React from 'react';
 import styles from './BookingComponent.module.scss';
-import { Text, TextField, Dropdown, DatePicker, DefaultButton, PrimaryButton, Stack, DayOfWeek } from '@fluentui/react';
+import { Text, TextField, Dropdown, DatePicker, DefaultButton, PrimaryButton, Stack, DayOfWeek, IDropdownStyles } from '@fluentui/react';
 import { useCustomerList } from '../Customers/fetchCustomers';
 
 export interface IBookingComponentProps {
+  customers: { key: string, text: string }[];
   coworkers: { key: string, text: string }[];
   projects: { key: string, text: string }[];
 }
@@ -16,8 +17,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
   const [selectedCoworker, setSelectedCoworker] = React.useState<string | undefined>(undefined);
 
-  const { customers, error } = useCustomerList();
-  console.log(error);
+  const { customers} = useCustomerList();
 
   const onSave = ():void => {
     console.log({
@@ -37,9 +37,26 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
     return `${day}/${month}/${year}`;
   };
 
+  const dropdownStyles: Partial<IDropdownStyles> = {
+    callout: {
+      maxHeight: 200,
+      overflowY: 'auto',
+    },
+    dropdown: {
+      maxWidth: 300,
+    },
+    dropdownItem: {
+      height: 'auto',
+    },
+    dropdownOptionText: {
+      overflow: 'visible',
+      whiteSpace: 'normal',
+    },
+  };
+
   return (
     <>
-      <Text variant={'large'}>Opret booking</Text>
+      <Text variant={'xLarge'}>Opret booking</Text>
       <Stack tokens={{ childrenGap: 15 }}>
         <TextField
           placeholder='Titel'
@@ -55,6 +72,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
           selectedKey={selectedCustomer}
           onChange={(e, option) => setSelectedCustomer(option?.key as string)}
           className={styles.inputFields}
+          styles={dropdownStyles}
           required
           />
         

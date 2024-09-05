@@ -1,22 +1,24 @@
 import { useState, useEffect } from 'react';
 import BackEndService from '../../services/BackEnd';
 
-export const useCustomerList = (): { customers: any[], error: string | null } => {
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
+interface Customer {
+  id: string;
+  name: string;
+}
+
+export const useCustomerList = (): { customers: Customer[] } => {
+  const [customers, setCustomers] = useState<Customer[]>([]);
 
   useEffect(() => {
-    const fetchCustomers = async ():Promise<void> => {
+    const fetchCustomers = async (): Promise<void> => {
       try {
-        const data = await BackEndService.Instance.fetchCustomers<any[]>();
+        const data = await BackEndService.Instance.fetchCustomers<Customer[]>();
         setCustomers(data);
-      } catch (err: any) {
-        setError(err.message || 'Unknown error');
-      }
+      } catch (err) {console.error(err)}
     };
 
-    fetchCustomers();
+    fetchCustomers().catch(e => console.error(e))
   }, []);
 
-  return { customers, error };
+  return { customers };
 };

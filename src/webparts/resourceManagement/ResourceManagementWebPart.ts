@@ -24,7 +24,6 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
   private _environmentMessage: string = "";
 
   public render(): void {
-    // Example data for customers, coworkers, and projects
     const customers = [
       { key: 'customer1', text: 'Customer 1' },
       { key: 'customer2', text: 'Customer 2' },

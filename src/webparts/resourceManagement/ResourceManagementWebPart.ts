@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDom from "react-dom";
 import { Version } from "@microsoft/sp-core-library";
 import {
-  type IPropertyPaneConfiguration,
+  IPropertyPaneConfiguration,
   PropertyPaneTextField,
 } from "@microsoft/sp-property-pane";
 import { BaseClientSideWebPart } from "@microsoft/sp-webpart-base";
@@ -22,11 +22,32 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
   private _environmentMessage: string = "";
 
   public render(): void {
-    const element: React.ReactElement<IResourceManagementProps> =
-      React.createElement(ResourceManagement, {
+    // Example data for customers, coworkers, and projects
+    const customers = [
+      { key: 'customer1', text: 'Customer 1' },
+      { key: 'customer2', text: 'Customer 2' },
+    ];
+
+    const coworkers = [
+      { key: 'coworker1', text: 'Coworker 1' },
+      { key: 'coworker2', text: 'Coworker 2' },
+    ];
+
+    const projects = [
+      { key: 'project1', text: 'Project 1' },
+      { key: 'project2', text: 'Project 2' },
+    ];
+
+    const element: React.ReactElement<IResourceManagementProps> = React.createElement(
+      ResourceManagement,
+      {
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
-      });
+        customers: customers,
+        coworkers: coworkers,
+        projects: projects,
+      }
+    );
 
     ReactDom.render(element, this.domElement);
   }

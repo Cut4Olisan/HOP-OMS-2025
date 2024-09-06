@@ -1,6 +1,6 @@
 import * as React from 'react';
 import styles from './BookingComponent.module.scss';
-import { Text, TextField, Dropdown, DatePicker, DefaultButton, PrimaryButton, Stack, DayOfWeek, IDropdownStyles } from '@fluentui/react';
+import { Text, TextField, Dropdown, DatePicker, DefaultButton, PrimaryButton, Stack, DayOfWeek, IDropdownStyles, IBasePickerSuggestionsProps, IPersonaProps, CompactPeoplePicker, } from '@fluentui/react';
 import { useCustomerList } from '../Customers/fetchCustomers';
 
 export interface IBookingComponentProps {
@@ -8,6 +8,14 @@ export interface IBookingComponentProps {
   coworkers: { key: string, text: string }[];
   projects: { key: string, text: string }[];
 }
+const suggestionProps: IBasePickerSuggestionsProps = {
+  suggestionsHeaderText: 'Vælg medarbejder',
+  mostRecentlyUsedHeaderText: 'Vælg medarbejder',
+  noResultsFoundText: 'Ingen medarbejder fundet',
+  loadingText: 'Indlæser',
+  showRemoveButtons: false,
+  suggestionsAvailableAlertText: 'Valg af medarbejdere tilgængelig',
+};
 
 const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, projects }) => {
   const [title, setTitle] = React.useState<string>('');
@@ -15,9 +23,46 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
   const [selectedCustomer, setSelectedCustomer] = React.useState<string | undefined>(undefined);
   const [estimatedHours, setEstimatedHours] = React.useState<string>('');
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
-  const [selectedCoworker, setSelectedCoworker] = React.useState<string | undefined>(undefined);
+  const [selectedCoworkers, setSelectedCoworkers] = React.useState<IPersonaProps[]>([]);
 
   const { customers} = useCustomerList();
+
+  const people: IPersonaProps[] = [
+    { text: 'Anders Ravn Andriansen'},
+    { text: 'Charlotte Flarup'},
+    { text: 'Esben Rytter'},
+    { text: 'Frank Nielsen'},
+    { text: 'Frederik Juhl-Hansen'},
+    { text: 'Kristian Bækmark Kjær'},
+    { text: 'Louise Bjerregaard'},
+    { text: 'Maria Bech'},
+    { text: 'Martin Rossen'},
+    { text: 'Oliver Max Sund'},
+    { text: 'Pernille Østergaard'},
+    { text: 'Sara Avijaja Schou Nielsen'},
+    { text: 'Tobias Juul Michaelsen'},
+  ];
+  
+
+  const onFilterChanged = (filterText: string, currentPersonas: IPersonaProps[]): IPersonaProps[] | Promise<IPersonaProps[]> => {
+    if (filterText) {
+      const filteredPersonas: IPersonaProps[] = people.filter((persona: { text: string; }) =>
+        persona.text?.toLowerCase().includes(filterText.toLowerCase())
+      );
+      return filteredPersonas;
+    }
+    return people;
+  };
+
+
+  const handleFocus = (): void => {
+    onFilterChanged('', selectedCoworkers);
+  };
+  const handleCoworkerChange = (items?: IPersonaProps[]):void => {
+    if (items) {
+      setSelectedCoworkers(items);
+    }
+  };
 
   const onSave = ():void => {
     console.log({
@@ -25,7 +70,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
       selectedCustomer,
       estimatedHours,
       selectedDate,
-      selectedCoworker,
+      selectedCoworkers,
     });
   };
 
@@ -55,9 +100,10 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
   };
 
   return (
-    <>
-      <Text variant={'xLarge'}>Opret booking</Text>
+    <Stack horizontal>
+    <div className={styles.halfWidth}>
       <Stack tokens={{ childrenGap: 15 }}>
+        <Text variant={'xxLargePlus'} className={styles.headingMargin}>Opret booking</Text>
         <TextField
           placeholder='Titel'
           value={title}
@@ -88,20 +134,24 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
         <DatePicker
           placeholder="Vælg dato"
           showMonthPickerAsOverlay
-          value={new Date() || selectedDate}
+          value={selectedDate}
           onSelectDate={(date) => setSelectedDate(date || undefined)}
           firstDayOfWeek={DayOfWeek.Monday}
           className={styles.inputFields}
           formatDate={formatDate}
           />
-        
-        <Dropdown
-          placeholder="Vælg medarbejder"
-          options={coworkers}
-          selectedKey={selectedCoworker}
-          onChange={(e, option) => setSelectedCoworker(option?.key as string)}
-          className={styles.inputFields}
-          required
+
+        <CompactPeoplePicker
+            onResolveSuggestions={onFilterChanged}
+            pickerSuggestionsProps={suggestionProps}
+            getTextFromItem={(persona) => persona.text || ''}
+            selectedItems={selectedCoworkers}
+            onChange={handleCoworkerChange}
+            inputProps={{
+              'aria-label': 'People Picker',
+              onFocus: handleFocus
+            }}
+            className={styles.inputFields}
           />
 
         <TextField
@@ -119,7 +169,11 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
           <DefaultButton text="Annuller" onClick={() => console.log('Cancelled')} />
         </Stack>
       </Stack>
-    </>
+      </div>
+      <div className={styles.halfWidth}>
+        <Text variant={'xxLarge'} className={styles.headingMargin}>Fremtidige bookinger på</Text>
+      </div>
+    </Stack>
   );
 };
 

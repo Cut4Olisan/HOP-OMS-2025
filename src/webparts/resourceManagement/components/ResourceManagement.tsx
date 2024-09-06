@@ -1,6 +1,7 @@
 import * as React from 'react';
 import BookingComponent from './booking/BookingComponent';
 import { useCustomerList } from './Customers/fetchCustomers';
+import { WebPartContext } from '@microsoft/sp-webpart-base';
 
 export interface IResourceManagementProps {
   isDarkTheme: boolean;
@@ -8,10 +9,11 @@ export interface IResourceManagementProps {
   customers: { key: string; text: string }[];
   coworkers: { key: string; text: string }[];
   projects: { key: string; text: string }[];
+  context: WebPartContext
 }
 
 
-const ResourceManagement: React.FC<IResourceManagementProps> = () => {
+const ResourceManagement: React.FC<IResourceManagementProps> = ({context}) => {
   const { customers } = useCustomerList();
 
   const coworkers = [
@@ -30,6 +32,7 @@ const ResourceManagement: React.FC<IResourceManagementProps> = () => {
         coworkers={coworkers}
         projects={projects}
         customers={customers.map(c => ({ key: c.id, text: c.name }))}
+        context={context}
       />
     </div>
   );

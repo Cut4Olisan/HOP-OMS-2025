@@ -47,6 +47,7 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
         customers: customers,
         coworkers: coworkers,
         projects: projects,
+        context: this.context
       }
     );
 

@@ -1,70 +1,61 @@
-import * as React from 'react';
-import styles from './BookingComponent.module.scss';
-import { Text, TextField, Dropdown, DatePicker, DefaultButton, PrimaryButton, Stack, DayOfWeek, IDropdownStyles, IBasePickerSuggestionsProps, IPersonaProps, CompactPeoplePicker, } from '@fluentui/react';
-import { useCustomerList } from '../Customers/fetchCustomers';
+import * as React from "react";
+import styles from "./BookingComponent.module.scss";
+import {
+  Text,
+  TextField,
+  Dropdown,
+  DatePicker,
+  DefaultButton,
+  PrimaryButton,
+  Stack,
+  DayOfWeek,
+  IDropdownStyles,
+} from "@fluentui/react";
+import { useCustomerList } from "../Customers/fetchCustomers";
+import {
+  PeoplePicker,
+  PrincipalType,
+} from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
 
 export interface IBookingComponentProps {
-  customers: { key: string, text: string }[];
-  coworkers: { key: string, text: string }[];
-  projects: { key: string, text: string }[];
+  context: WebPartContext;
+  customers: { key: string; text: string }[];
+  coworkers: { key: string; text: string }[];
+  projects: { key: string; text: string }[];
 }
-const suggestionProps: IBasePickerSuggestionsProps = {
-  suggestionsHeaderText: 'Vælg medarbejder',
-  mostRecentlyUsedHeaderText: 'Vælg medarbejder',
-  noResultsFoundText: 'Ingen medarbejder fundet',
-  loadingText: 'Indlæser',
-  showRemoveButtons: false,
-  suggestionsAvailableAlertText: 'Valg af medarbejdere tilgængelig',
-};
 
-const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, projects }) => {
-  const [title, setTitle] = React.useState<string>('');
-  const [info, setInfo] = React.useState<string>('');
-  const [selectedCustomer, setSelectedCustomer] = React.useState<string | undefined>(undefined);
-  const [estimatedHours, setEstimatedHours] = React.useState<string>('');
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
-  const [selectedCoworkers, setSelectedCoworkers] = React.useState<IPersonaProps[]>([]);
+export interface IPeoplePickerItem {
+  id: string;
+  fullName: string;
+  email: string;
+}
 
-  const { customers} = useCustomerList();
+const BookingComponent: React.FC<IBookingComponentProps> = ({
+  coworkers,
+  projects,
+  context,
+}) => {
+  const [title, setTitle] = React.useState<string>("");
+  const [info, setInfo] = React.useState<string>("");
+  const [selectedCustomer, setSelectedCustomer] = React.useState<
+    string | undefined
+  >(undefined);
+  const [estimatedHours, setEstimatedHours] = React.useState<string>("");
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
+    undefined
+  );
+  const [selectedCoworkers, setSelectedCoworkers] = React.useState<
+    IPeoplePickerItem[]
+  >([]);
 
-  const people: IPersonaProps[] = [
-    { text: 'Anders Ravn Andriansen'},
-    { text: 'Charlotte Flarup'},
-    { text: 'Esben Rytter'},
-    { text: 'Frank Nielsen'},
-    { text: 'Frederik Juhl-Hansen'},
-    { text: 'Kristian Bækmark Kjær'},
-    { text: 'Louise Bjerregaard'},
-    { text: 'Maria Bech'},
-    { text: 'Martin Rossen'},
-    { text: 'Oliver Max Sund'},
-    { text: 'Pernille Østergaard'},
-    { text: 'Sara Avijaja Schou Nielsen'},
-    { text: 'Tobias Juul Michaelsen'},
-  ];
-  
+  const { customers } = useCustomerList();
 
-  const onFilterChanged = (filterText: string, currentPersonas: IPersonaProps[]): IPersonaProps[] | Promise<IPersonaProps[]> => {
-    if (filterText) {
-      const filteredPersonas: IPersonaProps[] = people.filter((persona: { text: string; }) =>
-        persona.text?.toLowerCase().includes(filterText.toLowerCase())
-      );
-      return filteredPersonas;
-    }
-    return people;
+  const _getPeoplePickerItems = (items: IPeoplePickerItem[]): void => {
+    setSelectedCoworkers(items);
   };
 
-
-  const handleFocus = (): void => {
-    onFilterChanged('', selectedCoworkers);
-  };
-  const handleCoworkerChange = (items?: IPersonaProps[]):void => {
-    if (items) {
-      setSelectedCoworkers(items);
-    }
-  };
-
-  const onSave = ():void => {
+  const onSave = (): void => {
     console.log({
       title,
       selectedCustomer,
@@ -75,9 +66,9 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
   };
 
   const formatDate = (date?: Date): string => {
-    if (!date) return '';
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    if (!date) return "";
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -85,93 +76,107 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ coworkers, project
   const dropdownStyles: Partial<IDropdownStyles> = {
     callout: {
       maxHeight: 200,
-      overflowY: 'auto',
+      overflowY: "auto",
     },
     dropdown: {
       maxWidth: 300,
     },
     dropdownItem: {
-      height: 'auto',
+      height: "auto",
     },
     dropdownOptionText: {
-      overflow: 'visible',
-      whiteSpace: 'normal',
+      overflow: "visible",
+      whiteSpace: "normal",
     },
   };
 
   return (
     <Stack horizontal>
-    <div className={styles.halfWidth}>
-      <Stack tokens={{ childrenGap: 15 }}>
-        <Text variant={'xxLargePlus'} className={styles.headingMargin}>Opret booking</Text>
-        <TextField
-          placeholder='Titel'
-          value={title}
-          onChange={(e, newValue) => setTitle(newValue || '')}
-          className={styles.inputFields}
-          required
-          />
-        
-        <Dropdown
-          placeholder="Vælg kunde"
-          options={customers.map(customer => ({ key: customer.id, text: customer.name }))}
-          selectedKey={selectedCustomer}
-          onChange={(e, option) => setSelectedCustomer(option?.key as string)}
-          className={styles.inputFields}
-          styles={dropdownStyles}
-          required
-          />
-        
-        <TextField
-          placeholder='Estimat i hele timer'
-          value={estimatedHours}
-          onChange={(e, newValue) => setEstimatedHours(newValue || '')}
-          type="number"
-          className={styles.inputFields}
-          required
-          />
-        
-        <DatePicker
-          placeholder="Vælg dato"
-          showMonthPickerAsOverlay
-          value={selectedDate}
-          onSelectDate={(date) => setSelectedDate(date || undefined)}
-          firstDayOfWeek={DayOfWeek.Monday}
-          className={styles.inputFields}
-          formatDate={formatDate}
-          />
+      <div className={styles.halfWidth}>
+        <Stack tokens={{ childrenGap: 15 }}>
+          <Text variant={"xxLargePlus"} className={styles.headingMargin}>
+            Opret booking
+          </Text>
 
-        <CompactPeoplePicker
-            onResolveSuggestions={onFilterChanged}
-            pickerSuggestionsProps={suggestionProps}
-            getTextFromItem={(persona) => persona.text || ''}
-            selectedItems={selectedCoworkers}
-            onChange={handleCoworkerChange}
-            inputProps={{
-              'aria-label': 'People Picker',
-              onFocus: handleFocus
-            }}
+          <TextField
+            placeholder="Titel"
+            value={title}
+            onChange={(e, newValue) => setTitle(newValue || "")}
             className={styles.inputFields}
+            required
           />
 
-        <TextField
-          placeholder='Information...'
-          value={info}
-          onChange={(e, newValue) => setInfo(newValue || '')}
-          multiline
-          rows = {7}
-          resizable={false}
-          className={styles.textArea}
+          <Dropdown
+            placeholder="Vælg kunde"
+            options={customers.map((customer) => ({
+              key: customer.id,
+              text: customer.name,
+            }))}
+            selectedKey={selectedCustomer}
+            onChange={(e, option) => setSelectedCustomer(option?.key as string)}
+            className={styles.inputFields}
+            styles={dropdownStyles}
+            required
           />
 
-        <Stack horizontal tokens={{ childrenGap: 10 }}>
-          <PrimaryButton text="Gem" onClick={onSave} />
-          <DefaultButton text="Annuller" onClick={() => console.log('Cancelled')} />
+          <TextField
+            placeholder="Estimat i hele timer"
+            value={estimatedHours}
+            onChange={(e, newValue) => setEstimatedHours(newValue || "")}
+            type="number"
+            className={styles.inputFields}
+            required
+          />
+
+          <DatePicker
+            placeholder="Vælg dato"
+            showMonthPickerAsOverlay
+            value={selectedDate}
+            onSelectDate={(date) => setSelectedDate(date || undefined)}
+            firstDayOfWeek={DayOfWeek.Monday}
+            className={styles.inputFields}
+            formatDate={formatDate}
+          />
+
+          <PeoplePicker
+            context={{
+              absoluteUrl: context.pageContext.web.absoluteUrl,
+              msGraphClientFactory: context.msGraphClientFactory,
+              spHttpClient: context.spHttpClient,
+            }}
+            titleText="Vælg medarbejder"
+            personSelectionLimit={3}
+            groupName={""} // Empty = filter from all users
+            showtooltip={false}
+            required={false}
+            onChange={_getPeoplePickerItems}
+            principalTypes={[PrincipalType.User]}
+            resolveDelay={1000}
+          />
+
+          <TextField
+            placeholder="Information..."
+            value={info}
+            onChange={(e, newValue) => setInfo(newValue || "")}
+            multiline
+            rows={7}
+            resizable={false}
+            className={styles.textArea}
+          />
+
+          <Stack horizontal tokens={{ childrenGap: 10 }}>
+            <PrimaryButton text="Gem" onClick={onSave} />
+            <DefaultButton
+              text="Annuller"
+              onClick={() => console.log("Cancelled")}
+            />
+          </Stack>
         </Stack>
-      </Stack>
       </div>
       <div className={styles.halfWidth}>
-        <Text variant={'xxLarge'} className={styles.headingMargin}>Fremtidige bookinger på</Text>
+        <Text variant={"xxLarge"} className={styles.headingMargin}>
+          Fremtidige bookinger på
+        </Text>
       </div>
     </Stack>
   );

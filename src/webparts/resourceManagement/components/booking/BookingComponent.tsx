@@ -4,7 +4,6 @@ import {
   Text,
   TextField,
   Dropdown,
-  DatePicker,
   DefaultButton,
   PrimaryButton,
   Stack,
@@ -17,8 +16,20 @@ import {
   PrincipalType,
 } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { formatDateForApi, formatDateForDisplay } from "../dateUtils";
+import {
+  formatDateForApi,
+  formatDateForDisplay,
+  extractTime,
+  calculateEstimatedHours,
+  getDatesBetween,
+} from "../dateUtils";
 import BackEndService, { Registration } from "../../services/BackEnd";
+import {
+  DateConvention,
+  DateTimePicker,
+  TimeConvention,
+  TimeDisplayControlType,
+} from "@pnp/spfx-controls-react";
 
 export interface IBookingComponentProps {
   context: WebPartContext;
@@ -43,14 +54,17 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   const [selectedCustomer, setSelectedCustomer] = React.useState<
     string | undefined
   >(undefined);
-  const [estimatedHours, setEstimatedHours] = React.useState<string>("");
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
+  // const [estimatedHours, setEstimatedHours] = React.useState<string>("");
+  // const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
+  const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
+    undefined
+  );
+  const [endDateTime, setEndDateTime] = React.useState<Date | undefined>(
     undefined
   );
   const [selectedCoworkers, setSelectedCoworkers] = React.useState<
     IPeoplePickerItem[]
   >([]);
-
   const { customers } = useCustomerList();
 
   const _getPeoplePickerItems = (items: IPeoplePickerItem[]): void => {
@@ -58,37 +72,46 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   };
 
   const onSave = (): void => {
-    const time = parseInt(estimatedHours, 10);
-    if (!selectedDate) {
-      alert("Vælg en dato!");
-      console.error("Brugeren har ikke valgt en dato");
-      return;
-    } else if (isNaN(time)) {
-      //In case brugeren skulle bypasse frontend input-restriction somehow
-      console.error("Skriv venligst et gyldigt antal timer");
+    if (!startDateTime || !endDateTime) {
+      alert("Vælg en start- og slutdato!");
+      console.error("Brugeren har ikke valgt start- eller slutdato");
       return;
     }
 
-    const registrationData: Partial<Registration> = {
-      shortDescription: title,
-      description: info,
-      date: formatDateForApi(selectedDate),
-      // start: "08:00",
-      // end: "16:00",
-      time: time,
-      employee: selectedCoworkers.map((coworker) => coworker.email).join(","),
-      registrationType: 2, // = "Booking"
-    };
+    const dates = getDatesBetween(startDateTime, endDateTime);
+    const startTime = extractTime(startDateTime);
+    const endTime = extractTime(endDateTime);
+    const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
 
-    BackEndService.Instance.createRegistration(registrationData);
-    console.log("Registrering gemt:", registrationData);
-    console.log({
-      title,
-      selectedCustomer,
-      estimatedHours,
-      selectedDate,
-      selectedCoworkers,
+    if (dates === undefined || estimatedHours === undefined) {
+      console.error(
+        "Kunne ikke oprette booking, da startdato forekom efter slutdato"
+      );
+      return;
+    }
+
+    // Create a registration for each day
+    const registrations = dates.map((date) => {
+      const registrationData: Partial<Registration> = {
+        shortDescription: title,
+        description: info,
+        date: formatDateForApi(date),
+        start: startTime,
+        end: endTime,
+        time: estimatedHours,
+        employee: selectedCoworkers.map((coworker) => coworker.email).join(","),
+        registrationType: 2, // = "Booking"
+      };
+
+      return registrationData;
     });
+
+    // Send each registration to the database
+    registrations.forEach((registration) => {
+      BackEndService.Instance.createRegistration(registration);
+      console.log(registration);
+    });
+
   };
 
   const dropdownStyles: Partial<IDropdownStyles> = {
@@ -108,9 +131,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     },
   };
 
-  React.useEffect(() => {
-
-  }, []);
+  React.useEffect(() => {}, []);
 
   return (
     <Stack horizontal>
@@ -141,16 +162,16 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             required
           />
 
-          <TextField
+          {/* <TextField
             placeholder="Estimat i hele timer"
             value={estimatedHours}
             onChange={(e, newValue) => setEstimatedHours(newValue || "")}
             type="number"
             className={styles.inputFields}
             required
-          />
+          /> */}
 
-          <DatePicker
+          {/* <DatePicker
             placeholder="Vælg dato"
             showMonthPickerAsOverlay
             value={selectedDate}
@@ -160,6 +181,42 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             formatDate={(date) =>
               date ? formatDateForDisplay(date.toISOString()) : ""
             }
+          /> */}
+
+          {/* Start DateTimePicker */}
+          <DateTimePicker
+            label="Starttid"
+            placeholder="Vælg en dato"
+            dateConvention={DateConvention.DateTime}
+            timeConvention={TimeConvention.Hours24}
+            firstDayOfWeek={DayOfWeek.Monday}
+            timeDisplayControlType={TimeDisplayControlType.Dropdown}
+            minutesIncrementStep={5}
+            showMonthPickerAsOverlay
+            showSeconds={false}
+            value={startDateTime}
+            formatDate={(date) =>
+              date ? formatDateForDisplay(date.toISOString()) : ""
+            }
+            onChange={(date) => setStartDateTime(date || undefined)}
+          />
+
+          {/* End DateTimePicker */}
+          <DateTimePicker
+            label="Sluttid"
+            placeholder="Vælg en dato"
+            dateConvention={DateConvention.DateTime}
+            timeConvention={TimeConvention.Hours24}
+            firstDayOfWeek={DayOfWeek.Monday}
+            timeDisplayControlType={TimeDisplayControlType.Dropdown}
+            minutesIncrementStep={5}
+            showMonthPickerAsOverlay
+            showSeconds={false}
+            value={endDateTime}
+            formatDate={(date) =>
+              date ? formatDateForDisplay(date.toISOString()) : ""
+            }
+            onChange={(date) => setEndDateTime(date || undefined)}
           />
 
           <PeoplePicker

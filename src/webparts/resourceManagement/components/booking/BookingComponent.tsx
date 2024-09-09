@@ -17,6 +17,8 @@ import {
   PrincipalType,
 } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
+import { formatDateForApi, formatDateForDisplay } from "../dateUtils";
+import BackEndService, { Registration } from "../../services/BackEnd";
 
 export interface IBookingComponentProps {
   context: WebPartContext;
@@ -56,6 +58,30 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   };
 
   const onSave = (): void => {
+    const time = parseInt(estimatedHours, 10);
+    if (!selectedDate) {
+      alert("Vælg en dato!");
+      console.error("Brugeren har ikke valgt en dato");
+      return;
+    } else if (isNaN(time)) {
+      //In case brugeren skulle bypasse frontend input-restriction somehow
+      console.error("Skriv venligst et gyldigt antal timer");
+      return;
+    }
+
+    const registrationData: Partial<Registration> = {
+      shortDescription: title,
+      description: info,
+      date: formatDateForApi(selectedDate),
+      // start: "08:00",
+      // end: "16:00",
+      time: time,
+      employee: selectedCoworkers.map((coworker) => coworker.email).join(","),
+      registrationType: 2, // = "Booking"
+    };
+
+    BackEndService.Instance.createRegistration(registrationData);
+    console.log("Registrering gemt:", registrationData);
     console.log({
       title,
       selectedCustomer,
@@ -63,14 +89,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       selectedDate,
       selectedCoworkers,
     });
-  };
-
-  const formatDate = (date?: Date): string => {
-    if (!date) return "";
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
   };
 
   const dropdownStyles: Partial<IDropdownStyles> = {
@@ -89,6 +107,10 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       whiteSpace: "normal",
     },
   };
+
+  React.useEffect(() => {
+
+  }, []);
 
   return (
     <Stack horizontal>
@@ -135,7 +157,9 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             onSelectDate={(date) => setSelectedDate(date || undefined)}
             firstDayOfWeek={DayOfWeek.Monday}
             className={styles.inputFields}
-            formatDate={formatDate}
+            formatDate={(date) =>
+              date ? formatDateForDisplay(date.toISOString()) : ""
+            }
           />
 
           <PeoplePicker

@@ -12,7 +12,7 @@ export const useCustomerList = (): { customers: Customer[] } => {
   useEffect(() => {
     const fetchCustomers = async (): Promise<void> => {
       try {
-        const data = await BackEndService.Instance.fetchCustomers<Customer[]>();
+        const data = await BackEndService.Instance.getCustomers<Customer[]>();
         setCustomers(data);
       } catch (err) {console.error(err)}
     };

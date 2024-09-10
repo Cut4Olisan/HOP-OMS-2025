@@ -63,7 +63,7 @@ class BackEndService {
     return await BackEndService.handleResponse(response);
   }
 
-  public async fetchCustomers<T>(): Promise<T> {
+  public async getCustomers<T>(): Promise<T> {
     const response = await fetch(BackEndService.API_URL_Customers, {
       method: "GET",
       headers: {
@@ -74,9 +74,7 @@ class BackEndService {
     return await BackEndService.handleResponse(response);
   }
 
-  public async createRegistration(
-    data: Partial<Registration>
-  ): Promise<unknown> {
+  public async createRegistration(data: Partial<Registration>): Promise<void> {
     const response = await fetch(BackEndService.API_URL_Registration, {
       method: "POST",
       headers: {
@@ -86,6 +84,23 @@ class BackEndService {
     });
     return await BackEndService.handleResponse(response);
   }
+
+  public async getRegistrations<T>(registrationType?: number): Promise<T> {
+    const response = await fetch(BackEndService.API_URL_Registration);
+    
+    if (!response.ok) {
+      throw new Error("Fejl ved hentning af data");
+    }
+    const allRegistrations = (await response.json()) as Registration[];
+  
+    // If registrationType is provided, filter the registrations
+    const filteredRegistrations = registrationType
+      ? allRegistrations.filter(reg => reg.registrationType === registrationType)
+      : allRegistrations;
+  
+    return filteredRegistrations as unknown as T;
+  }
+  
 }
 
 export default BackEndService;

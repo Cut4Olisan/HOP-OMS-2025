@@ -9,6 +9,9 @@ import {
   Stack,
   DayOfWeek,
   IDropdownStyles,
+  Toggle,
+  Checkbox,
+  ITextFieldStyles,
 } from "@fluentui/react";
 import { useCustomerList } from "../Customers/fetchCustomers";
 import {
@@ -54,24 +57,25 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   const [selectedCustomer, setSelectedCustomer] = React.useState<
     string | undefined
   >(undefined);
-  // const [estimatedHours, setEstimatedHours] = React.useState<string>("");
-  // const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
   const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
     undefined
   );
   const [endDateTime, setEndDateTime] = React.useState<Date | undefined>(
     undefined
   );
-  const [selectedCoworkers, setSelectedCoworkers] = React.useState<
-    IPeoplePickerItem[]
-  >([]);
+  const [selectedCoworkers, setSelectedCoworkers] = React.useState<string[]>(
+    []
+  );
+  const [debuggingMode, setDebuggingMode] = React.useState<boolean>(false);
+  const [isRecurring, setIsRecurring] = React.useState<boolean>(false);
   const { customers } = useCustomerList();
 
-  const _getPeoplePickerItems = (items: IPeoplePickerItem[]): void => {
-    setSelectedCoworkers(items);
+  const _getPeoplePickerItems = (items: any[]): void => {
+    const emails = items.map((item) => item.secondaryText);
+    setSelectedCoworkers(emails);
   };
 
-  const onSave = (): void => {
+  const onSave = async (): Promise<void> => {
     if (!startDateTime || !endDateTime) {
       alert("Vælg en start- og slutdato!");
       console.error("Brugeren har ikke valgt start- eller slutdato");
@@ -99,21 +103,27 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
         start: startTime,
         end: endTime,
         time: estimatedHours,
-        employee: selectedCoworkers.map((coworker) => coworker.email).join(","),
+        employee: selectedCoworkers.join(","),
         registrationType: 2, // = "Booking"
       };
 
       return registrationData;
     });
-
-    // Send each registration to the database
-    registrations.forEach((registration) => {
-      BackEndService.Instance.createRegistration(registration);
-      console.log(registration);
+    console.log("Debugging mode is: ", debuggingMode);
+    registrations.forEach(async (registration) => {
+      if (!debuggingMode) {
+        // POST'er til DB hvis debugging mode er slået fra
+        await BackEndService.Instance.createRegistration(registration);
+        console.log("Booking oprettet: ", registration);
+      } else {
+        console.log("Debugging mode: Booking not posted to DB: ", registration);
+      }
     });
-
   };
 
+  const narrowTextFieldStyles: Partial<ITextFieldStyles> = {
+    fieldGroup: { width: 100 },
+  };
   const dropdownStyles: Partial<IDropdownStyles> = {
     callout: {
       maxHeight: 200,
@@ -131,7 +141,18 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     },
   };
 
-  React.useEffect(() => {}, []);
+  React.useEffect(() => {
+    const getBookings = async (): Promise<void> => {
+      try {
+        const bookings = await BackEndService.Instance.getRegistrations(2);
+        console.log(bookings);
+      } catch (error) {
+        console.error("Error fetching registrations:", error);
+      }
+    };
+
+    getBookings().catch((e) => console.error(e));
+  }, []);
 
   return (
     <Stack horizontal>
@@ -140,6 +161,25 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           <Text variant={"xxLargePlus"} className={styles.headingMargin}>
             Opret booking
           </Text>
+
+          <Toggle
+            label="Debugging mode (ingen DB posts)"
+            checked={debuggingMode}
+            onChange={(e, checked) => {
+              if (checked) {
+                console.log(
+                  "Debugging mode: " + !!checked + " - no database actions."
+                );
+              } else {
+                console.warn(
+                  "Debugging mode: " +
+                    !!checked +
+                    " - database actions enabled!"
+                );
+              }
+              setDebuggingMode(!!checked);
+            }}
+          />
 
           <TextField
             placeholder="Titel"
@@ -162,28 +202,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             required
           />
 
-          {/* <TextField
-            placeholder="Estimat i hele timer"
-            value={estimatedHours}
-            onChange={(e, newValue) => setEstimatedHours(newValue || "")}
-            type="number"
-            className={styles.inputFields}
-            required
-          /> */}
-
-          {/* <DatePicker
-            placeholder="Vælg dato"
-            showMonthPickerAsOverlay
-            value={selectedDate}
-            onSelectDate={(date) => setSelectedDate(date || undefined)}
-            firstDayOfWeek={DayOfWeek.Monday}
-            className={styles.inputFields}
-            formatDate={(date) =>
-              date ? formatDateForDisplay(date.toISOString()) : ""
-            }
-          /> */}
-
-          {/* Start DateTimePicker */}
           <DateTimePicker
             label="Starttid"
             placeholder="Vælg en dato"
@@ -201,7 +219,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             onChange={(date) => setStartDateTime(date || undefined)}
           />
 
-          {/* End DateTimePicker */}
           <DateTimePicker
             label="Sluttid"
             placeholder="Vælg en dato"
@@ -218,6 +235,32 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             }
             onChange={(date) => setEndDateTime(date || undefined)}
           />
+
+          <Toggle
+            label="Skal denne booking gentages ugentligt?"
+            checked={isRecurring}
+            onChange={(e, checked) => {
+              setIsRecurring(!!checked);
+            }}
+          />
+
+          {isRecurring && (
+            <div>
+              <Text variant="large">Gentag booking hver...</Text>
+              <Stack tokens={{ childrenGap: 5 }}>
+                <Checkbox label="Mandag" />
+                <Checkbox label="Tirsdag" />
+                <Checkbox label="Onsdag" />
+                <Checkbox label="Torsdag" />
+                <Checkbox label="Fredag" />
+              </Stack>
+              <Stack horizontal tokens={{ childrenGap: 5 }}>
+                <Text variant={"large"}>I de næste</Text>
+                <TextField placeholder="..." styles={narrowTextFieldStyles} />
+                <Text variant={"large"}>uger</Text>
+              </Stack>
+            </div>
+          )}
 
           <PeoplePicker
             context={{
@@ -240,9 +283,8 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             value={info}
             onChange={(e, newValue) => setInfo(newValue || "")}
             multiline
-            rows={7}
-            resizable={false}
-            className={styles.textArea}
+            rows={3}
+            className={styles.inputFields}
           />
 
           <Stack horizontal tokens={{ childrenGap: 10 }}>
@@ -253,11 +295,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             />
           </Stack>
         </Stack>
-      </div>
-      <div className={styles.halfWidth}>
-        <Text variant={"xxLarge"} className={styles.headingMargin}>
-          Fremtidige bookinger på
-        </Text>
       </div>
     </Stack>
   );

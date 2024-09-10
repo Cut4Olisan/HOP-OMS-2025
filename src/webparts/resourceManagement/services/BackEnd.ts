@@ -42,8 +42,6 @@ class BackEndService {
     BackEndService.baseurl + "api/customers";
   private static API_URL_Registration: string =
     BackEndService.baseurl + "api/registrations";
-  // private static API_URL_Projects: string = BackEndService.baseurl + "api/projects";
-  // private static API_URL_ProjectStatus: string = BackEndService.baseurl + "api/projectStatus";
 
   private static handleResponse = async (response: Response): Promise<any> => {
     if (!response.ok) {

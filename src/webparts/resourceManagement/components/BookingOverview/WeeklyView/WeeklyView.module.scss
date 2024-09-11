@@ -1,23 +1,110 @@
-.container {
-  padding: 5px;
+.weeklyViewContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
 }
 
 .controlsContainer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
-.navigationContainer {
+.weekInfo {
+  text-align: center;
+  flex-grow: 1;
+}
+
+.dateRange {
+  margin-top: 5px;
+}
+
+.navigationArrows {
   display: flex;
+  justify-content: flex-end;
   gap: 10px;
 }
 
-.backButton {
+.syncScrollContainer {
   display: flex;
-  justify-content: flex-start;
-  margin-bottom: 20px;
+  flex-grow: 1;
+  position: relative;
+  overflow-y: auto;
+  height: 600px; /* Adjust height to fit the view */
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: 100px repeat(5, 1fr); /* One fixed column for time, and 5 flexible columns for days */
+  width: 100%; /* Ensure it uses the full available width */
+}
+
+.gridHeader {
+  display: contents; /* Allow sticky headers */
+}
+
+.timeHeader {
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.dayHeader {
+  text-align: center;
+  padding: 10px;
+  font-weight: bold;
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid #ccc;
+  height: 40px; /* Adjust header height */
+}
+
+.gridRow {
+  display: contents;
+}
+
+.timeColumn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px; /* 4 time slots (15px each) = 1 hour */
+  border-bottom: 1px solid #ccc;
+}
+
+.dayColumn {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ccc;
+}
+
+.hourRow {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #eee;
+  height: 60px; /* 4 time slots (15px each) = 1 hour */
+}
+
+.timeSlot {
+  height: 15px; /* Each time slot is 15 minutes (4 per hour) */
+  position: relative;
+  background-color: #f9f9f9;
+  border-right: 1px solid #eee;
+}
+
+.booking {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #0078d4;
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  cursor: move;
 }
 
 .arrowButton {
@@ -28,71 +115,4 @@
 
 .arrowButton:hover {
   color: var(--themeDark);
-}
-
-.weekHeader {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 1;
-}
-
-.addIcon {
-  cursor: pointer;
-  color: var(--white);
-}
-
-.weekDaysContainer {
-  display: flex;
-  gap: 5px;
-  flex-grow: 1;
-  justify-content: space-between;
-}
-
-.dayBlock {
-  border-radius: 8px;
-  padding: 15px;
-  flex: 1;
-  min-width: 150px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  max-height: 400px;
-  background-color: var(--neutralLight);
-}
-
-.dayName {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.bookingsList {
-  margin-top: 10px;
-  border-color: var(--colorBrandBackground1);
-  overflow-y: auto;
-}
-
-.bookingCard {
-  background-color: var(--white);
-  padding: 15px;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  margin-bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border-bottom: 2px solid var(--themePrimary);
-}
-
-.projectName {
-  font-weight: bold;
-}
-
-.description {
-  color: var(--neutralPrimary);
-}
-
-.Bold {
-  font-weight: bold;
 }

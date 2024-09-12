@@ -65,6 +65,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     string | undefined
   >(undefined);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  const [selectedProject, setSelectedProject] = React.useState<string>("");
   const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
     undefined
   );
@@ -114,6 +115,15 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   const onSave = async (): Promise<void> => {
     if (!startDateTime || !endDateTime) {
       return setError("Vælg en start- og slutdato!");
+    }
+    if (!title) {
+      return setError("Titel manger");
+    }
+    if (!selectedCustomer) {
+      return setError("Vælg en kunde");
+    }
+    if (!selectedCoworkers) {
+      return setError("Vælg en medarbejder");
     }
 
     let dates: Date[] | [] = [];
@@ -177,7 +187,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       overflowY: "auto",
     },
     dropdown: {
-      maxWidth: 300,
+      maxWidth: 400,
     },
     dropdownItem: {
       height: "auto",
@@ -248,7 +258,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             placeholder="Titel"
             value={title}
             onChange={(e, newValue) => setTitle(newValue || "")}
-            className={styles.limitToSetWidth}
             required
           />
 
@@ -260,10 +269,25 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             }))}
             selectedKey={selectedCustomer}
             onChange={(e, option) => setSelectedCustomer(option?.key as string)}
-            className={styles.limitToSetWidth}
             styles={dropdownStyles}
             required
           />
+          {selectedCustomer && (
+            <Dropdown
+              placeholder="Vælg projekt for kunde"
+              options={customers.map((customer) => ({
+                key: customer.id,
+                text: customer.name,
+              }))}
+              selectedKey={selectedProject}
+              onChange={(e, option) =>
+                setSelectedProject(option?.key as string)
+              }
+              styles={dropdownStyles}
+              className={styles.isShorter}
+              required
+            />
+          )}
 
           <DateTimePicker
             label="Starttid"
@@ -334,7 +358,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             onChange={(e, newValue) => setInfo(newValue || "")}
             multiline
             rows={3}
-            className={styles.limitToSetWidth}
           />
 
           <Stack horizontal tokens={{ childrenGap: 10 }}>

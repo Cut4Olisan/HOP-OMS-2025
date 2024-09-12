@@ -5,19 +5,24 @@ import {
   Stack,
   TextField,
   ITextFieldStyles,
+  DayOfWeek,
 } from "@fluentui/react";
 import styles from "./Recursion.module.scss";
 
-export interface IRecursionProps {}
+export interface IRecursionProps {
+  onRecursionChange: (days: DayOfWeek[], weeks: number) => void;
+}
 
 const narrowTextFieldStyles: Partial<ITextFieldStyles> = {
-  fieldGroup: { width: 42, height: 22, },
-  field: { padding: "0 6px",},
+  fieldGroup: { width: 42, height: 22 },
+  field: { padding: "0 6px" },
 };
+
 const MAX_INPUT_LENGTH = 3;
 
-const RecursionPanel: React.FC<IRecursionProps> = () => {
+const RecursionPanel: React.FC<IRecursionProps> = ({ onRecursionChange }) => {
   const [TextFieldValue, setTextFieldValue] = React.useState("");
+  const [selectedDays, setSelectedDays] = React.useState<DayOfWeek[]>([]);
 
   const limitTextFieldLength = React.useCallback(
     (
@@ -31,17 +36,51 @@ const RecursionPanel: React.FC<IRecursionProps> = () => {
     []
   );
 
+  const toggleDaySelection = (day: DayOfWeek): void => {
+    setSelectedDays((prevDays) =>
+      prevDays.includes(day)
+        ? prevDays.filter((d) => d !== day)
+        : [...prevDays, day]
+    );
+  };
+
+  React.useEffect(() => {
+    const weeks = parseInt(TextFieldValue, 10);
+    if (weeks && selectedDays.length > 0) {
+      onRecursionChange(selectedDays, weeks);
+    }
+  }, [TextFieldValue, selectedDays, onRecursionChange]);
+
   return (
     <div>
       <Text variant="large">Gentag booking hver:</Text>
       <Stack tokens={{ childrenGap: 5 }}>
-        <Checkbox label="Mandag" />
-        <Checkbox label="Tirsdag" />
-        <Checkbox label="Onsdag" />
-        <Checkbox label="Torsdag" />
-        <Checkbox label="Fredag" />
+        <Checkbox
+          label="Mandag"
+          onChange={() => toggleDaySelection(DayOfWeek.Monday)}
+        />
+        <Checkbox
+          label="Tirsdag"
+          onChange={() => toggleDaySelection(DayOfWeek.Tuesday)}
+        />
+        <Checkbox
+          label="Onsdag"
+          onChange={() => toggleDaySelection(DayOfWeek.Wednesday)}
+        />
+        <Checkbox
+          label="Torsdag"
+          onChange={() => toggleDaySelection(DayOfWeek.Thursday)}
+        />
+        <Checkbox
+          label="Fredag"
+          onChange={() => toggleDaySelection(DayOfWeek.Friday)}
+        />
       </Stack>
-      <Stack horizontal tokens={{ childrenGap: 5 }} className={styles.verticalAligned}>
+      <Stack
+        horizontal
+        tokens={{ childrenGap: 5 }}
+        className={styles.verticalAligned}
+      >
         <Text variant={"large"}>I de næste</Text>
         <TextField
           placeholder="..."

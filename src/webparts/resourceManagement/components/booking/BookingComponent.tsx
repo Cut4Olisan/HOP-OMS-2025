@@ -66,8 +66,37 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     []
   );
   const [debuggingMode, setDebuggingMode] = React.useState<boolean>(false);
-  const [isRecurring, setIsRecurring] = React.useState<boolean>(false);
   const { customers } = useCustomerList();
+  const [isRecurring, setIsRecurring] = React.useState<boolean>(false);
+  const [recursionData, setRecursionData] = React.useState<{
+    days: DayOfWeek[];
+    weeks: number;
+  } | null>(null);
+
+  const handleRecursionChange = (days: DayOfWeek[], weeks: number): void => {
+    setRecursionData({ days, weeks });
+  };
+
+  const calculateRecurrenceDates = (
+    startDate: Date,
+    selectedDays: DayOfWeek[],
+    weeks: number
+  ): Date[] => {
+    const recurrenceDates: Date[] = [];
+    const currentDate = new Date(startDate);
+
+    for (let week = 0; week < weeks; week++) {
+      selectedDays.forEach((day) => {
+        const date = new Date(currentDate);
+        date.setDate(
+          currentDate.getDate() + ((day - currentDate.getDay() + 7) % 7)
+        );
+        recurrenceDates.push(new Date(date));
+      });
+      currentDate.setDate(currentDate.getDate() + 7);
+    }
+    return recurrenceDates;
+  };
 
   const _getPeoplePickerItems = (items: any[]): void => {
     const emails = items.map((item) => item.secondaryText);
@@ -81,7 +110,16 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       return;
     }
 
-    const dates = getDatesBetween(startDateTime, endDateTime);
+    let dates: Date[] = getDatesBetween(startDateTime, endDateTime) || [];
+
+    if (isRecurring && recursionData && recursionData.weeks > 0) {
+      const recurrenceDates = calculateRecurrenceDates(
+        startDateTime,
+        recursionData.days,
+        recursionData.weeks
+      );
+      dates = [...dates, ...recurrenceDates];
+    }
     const startTime = extractTime(startDateTime);
     const endTime = extractTime(endDateTime);
     const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
@@ -93,7 +131,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       return;
     }
 
-    // Create a registration for each day
+    // Laver en registrering for hver dag
     const registrations = dates.map((date) => {
       const registrationData: Partial<Registration> = {
         shortDescription: title,
@@ -111,7 +149,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     console.log("Debugging mode is: ", debuggingMode);
     registrations.forEach(async (registration) => {
       if (!debuggingMode) {
-        // POST'er til DB hvis debugging mode er slået fra
+        // POST'er kun til DB hvis debugging mode er slået fra
         await BackEndService.Instance.createRegistration(registration);
         console.log("Booking oprettet: ", registration);
       } else {
@@ -238,12 +276,11 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             <Toggle
               label="Skal denne booking gentages ugentligt?"
               checked={isRecurring}
-              onChange={(e, checked) => {
-                setIsRecurring(!!checked);
-              }}
+              onChange={(e, checked) => setIsRecurring(!!checked)}
             />
-
-            {isRecurring && <RecursionPanel />}
+            {isRecurring && (
+              <RecursionPanel onRecursionChange={handleRecursionChange} />
+            )}
 
             <PeoplePicker
               context={{

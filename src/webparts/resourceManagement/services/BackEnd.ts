@@ -85,20 +85,21 @@ class BackEndService {
 
   public async getRegistrations<T>(registrationType?: number): Promise<T> {
     const response = await fetch(BackEndService.API_URL_Registration);
-    
+
     if (!response.ok) {
       throw new Error("Fejl ved hentning af data");
     }
     const allRegistrations = (await response.json()) as Registration[];
-  
+
     // If registrationType is provided, filter the registrations
     const filteredRegistrations = registrationType
-      ? allRegistrations.filter(reg => reg.registrationType === registrationType)
+      ? allRegistrations.filter(
+          (reg) => reg.registrationType === registrationType
+        )
       : allRegistrations;
-  
+
     return filteredRegistrations as unknown as T;
   }
-  
 }
 
 export default BackEndService;

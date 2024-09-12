@@ -3,7 +3,7 @@ import FiveWeekView from "./FiveWeekView/FiveWeekView";
 
 interface OverviewComponentsProps {}
 
-const BookingOverviewComponent: React.FC<OverviewComponentsProps> = ({}) => {
+const BookingOverviewComponent: React.FC<OverviewComponentsProps> = () => {
   return (
     <div>
       <FiveWeekView />

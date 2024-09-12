@@ -102,25 +102,23 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
   const handlePreviousWeek = () => {
     setCurrentWeekNumber((prevWeek) => {
       const updatedWeek = prevWeek - 1;
-      onPreviousWeek(); // Call the callback to update FiveWeekView if necessary
-      return updatedWeek; // Ensure the week number is updated
+      onPreviousWeek();
+      return updatedWeek;
     });
   };
 
   const handleNextWeek = () => {
     setCurrentWeekNumber((prevWeek) => {
       const updatedWeek = prevWeek + 1;
-      onNextWeek(); // Call the callback to update FiveWeekView if necessary
-      return updatedWeek; // Ensure the week number is updated
+      onNextWeek();
+      return updatedWeek;
     });
   };
 
-  // Calculate the start and end of the week
   const startOfWeek = getWeekStartDate(currentWeekNumber, 2024);
   const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 4); // End on Friday
+  endOfWeek.setDate(startOfWeek.getDate() + 4);
 
-  // Create an array of dates for Monday to Friday
   const weekDays = Array.from({ length: 5 }, (_, i) => {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
@@ -133,7 +131,6 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
   return (
     <DndProvider backend={HTML5Backend}>
       <div className={styles.weeklyViewContainer}>
-        {/* Navigation Controls */}
         <div className={styles.controlsContainer}>
           <DefaultButton onClick={onBack}>
             Tilbage til 5 ugers oversigt
@@ -157,7 +154,6 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
 
         <div className={styles.syncScrollContainer}>
           <div className={styles.gridContainer}>
-            {/* Sticky Header for Days */}
             <div className={styles.gridHeader}>
               <div className={styles.timeHeader}></div>
               {days.map((day, i) => (
@@ -167,14 +163,12 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
               ))}
             </div>
 
-            {/* Grid with Time Labels on the Left */}
             {hours.map((hour) => (
               <div key={hour} className={styles.gridRow}>
                 <div className={styles.timeColumn}>
                   <Text variant="large">{`${hour}:00`}</Text>
                 </div>
 
-                {/* Booking Slots for Each Day */}
                 {days.map((day, i) => (
                   <div key={day} className={styles.dayColumn}>
                     {Array.from({ length: 4 }).map((_, j) => {

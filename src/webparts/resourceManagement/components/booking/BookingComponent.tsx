@@ -10,8 +10,10 @@ import {
   DayOfWeek,
   IDropdownStyles,
   Toggle,
+  IPersonaProps,
+  MessageBar,
+  MessageBarType,
 } from "@fluentui/react";
-import { useCustomerList } from "../Customers/fetchCustomers";
 import {
   PeoplePicker,
   PrincipalType,
@@ -46,16 +48,23 @@ export interface IPeoplePickerItem {
   email: string;
 }
 
+interface Customer {
+  id: string;
+  name: string;
+}
+
 const BookingComponent: React.FC<IBookingComponentProps> = ({
   coworkers,
   projects,
   context,
 }) => {
   const [title, setTitle] = React.useState<string>("");
+  const [error, setError] = React.useState<string | undefined>();
   const [info, setInfo] = React.useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = React.useState<
     string | undefined
   >(undefined);
+  const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
     undefined
   );
@@ -66,16 +75,15 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     []
   );
   const [debuggingMode, setDebuggingMode] = React.useState<boolean>(false);
-  const { customers } = useCustomerList();
   const [isRecurring, setIsRecurring] = React.useState<boolean>(false);
   const [recursionData, setRecursionData] = React.useState<{
     days: DayOfWeek[];
     weeks: number;
   } | null>(null);
 
-  const handleRecursionChange = (days: DayOfWeek[], weeks: number): void => {
-    setRecursionData({ days, weeks });
-  };
+  React.useEffect(() => {
+    setTimeout(() => setError(undefined), 5000);
+  }, [error]);
 
   const calculateRecurrenceDates = (
     startDate: Date,
@@ -98,19 +106,23 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     return recurrenceDates;
   };
 
-  const _getPeoplePickerItems = (items: any[]): void => {
+  const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
     const emails = items.map((item) => item.secondaryText);
-    setSelectedCoworkers(emails);
+    setSelectedCoworkers(emails.filter((e) => !!e) as string[]);
   };
 
   const onSave = async (): Promise<void> => {
     if (!startDateTime || !endDateTime) {
-      alert("Vælg en start- og slutdato!");
-      console.error("Brugeren har ikke valgt start- eller slutdato");
-      return;
+      return setError("Vælg en start- og slutdato!");
     }
 
-    let dates: Date[] = getDatesBetween(startDateTime, endDateTime) || [];
+    let dates: Date[] | [] = [];
+    const dateResult = getDatesBetween(startDateTime, endDateTime);
+    if (dateResult instanceof Error) {
+      setError(dateResult.message);
+    } else {
+      dates = dateResult;
+    }
 
     if (isRecurring && recursionData && recursionData.weeks > 0) {
       const recurrenceDates = calculateRecurrenceDates(
@@ -125,10 +137,11 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
 
     if (dates === undefined || estimatedHours === undefined) {
-      console.error(
-        "Kunne ikke oprette booking, da startdato forekom efter slutdato"
-      );
-      return;
+      return setError("Kunne ikke oprette booking - Ugyldig datoer");
+    }
+
+    if (estimatedHours instanceof Error) {
+      return setError(estimatedHours.message);
     }
 
     // Laver en registrering for hver dag
@@ -178,7 +191,9 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   React.useEffect(() => {
     const getBookings = async (): Promise<void> => {
       try {
-        const bookings = await BackEndService.Instance.getRegistrations(2);
+        const bookings = await BackEndService.Instance.getRegistrationsByType(
+          2
+        );
         console.log(bookings);
       } catch (error) {
         console.error("Error fetching registrations:", error);
@@ -186,141 +201,150 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     };
 
     getBookings().catch((e) => console.error(e));
+
+    const fetchCustomers = async (): Promise<void> => {
+      try {
+        const data = await BackEndService.Instance.getCustomers<Customer[]>();
+        setCustomers(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCustomers().catch((e) => console.error(e));
   }, []);
 
   return (
     <>
-      <Stack horizontal>
-        <div className={styles.halfWidth}>
-          <Stack tokens={{ childrenGap: 15 }}>
-            <Text variant={"xxLargePlus"} className={styles.headingMargin}>
-              Opret booking
-            </Text>
-
-            <Toggle
-              label="Debugging mode (ingen DB posts)"
-              checked={debuggingMode}
-              onChange={(e, checked) => {
-                if (checked) {
-                  console.log(
-                    "Debugging mode: " + !!checked + " - no database actions."
-                  );
-                } else {
-                  console.warn(
-                    "Debugging mode: " +
-                      !!checked +
-                      " - database actions enabled!"
-                  );
-                }
-                setDebuggingMode(!!checked);
-              }}
-            />
-
-            <TextField
-              placeholder="Titel"
-              value={title}
-              onChange={(e, newValue) => setTitle(newValue || "")}
-              className={styles.inputFields}
-              required
-            />
-
-            <Dropdown
-              placeholder="Vælg kunde"
-              options={customers.map((customer) => ({
-                key: customer.id,
-                text: customer.name,
-              }))}
-              selectedKey={selectedCustomer}
-              onChange={(e, option) =>
-                setSelectedCustomer(option?.key as string)
-              }
-              className={styles.inputFields}
-              styles={dropdownStyles}
-              required
-            />
-
-            <DateTimePicker
-              label="Starttid"
-              placeholder="Vælg en dato"
-              dateConvention={DateConvention.DateTime}
-              timeConvention={TimeConvention.Hours24}
-              firstDayOfWeek={DayOfWeek.Monday}
-              timeDisplayControlType={TimeDisplayControlType.Dropdown}
-              minutesIncrementStep={5}
-              showMonthPickerAsOverlay
-              showSeconds={false}
-              value={startDateTime}
-              formatDate={(date) =>
-                date ? formatDateForDisplay(date.toISOString()) : ""
-              }
-              onChange={(date) => setStartDateTime(date || undefined)}
-            />
-
-            <DateTimePicker
-              label="Sluttid"
-              placeholder="Vælg en dato"
-              dateConvention={DateConvention.DateTime}
-              timeConvention={TimeConvention.Hours24}
-              firstDayOfWeek={DayOfWeek.Monday}
-              timeDisplayControlType={TimeDisplayControlType.Dropdown}
-              minutesIncrementStep={5}
-              showMonthPickerAsOverlay
-              showSeconds={false}
-              value={endDateTime}
-              formatDate={(date) =>
-                date ? formatDateForDisplay(date.toISOString()) : ""
-              }
-              onChange={(date) => setEndDateTime(date || undefined)}
-            />
-
-            <Toggle
-              label="Skal denne booking gentages ugentligt?"
-              checked={isRecurring}
-              onChange={(e, checked) => setIsRecurring(!!checked)}
-            />
-            {isRecurring && (
-              <RecursionPanel onRecursionChange={handleRecursionChange} />
-            )}
-
-            <PeoplePicker
-              context={{
-                absoluteUrl: context.pageContext.web.absoluteUrl,
-                msGraphClientFactory: context.msGraphClientFactory,
-                spHttpClient: context.spHttpClient,
-              }}
-              titleText="Vælg medarbejder"
-              personSelectionLimit={3}
-              groupName={""} // Empty = filter from all users
-              showtooltip={false}
-              required={false}
-              onChange={_getPeoplePickerItems}
-              principalTypes={[PrincipalType.User]}
-              resolveDelay={1000}
-            />
-
-            <TextField
-              placeholder="Information..."
-              value={info}
-              onChange={(e, newValue) => setInfo(newValue || "")}
-              multiline
-              rows={3}
-              className={styles.inputFields}
-            />
-
-            <Stack horizontal tokens={{ childrenGap: 10 }}>
-              <PrimaryButton text="Gem" onClick={onSave} />
-              <DefaultButton
-                text="Annuller"
-                onClick={() => console.log("Cancelled")}
-              />
-            </Stack>
-          </Stack>
-        </div>
-        <div className={styles.halfWidth}>
-          <Text variant={"xxLarge"} className={styles.headingMargin}>
-            Fremtidige bookinger på
+      <Stack className={styles.componentBody}>
+        {error && (
+          <MessageBar messageBarType={MessageBarType.error}>{error}</MessageBar>
+        )}
+        <Stack tokens={{ childrenGap: 15 }}>
+          <Text variant={"xxLargePlus"} className={styles.headingMargin}>
+            Opret booking
           </Text>
-        </div>
+
+          <Toggle
+            label="Debugging mode (ingen DB posts)"
+            checked={debuggingMode}
+            onChange={(e, checked) => {
+              if (checked) {
+                console.log(
+                  "Debugging mode: " + !!checked + " - no database actions."
+                );
+              } else {
+                console.warn(
+                  "Debugging mode: " +
+                    !!checked +
+                    " - database actions enabled!"
+                );
+              }
+              setDebuggingMode(!!checked);
+            }}
+          />
+
+          <TextField
+            placeholder="Titel"
+            value={title}
+            onChange={(e, newValue) => setTitle(newValue || "")}
+            className={styles.limitToSetWidth}
+            required
+          />
+
+          <Dropdown
+            placeholder="Vælg kunde"
+            options={customers.map((customer) => ({
+              key: customer.id,
+              text: customer.name,
+            }))}
+            selectedKey={selectedCustomer}
+            onChange={(e, option) => setSelectedCustomer(option?.key as string)}
+            className={styles.limitToSetWidth}
+            styles={dropdownStyles}
+            required
+          />
+
+          <DateTimePicker
+            label="Starttid"
+            placeholder="Vælg en dato"
+            dateConvention={DateConvention.DateTime}
+            timeConvention={TimeConvention.Hours24}
+            firstDayOfWeek={DayOfWeek.Monday}
+            timeDisplayControlType={TimeDisplayControlType.Dropdown}
+            minutesIncrementStep={5}
+            showMonthPickerAsOverlay
+            showSeconds={false}
+            value={startDateTime}
+            formatDate={(date) =>
+              date ? formatDateForDisplay(date.toISOString()) : ""
+            }
+            onChange={(date) => setStartDateTime(date || undefined)}
+          />
+
+          <DateTimePicker
+            label="Sluttid"
+            placeholder="Vælg en dato"
+            dateConvention={DateConvention.DateTime}
+            timeConvention={TimeConvention.Hours24}
+            firstDayOfWeek={DayOfWeek.Monday}
+            timeDisplayControlType={TimeDisplayControlType.Dropdown}
+            minutesIncrementStep={5}
+            showMonthPickerAsOverlay
+            showSeconds={false}
+            value={endDateTime}
+            formatDate={(date) =>
+              date ? formatDateForDisplay(date.toISOString()) : ""
+            }
+            onChange={(date) => setEndDateTime(date || undefined)}
+          />
+
+          <Toggle
+            label="Skal denne booking gentages ugentligt?"
+            checked={isRecurring}
+            onChange={(e, checked) => setIsRecurring(!!checked)}
+          />
+          {isRecurring && (
+            <RecursionPanel
+              onRecursionChange={(d, w) =>
+                setRecursionData({ days: d, weeks: w })
+              }
+            />
+          )}
+
+          <PeoplePicker
+            context={{
+              absoluteUrl: context.pageContext.web.absoluteUrl,
+              msGraphClientFactory: context.msGraphClientFactory,
+              spHttpClient: context.spHttpClient,
+            }}
+            titleText="Vælg medarbejder"
+            personSelectionLimit={3}
+            groupName={""} // Empty = filter from all users
+            showtooltip={false}
+            required={false}
+            onChange={_getPeoplePickerItems}
+            principalTypes={[PrincipalType.User]}
+            resolveDelay={1000}
+          />
+
+          <TextField
+            placeholder="Information..."
+            value={info}
+            onChange={(e, newValue) => setInfo(newValue || "")}
+            multiline
+            rows={3}
+            className={styles.limitToSetWidth}
+          />
+
+          <Stack horizontal tokens={{ childrenGap: 10 }}>
+            <PrimaryButton text="Gem" onClick={onSave} />
+            <DefaultButton
+              text="Annuller"
+              onClick={() => console.log("Cancelled")}
+            />
+          </Stack>
+        </Stack>
       </Stack>
     </>
   );

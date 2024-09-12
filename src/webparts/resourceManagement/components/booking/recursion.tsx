@@ -45,11 +45,16 @@ const RecursionPanel: React.FC<IRecursionProps> = ({ onRecursionChange }) => {
   };
 
   React.useEffect(() => {
-    const weeks = parseInt(TextFieldValue, 10);
-    if (weeks && selectedDays.length > 0) {
+    //const weeks = parseInt(TextFieldValue, 10);
+    /*     if (weeks && selectedDays.length > 0) {
       onRecursionChange(selectedDays, weeks);
-    }
-  }, [TextFieldValue, selectedDays, onRecursionChange]);
+    } */
+    if (!parseInt(TextFieldValue, 10)) return;
+
+    if (!selectedDays.length) return;
+
+    return onRecursionChange(selectedDays, parseInt(TextFieldValue, 10));
+  }, [TextFieldValue, selectedDays]);
 
   return (
     <div>

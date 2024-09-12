@@ -43,15 +43,18 @@ class BackEndService {
   private static API_URL_Registration: string =
     BackEndService.baseurl + "api/registrations";
 
-  private static handleResponse = async (response: Response): Promise<any> => {
+  private static handleResponse = async <T>(response: Response): Promise<T> => {
     if (!response.ok) {
       const error = await response.text();
       throw new Error(error);
     }
-    return response.json();
+    const data = await response.json();
+    return data as unknown as T;
   };
 
-  public async getRegistrationTypes<T>(): Promise<T> {
+  public async getRegistrationTypes<
+    RegistrationType
+  >(): Promise<RegistrationType> {
     const response = await fetch(BackEndService.API_URL_RegistrationType, {
       method: "GET",
       headers: {
@@ -83,22 +86,26 @@ class BackEndService {
     return await BackEndService.handleResponse(response);
   }
 
-  public async getRegistrations<T>(registrationType?: number): Promise<T> {
-    const response = await fetch(BackEndService.API_URL_Registration);
+  public async getRegistrationsByType(
+    registrationType?: number
+  ): Promise<Registration[]> {
+    const response = await fetch(BackEndService.API_URL_Registration, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const allRegistrations = await BackEndService.handleResponse<
+      Registration[]
+    >(response);
 
-    if (!response.ok) {
-      throw new Error("Fejl ved hentning af data");
-    }
-    const allRegistrations = (await response.json()) as Registration[];
-
-    // If registrationType is provided, filter the registrations
     const filteredRegistrations = registrationType
       ? allRegistrations.filter(
           (reg) => reg.registrationType === registrationType
         )
       : allRegistrations;
 
-    return filteredRegistrations as unknown as T;
+    return filteredRegistrations;
   }
 }
 

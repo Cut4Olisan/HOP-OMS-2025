@@ -23,7 +23,7 @@ export const extractTime = (date: Date | undefined): string => {
 export const calculateEstimatedHours = (
   start: Date | undefined,
   end: Date | undefined
-): number | undefined => {
+): number | undefined | Error => {
   if (!start || !end) return 0;
 
   // Extract hours and minutes from start and end times
@@ -38,8 +38,7 @@ export const calculateEstimatedHours = (
 
   // Check if the end time is before the start time
   if (endTotalMinutes <= startTotalMinutes) {
-    alert("Starttidspunkt kan ikke forekomme efter sluttidspunkt");
-    return;
+    return new Error("Starttidspunkt kan ikke forekomme efter sluttidspunkt");
   }
 
   // Calculate the difference in minutes and convert to hours
@@ -50,15 +49,17 @@ export const calculateEstimatedHours = (
   return Math.max(0, diffInHours);
 };
 
-export const getDatesBetween = (startDate: Date, endDate: Date): Date[]|undefined => {
+export const getDatesBetween = (
+  startDate: Date,
+  endDate: Date
+): Date[] | Error => {
   if (endDate < startDate) {
-      alert("Slutdato kan ikke forekomme før startdato");
-      return 
+    return new Error("Slutdato kan ikke forekomme før startdato");
   }
 
   const dates = [];
   const currentDate = new Date(startDate);
-
+  //eslint-disable-next-line
   while (currentDate <= endDate) {
     dates.push(new Date(currentDate));
     currentDate.setDate(currentDate.getDate() + 1);

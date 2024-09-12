@@ -14,7 +14,6 @@ import ResourceManagement, {
 } from "./components/ResourceManagement";
 import BackEndService from "./services/BackEnd";
 
-
 export interface IResourceManagementWebPartProps {
   description: string;
 }
@@ -24,11 +23,6 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
   private _environmentMessage: string = "";
 
   public render(): void {
-    const customers = [
-      { key: 'customer1', text: 'Customer 1' },
-      { key: 'customer2', text: 'Customer 2' },
-    ];
-
     const coworkers = [
       { key: 'coworker1', text: 'Coworker 1' },
       { key: 'coworker2', text: 'Coworker 2' },
@@ -44,7 +38,6 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
       {
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
-        customers: customers,
         coworkers: coworkers,
         projects: projects,
         context: this.context
@@ -63,23 +56,22 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
 
   private _getEnvironmentMessage(): Promise<string> {
     if (!!this.context.sdks.microsoftTeams) {
-      // running in Teams, office.com or Outlook
       return this.context.sdks.microsoftTeams.teamsJs.app
         .getContext()
         .then((context) => {
           let environmentMessage: string = "";
           switch (context.app.host.name) {
-            case "Office": // running in Office
+            case "Office":
               environmentMessage = this.context.isServedFromLocalhost
                 ? strings.AppLocalEnvironmentOffice
                 : strings.AppOfficeEnvironment;
               break;
-            case "Outlook": // running in Outlook
+            case "Outlook":
               environmentMessage = this.context.isServedFromLocalhost
                 ? strings.AppLocalEnvironmentOutlook
                 : strings.AppOutlookEnvironment;
               break;
-            case "Teams": // running in Teams
+            case "Teams":
             case "TeamsModern":
               environmentMessage = this.context.isServedFromLocalhost
                 ? strings.AppLocalEnvironmentTeams

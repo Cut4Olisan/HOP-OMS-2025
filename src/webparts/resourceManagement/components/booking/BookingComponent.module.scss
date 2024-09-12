@@ -1,17 +1,20 @@
 @import '~@fluentui/react/dist/sass/References.scss';
 
-.inputFields {
-    width: 50%;
-    max-width: 300px;
+.componentBody {
+    width: 40dvw;
+    min-width: 350px;
+    max-width: 600px;
 }
 
-.textArea {
-    width: 65%;
-    max-width: 450px;
+.limitToSetWidth {
+    width: 100%;
+    max-width: 400px;
 }
 
-.halfWidth {
-    width: 50%;
+.ms-DatePicker {
+    width: 100%;
+    max-width: 350px;
+    background-color: limegreen;
 }
 
 .headingMargin {

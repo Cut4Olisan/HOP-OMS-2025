@@ -3,12 +3,10 @@ import styles from "./BookingComponent.module.scss";
 import {
   Text,
   TextField,
-  Dropdown,
   DefaultButton,
   PrimaryButton,
   Stack,
   DayOfWeek,
-  IDropdownStyles,
   Toggle,
   IPersonaProps,
   MessageBar,
@@ -18,47 +16,25 @@ import {
   PeoplePicker,
   PrincipalType,
 } from "@pnp/spfx-controls-react/lib/PeoplePicker";
-import { WebPartContext } from "@microsoft/sp-webpart-base";
 import {
   formatDateForApi,
-  formatDateForDisplay,
   extractTime,
   calculateEstimatedHours,
   getDatesBetween,
   calculateRecurrenceDates,
 } from "../dateUtils";
-import BackEndService, { Registration } from "../../services/BackEnd";
-import {
-  DateConvention,
-  DateTimePicker,
-  TimeConvention,
-  TimeDisplayControlType,
-} from "@pnp/spfx-controls-react";
-import RecursionPanel from "./recursion";
-
-export interface IBookingComponentProps {
-  context: WebPartContext;
-  customers: { key: string; text: string }[];
-  coworkers: { key: string; text: string }[];
-  projects: { key: string; text: string }[];
-}
+import RecursionPanel from "./RecursionDate";
+import DateTimePickerComponent from "./DateTimePicker";
+import { Customer, Project } from "./CustomerAndProjects/interfaces/ICustomerProjectsProps";
+import { Registration } from "./interfaces/IRegistrationProps";
+import BackEndService from "../../services/BackEnd";
+import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
+import { IBookingComponentProps } from "./interfaces/IBookingComponentProps";
 
 export interface IPeoplePickerItem {
   id: string;
   fullName: string;
   email: string;
-}
-
-export interface Customer {
-  id: number;
-  name: string;
-  active: boolean;
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  customerId: number;
 }
 
 const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
@@ -165,23 +141,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
     });
   };
 
-  const dropdownStyles: Partial<IDropdownStyles> = {
-    callout: {
-      maxHeight: 200,
-      overflowY: "auto",
-    },
-    dropdown: {
-      maxWidth: 400,
-    },
-    dropdownItem: {
-      height: "auto",
-    },
-    dropdownOptionText: {
-      overflow: "visible",
-      whiteSpace: "normal",
-    },
-  };
-
   React.useEffect(() => {
     const getBookings = async (): Promise<void> => {
       try {
@@ -256,78 +215,25 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
             required
           />
 
-          <Dropdown
-            label="Vælg en kunde"
-            placeholder="Vælg en kunde"
-            options={customers
-              .filter((c) => c.active)
-              .map((customer) => ({
-                key: customer.id,
-                text: customer.name,
-              }))}
-            selectedKey={selectedCustomer?.id}
-            onChange={(e, option) =>
-              option
-                ? setSelectedCustomer(
-                    customers.find((c) => c.id === Number(option.key))
-                  )
-                : undefined
-            }
-            styles={dropdownStyles}
-            required
+          <CustomerProjects
+            customers={customers}
+            projects={projects}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            selectedProject={selectedProject}
+            setSelectedProject={setSelectedProject}
           />
-          {selectedCustomer && (
-            <Dropdown
-              label="Projekt"
-              placeholder="Vælg projekt for kunde"
-              options={projects
-                .filter((p) => p.customerId === selectedCustomer.id)
-                .map((project) => ({
-                  key: project.id,
-                  text: project.name,
-                }))}
-              selectedKey={selectedProject}
-              onChange={(e, option) =>
-                setSelectedProject(option?.key as string)
-              }
-              styles={dropdownStyles}
-              className={styles.isShorter}
-              required
-            />
-          )}
 
-          <DateTimePicker
+          <DateTimePickerComponent
             label="Starttid"
-            placeholder="Vælg en dato"
-            dateConvention={DateConvention.DateTime}
-            timeConvention={TimeConvention.Hours24}
-            firstDayOfWeek={DayOfWeek.Monday}
-            timeDisplayControlType={TimeDisplayControlType.Dropdown}
-            minutesIncrementStep={5}
-            showMonthPickerAsOverlay
-            showSeconds={false}
             value={startDateTime}
-            formatDate={(date) =>
-              date ? formatDateForDisplay(date.toISOString()) : ""
-            }
-            onChange={(date) => setStartDateTime(date || undefined)}
+            onChange={setStartDateTime}
           />
 
-          <DateTimePicker
+          <DateTimePickerComponent
             label="Sluttid"
-            placeholder="Vælg en dato"
-            dateConvention={DateConvention.DateTime}
-            timeConvention={TimeConvention.Hours24}
-            firstDayOfWeek={DayOfWeek.Monday}
-            timeDisplayControlType={TimeDisplayControlType.Dropdown}
-            minutesIncrementStep={5}
-            showMonthPickerAsOverlay
-            showSeconds={false}
             value={endDateTime}
-            formatDate={(date) =>
-              date ? formatDateForDisplay(date.toISOString()) : ""
-            }
-            onChange={(date) => setEndDateTime(date || undefined)}
+            onChange={setEndDateTime}
           />
 
           <Toggle

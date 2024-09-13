@@ -1,5 +1,5 @@
 import * as React from "react";
-import BookingComponent from "./booking/BookingComponent";
+import BookingComponent from "./BookingCreation/BookingComponent";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 
 export interface IResourceManagementProps {

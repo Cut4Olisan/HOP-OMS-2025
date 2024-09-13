@@ -16,6 +16,10 @@
   width: 75%;
 }
 
+.verticalAligned {
+    align-items: center;
+}
+
 /* Selector for at få fat i rækkerne i dateTimePickers
 [class^="dateTimePicker_"] > [class^="container_"] > [class^="row_"] */
 

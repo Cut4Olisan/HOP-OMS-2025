@@ -17,14 +17,14 @@ export interface RegistrationDTO {
   hourlyRate: number;
   employee: string;
   registrationType: number;
-  forecastEstimate: number | null;
+  forecastEstimate: number | undefined;
 }
 
 export interface ProjectDTO {
   id: number;
   name: string;
   customerId: number;
-  parentProjectId: number | null;
+  parentProjectId: number | undefined;
   hourlyRate: number;
   invoiceable: boolean;
   projectStatus: number;

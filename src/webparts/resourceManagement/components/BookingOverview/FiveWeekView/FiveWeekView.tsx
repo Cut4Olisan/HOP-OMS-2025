@@ -1,9 +1,5 @@
-import {
-  Dropdown,
-  IDropdownOption,
-  Text,
-  DefaultButton,
-} from "@fluentui/react";
+import * as React from "react";
+import { Dropdown, Text, DefaultButton } from "@fluentui/react";
 import {
   AddSquare24Regular,
   ArrowLeftRegular,
@@ -13,8 +9,6 @@ import styles from "./FiveWeekView.module.scss";
 import WeeklyView from "../WeeklyView/WeeklyView";
 import { mockRegistrations, mockProjects } from "../mock/mockData";
 import { RegistrationDTO } from "../mock/iMockData";
-import { useState } from "react";
-import React from "react";
 
 // Helper functions to calculate week number and week range
 const getWeekRange = (date: Date) => {
@@ -44,42 +38,27 @@ const getWeeksFromDate = (startDate: Date) => {
 };
 
 const FiveWeekView: React.FC = () => {
-  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const [selectedBooking, setSelectedBooking] =
-    useState<RegistrationDTO | null>(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedEmployee, setSelectedEmployee] = React.useState<
+    string | undefined
+  >(undefined);
+  const [selectedCustomer, setSelectedCustomer] = React.useState<
+    string | undefined
+  >(undefined);
+  const [selectedProject, setSelectedProject] = React.useState<
+    string | undefined
+  >(undefined);
+  const [selectedBooking, setSelectedBooking] = React.useState<
+    RegistrationDTO | undefined
+  >(undefined);
+  const [currentDate, setCurrentDate] = React.useState(new Date());
 
   // Generate 5 weeks dynamically starting from currentDate
   const weeksToDisplay = getWeeksFromDate(currentDate);
 
-  // Handlers for changing filters and navigating weeks
-  const onEmployeeChange = (
-    event: React.FormEvent<HTMLDivElement>,
-    option?: IDropdownOption
-  ) => {
-    setSelectedEmployee(option ? option.key.toString() : null);
-  };
-
-  const onCustomerChange = (
-    event: React.FormEvent<HTMLDivElement>,
-    option?: IDropdownOption
-  ) => {
-    setSelectedCustomer(option ? option.key.toString() : null);
-  };
-
-  const onProjectChange = (
-    event: React.FormEvent<HTMLDivElement>,
-    option?: IDropdownOption
-  ) => {
-    setSelectedProject(option ? option.key.toString() : null);
-  };
-
   const clearFilters = () => {
-    setSelectedEmployee(null);
-    setSelectedCustomer(null);
-    setSelectedProject(null);
+    setSelectedEmployee(undefined);
+    setSelectedCustomer(undefined);
+    setSelectedProject(undefined);
   };
 
   const handlePreviousWeeks = () => {
@@ -116,7 +95,7 @@ const FiveWeekView: React.FC = () => {
     );
   };
 
-  // When selectedBooking is not null, show WeeklyView
+  // When selectedBooking is not undefined, show WeeklyView
   if (selectedBooking) {
     const weekBookings = filteredBookingsForEmployee(
       selectedBooking.weekNumber,
@@ -127,9 +106,9 @@ const FiveWeekView: React.FC = () => {
       <WeeklyView
         weekNumber={selectedBooking.weekNumber.toString()}
         employeeId={selectedBooking.employee}
-        weekBookings={weekBookings} // Pass the filtered bookings
+        weekBookings={weekBookings}
         employeeName={selectedBooking.employee}
-        onBack={() => setSelectedBooking(null)}
+        onBack={() => setSelectedBooking(undefined)}
         onPreviousWeek={handlePreviousWeeks}
         onNextWeek={handleNextWeeks}
       />
@@ -147,28 +126,38 @@ const FiveWeekView: React.FC = () => {
               key: booking.employee,
               text: booking.employee,
             }))}
-            onChange={onEmployeeChange}
+            onChange={(e, opt) =>
+              setSelectedEmployee(opt ? opt.key.toString() : undefined)
+            }
+            className={styles.filterContainerProps}
             selectedKey={selectedEmployee}
           />
+
           <Dropdown
             placeholder="Vælg Kunde"
             options={mockProjects.map((project) => ({
               key: project.customerId.toString(),
               text: `Kunde ${project.customerId}`,
             }))}
-            onChange={onCustomerChange}
+            onChange={(e, opt) =>
+              setSelectedCustomer(opt ? opt.key.toString() : undefined)
+            }
             selectedKey={selectedCustomer}
           />
+
           <Dropdown
             placeholder="Vælg Projekt"
             options={mockProjects.map((project) => ({
               key: project.id.toString(),
               text: project.name,
             }))}
-            onChange={onProjectChange}
+            onChange={(e, opt) =>
+              setSelectedProject(opt ? opt.key.toString() : undefined)
+            }
+            className={styles.filterContainerProps}
             selectedKey={selectedProject}
           />
-          {/* Conditionally render "Clear Filters" button if any filter is selected */}
+
           {(selectedEmployee || selectedCustomer || selectedProject) && (
             <DefaultButton text="Ryd filter" onClick={clearFilters} />
           )}
@@ -191,7 +180,6 @@ const FiveWeekView: React.FC = () => {
         {weeksToDisplay.map((week, index) => {
           const weekNumber = getWeekNumber(week.start);
 
-          // Filter bookings based on the current week's number and selected filters
           const bookingsForWeek = filteredBookings.filter(
             (booking) => booking.weekNumber === weekNumber
           );

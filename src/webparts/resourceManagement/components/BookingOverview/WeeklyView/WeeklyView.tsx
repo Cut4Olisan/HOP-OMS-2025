@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Text, DefaultButton } from "@fluentui/react";
@@ -20,7 +20,7 @@ interface IWeeklyViewProps {
 
 interface TimeSlotProps {
   timeSlotId: string;
-  booking: RegistrationDTO | null;
+  booking: RegistrationDTO | undefined;
   onDrop: (booking: RegistrationDTO, newStart: string) => void;
 }
 
@@ -70,13 +70,15 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
   onPreviousWeek,
   onNextWeek,
 }) => {
-  const [currentBookings, setCurrentBookings] = useState<RegistrationDTO[]>([]);
-  const [currentWeekNumber, setCurrentWeekNumber] = useState(
+  const [currentBookings, setCurrentBookings] = React.useState<
+    RegistrationDTO[]
+  >([]);
+  const [currentWeekNumber, setCurrentWeekNumber] = React.useState(
     parseInt(weekNumber, 10)
   );
 
   // Update the bookings whenever the week or employee changes
-  useEffect(() => {
+  React.useEffect(() => {
     const employeeBookings = weekBookings.filter(
       (b) => b.employee === employeeId
     );
@@ -181,7 +183,7 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
                             bookingDate.getMinutes() === j * 15 &&
                             bookingDate.getDate() === weekDays[i].getDate()
                           );
-                        }) || null;
+                        }) || undefined;
 
                       return (
                         <TimeSlot

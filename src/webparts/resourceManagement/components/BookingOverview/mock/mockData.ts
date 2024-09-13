@@ -6,7 +6,7 @@ export const mockProjects: ProjectDTO[] = [
     id: 1,
     name: "Projekt Alpha",
     customerId: 101,
-    parentProjectId: null,
+    parentProjectId: undefined,
     hourlyRate: 500,
     invoiceable: true,
     projectStatus: 1,
@@ -15,7 +15,7 @@ export const mockProjects: ProjectDTO[] = [
     id: 2,
     name: "Projekt Beta",
     customerId: 102,
-    parentProjectId: null,
+    parentProjectId: undefined,
     hourlyRate: 400,
     invoiceable: false,
     projectStatus: 1,
@@ -24,7 +24,7 @@ export const mockProjects: ProjectDTO[] = [
     id: 3,
     name: "Projekt Gamma",
     customerId: 103,
-    parentProjectId: null,
+    parentProjectId: undefined,
     hourlyRate: 450,
     invoiceable: true,
     projectStatus: 2,
@@ -47,7 +47,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 500,
     employee: "Medarbejder 1",
     registrationType: 1,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 36,
   },
   {
@@ -63,7 +63,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 500,
     employee: "Medarbejder 2",
     registrationType: 2,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 37,
   },
   {
@@ -95,7 +95,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 0,
     employee: "Medarbejder 4",
     registrationType: 1,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 38,
   },
   {
@@ -111,7 +111,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 400,
     employee: "Medarbejder 5",
     registrationType: 3,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 36,
   },
   {
@@ -175,7 +175,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 450,
     employee: "Medarbejder 4",
     registrationType: 3,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 36,
   },
   {
@@ -191,7 +191,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 400,
     employee: "Medarbejder 5",
     registrationType: 2,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 36,
   },
   {
@@ -223,7 +223,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 450,
     employee: "Medarbejder 2",
     registrationType: 2,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 38,
   },
   {
@@ -255,7 +255,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 450,
     employee: "Medarbejder 4",
     registrationType: 3,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 39,
   },
   {
@@ -271,7 +271,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 400,
     employee: "Medarbejder 5",
     registrationType: 2,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 39,
   },
   {
@@ -287,7 +287,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 500,
     employee: "Medarbejder 1",
     registrationType: 2,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 39,
   },
   {
@@ -303,7 +303,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 450,
     employee: "Medarbejder 2",
     registrationType: 3,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 40,
   },
   {
@@ -319,7 +319,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 400,
     employee: "Medarbejder 3",
     registrationType: 1,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 40,
   },
   {
@@ -335,7 +335,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 500,
     employee: "Medarbejder 4",
     registrationType: 2,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 40,
   },
   {
@@ -351,7 +351,7 @@ export const mockRegistrations: RegistrationDTO[] = [
     hourlyRate: 450,
     employee: "Medarbejder 5",
     registrationType: 3,
-    forecastEstimate: null,
+    forecastEstimate: undefined,
     weekNumber: 41,
   },
 ];

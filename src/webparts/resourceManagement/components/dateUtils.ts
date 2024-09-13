@@ -1,3 +1,5 @@
+import { DayOfWeek } from "@fluentui/react";
+
 export const formatDateForApi = (date: Date): string => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -66,4 +68,25 @@ export const getDatesBetween = (
   }
 
   return dates;
+};
+
+export const calculateRecurrenceDates = (
+  startDate: Date,
+  selectedDays: DayOfWeek[],
+  weeks: number
+): Date[] => {
+  const recurrenceDates: Date[] = [];
+  const currentDate = new Date(startDate);
+
+  for (let week = 0; week < weeks; week++) {
+    selectedDays.forEach((day) => {
+      const date = new Date(currentDate);
+      date.setDate(
+        currentDate.getDate() + ((day - currentDate.getDay() + 7) % 7)
+      );
+      recurrenceDates.push(new Date(date));
+    });
+    currentDate.setDate(currentDate.getDate() + 7);
+  }
+  return recurrenceDates;
 };

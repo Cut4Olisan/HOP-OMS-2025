@@ -28,18 +28,12 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
       { key: 'coworker2', text: 'Coworker 2' },
     ];
 
-    const projects = [
-      { key: 'project1', text: 'Project 1' },
-      { key: 'project2', text: 'Project 2' },
-    ];
-
     const element: React.ReactElement<IResourceManagementProps> = React.createElement(
       ResourceManagement,
       {
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
         coworkers: coworkers,
-        projects: projects,
         context: this.context
       }
     );

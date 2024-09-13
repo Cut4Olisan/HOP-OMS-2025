@@ -1,3 +1,5 @@
+import { Customer, Project } from "../components/booking/BookingComponent";
+
 export interface Registration {
   id: number;
   shortDescription: string;
@@ -42,6 +44,7 @@ class BackEndService {
     BackEndService.baseurl + "api/customers";
   private static API_URL_Registration: string =
     BackEndService.baseurl + "api/registrations";
+  private static API_URL_Projects = BackEndService.baseurl + "api/projects";
 
   private static handleResponse = async <T>(response: Response): Promise<T> => {
     if (!response.ok) {
@@ -64,7 +67,7 @@ class BackEndService {
     return await BackEndService.handleResponse(response);
   }
 
-  public async getCustomers<T>(): Promise<T> {
+  public async getCustomers(): Promise<Customer[]> {
     const response = await fetch(BackEndService.API_URL_Customers, {
       method: "GET",
       headers: {
@@ -72,7 +75,18 @@ class BackEndService {
       },
     });
 
-    return await BackEndService.handleResponse(response);
+    return await BackEndService.handleResponse<Customer[]>(response);
+  }
+
+  public async getProjects(): Promise<Project[]> {
+    const response = await fetch(BackEndService.API_URL_Projects, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return await BackEndService.handleResponse<Project[]>(response);
   }
 
   public async createRegistration(data: Partial<Registration>): Promise<void> {

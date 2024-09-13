@@ -25,6 +25,7 @@ import {
   extractTime,
   calculateEstimatedHours,
   getDatesBetween,
+  calculateRecurrenceDates,
 } from "../dateUtils";
 import BackEndService, { Registration } from "../../services/BackEnd";
 import {
@@ -48,23 +49,27 @@ export interface IPeoplePickerItem {
   email: string;
 }
 
-interface Customer {
-  id: string;
+export interface Customer {
+  id: number;
   name: string;
+  active: boolean;
 }
 
-const BookingComponent: React.FC<IBookingComponentProps> = ({
-  coworkers,
-  projects,
-  context,
-}) => {
+export interface Project {
+  id: string;
+  name: string;
+  customerId: number;
+}
+
+const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
   const [title, setTitle] = React.useState<string>("");
   const [error, setError] = React.useState<string | undefined>();
   const [info, setInfo] = React.useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = React.useState<
-    string | undefined
+    Customer | undefined
   >(undefined);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  const [projects, setProjects] = React.useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = React.useState<string>("");
   const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
     undefined
@@ -85,27 +90,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   React.useEffect(() => {
     setTimeout(() => setError(undefined), 5000);
   }, [error]);
-
-  const calculateRecurrenceDates = (
-    startDate: Date,
-    selectedDays: DayOfWeek[],
-    weeks: number
-  ): Date[] => {
-    const recurrenceDates: Date[] = [];
-    const currentDate = new Date(startDate);
-
-    for (let week = 0; week < weeks; week++) {
-      selectedDays.forEach((day) => {
-        const date = new Date(currentDate);
-        date.setDate(
-          currentDate.getDate() + ((day - currentDate.getDay() + 7) % 7)
-        );
-        recurrenceDates.push(new Date(date));
-      });
-      currentDate.setDate(currentDate.getDate() + 7);
-    }
-    return recurrenceDates;
-  };
 
   const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
     const emails = items.map((item) => item.secondaryText);
@@ -214,14 +198,24 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
     const fetchCustomers = async (): Promise<void> => {
       try {
-        const data = await BackEndService.Instance.getCustomers<Customer[]>();
+        const data = await BackEndService.Instance.getCustomers();
         setCustomers(data);
       } catch (err) {
         console.error(err);
       }
     };
 
+    const fetchProjects = async (): Promise<void> => {
+      try {
+        const data = await BackEndService.Instance.getProjects();
+        setProjects(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
     fetchCustomers().catch((e) => console.error(e));
+    fetchProjects().catch((e) => console.error(e));
   }, []);
 
   return (
@@ -255,6 +249,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           />
 
           <TextField
+            label="Titel"
             placeholder="Titel"
             value={title}
             onChange={(e, newValue) => setTitle(newValue || "")}
@@ -262,23 +257,35 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           />
 
           <Dropdown
-            placeholder="Vælg kunde"
-            options={customers.map((customer) => ({
-              key: customer.id,
-              text: customer.name,
-            }))}
-            selectedKey={selectedCustomer}
-            onChange={(e, option) => setSelectedCustomer(option?.key as string)}
+            label="Vælg en kunde"
+            placeholder="Vælg en kunde"
+            options={customers
+              .filter((c) => c.active)
+              .map((customer) => ({
+                key: customer.id,
+                text: customer.name,
+              }))}
+            selectedKey={selectedCustomer?.id}
+            onChange={(e, option) =>
+              option
+                ? setSelectedCustomer(
+                    customers.find((c) => c.id === Number(option.key))
+                  )
+                : undefined
+            }
             styles={dropdownStyles}
             required
           />
           {selectedCustomer && (
             <Dropdown
+              label="Projekt"
               placeholder="Vælg projekt for kunde"
-              options={customers.map((customer) => ({
-                key: customer.id,
-                text: customer.name,
-              }))}
+              options={projects
+                .filter((p) => p.customerId === selectedCustomer.id)
+                .map((project) => ({
+                  key: project.id,
+                  text: project.name,
+                }))}
               selectedKey={selectedProject}
               onChange={(e, option) =>
                 setSelectedProject(option?.key as string)
@@ -337,6 +344,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           )}
 
           <PeoplePicker
+            placeholder="Vælg medarbejder"
             context={{
               absoluteUrl: context.pageContext.web.absoluteUrl,
               msGraphClientFactory: context.msGraphClientFactory,
@@ -353,11 +361,12 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           />
 
           <TextField
-            placeholder="Information..."
+            label="Booking information"
+            placeholder="Skriv information om booking"
             value={info}
             onChange={(e, newValue) => setInfo(newValue || "")}
             multiline
-            rows={3}
+            rows={5}
           />
 
           <Stack horizontal tokens={{ childrenGap: 10 }}>

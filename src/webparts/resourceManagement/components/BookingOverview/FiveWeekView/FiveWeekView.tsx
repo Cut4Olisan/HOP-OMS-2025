@@ -11,7 +11,7 @@ import { mockRegistrations, mockProjects } from "../mock/mockData";
 import { RegistrationDTO } from "../mock/iMockData";
 
 // Helper functions to calculate week number and week range
-const getWeekRange = (date: Date) => {
+const getWeekRange = (date: Date): { start: Date; end: Date } => {
   const firstDayOfWeek = new Date(
     date.setDate(date.getDate() - date.getDay() + 1)
   );
@@ -19,20 +19,21 @@ const getWeekRange = (date: Date) => {
   return { start: firstDayOfWeek, end: lastDayOfWeek };
 };
 
-const getWeekNumber = (date: Date) => {
+const getWeekNumber = (date: Date): number => {
   const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
   const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
   return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
 };
 
 // Get 5 weeks starting from a given date
-const getWeeksFromDate = (startDate: Date) => {
+const getWeeksFromDate = (startDate: Date): { start: Date; end: Date }[] => {
   const weeks = [];
-  let currentDate = new Date(startDate);
+  // Using const for the initial date, no reassignment
   for (let i = 0; i < 5; i++) {
-    const { start, end } = getWeekRange(new Date(currentDate));
+    const currentDate = new Date(startDate); // create a new date object inside the loop
+    currentDate.setDate(startDate.getDate() + i * 7); // Move forward by 'i' weeks
+    const { start, end } = getWeekRange(currentDate);
     weeks.push({ start, end });
-    currentDate.setDate(currentDate.getDate() + 7);
   }
   return weeks;
 };
@@ -55,19 +56,19 @@ const FiveWeekView: React.FC = () => {
   // Generate 5 weeks dynamically starting from currentDate
   const weeksToDisplay = getWeeksFromDate(currentDate);
 
-  const clearFilters = () => {
+  const clearFilters = (): void => {
     setSelectedEmployee(undefined);
     setSelectedCustomer(undefined);
     setSelectedProject(undefined);
   };
 
-  const handlePreviousWeeks = () => {
+  const handlePreviousWeeks = (): void => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() - 7 * 5);
     setCurrentDate(newDate);
   };
 
-  const handleNextWeeks = () => {
+  const handleNextWeeks = (): void => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7 * 5);
     setCurrentDate(newDate);
@@ -88,7 +89,7 @@ const FiveWeekView: React.FC = () => {
   const filteredBookingsForEmployee = (
     weekNumber: number,
     employee: string
-  ) => {
+  ): RegistrationDTO[] => {
     return filteredBookings.filter(
       (booking) =>
         booking.weekNumber === weekNumber && booking.employee === employee

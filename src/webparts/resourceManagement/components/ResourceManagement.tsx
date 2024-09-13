@@ -22,7 +22,6 @@ export default class ResourceManagement extends React.Component<IResourceManagem
 
   // Midlertidig render for testing UI
   public render(): React.ReactElement<IResourceManagementProps> {
-    const {} = this.state;
     return (
       <div>
         <FiveWeekView />

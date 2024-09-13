@@ -5,24 +5,10 @@ import { Text, DefaultButton } from "@fluentui/react";
 import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./WeeklyView.module.scss";
 import { RegistrationDTO } from "../mock/iMockData"; // Mock data
+import { WeeklyViewProps } from "./Interfaces/iWeeklyViewProps";
+import { TimeSlotProps } from "./Interfaces/iTimeSlotProps";
 
 const ItemType = "BOOKING"; // Draggable item type
-
-interface IWeeklyViewProps {
-  weekNumber: string;
-  employeeId: string;
-  weekBookings: RegistrationDTO[];
-  employeeName: string;
-  onBack: () => void;
-  onPreviousWeek: () => void;
-  onNextWeek: () => void;
-}
-
-interface TimeSlotProps {
-  timeSlotId: string;
-  booking: RegistrationDTO | undefined;
-  onDrop: (booking: RegistrationDTO, newStart: string) => void;
-}
 
 const TimeSlot: React.FC<TimeSlotProps> = ({ timeSlotId, booking, onDrop }) => {
   const [, drop] = useDrop({
@@ -49,7 +35,6 @@ const TimeSlot: React.FC<TimeSlotProps> = ({ timeSlotId, booking, onDrop }) => {
   );
 };
 
-// Helper function to calculate the start of the week (Monday) for a given week number
 const getWeekStartDate = (weekNumber: number, year: number): Date => {
   const firstDayOfYear = new Date(year, 0, 1);
   const daysOffset = (weekNumber - 1) * 7;
@@ -61,7 +46,7 @@ const getWeekStartDate = (weekNumber: number, year: number): Date => {
   return new Date(firstMonday.setDate(firstMonday.getDate() + daysOffset));
 };
 
-const WeeklyView: React.FC<IWeeklyViewProps> = ({
+const WeeklyView: React.FC<WeeklyViewProps> = ({
   weekNumber,
   employeeId,
   weekBookings,
@@ -78,7 +63,7 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
   );
 
   // Update the bookings whenever the week or employee changes
-  React.useEffect(() => {
+  React.useEffect((): void => {
     const employeeBookings = weekBookings.filter(
       (b) => b.employee === employeeId
     );
@@ -86,7 +71,10 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
   }, [weekBookings, employeeId, currentWeekNumber]);
 
   // Handle booking drop
-  const onBookingDrop = (movedBooking: RegistrationDTO, newStart: string) => {
+  const onBookingDrop = (
+    movedBooking: RegistrationDTO,
+    newStart: string
+  ): void => {
     const updatedBookings = currentBookings.map((b) => {
       if (b.id === movedBooking.id) {
         const newDate = new Date(b.date);
@@ -101,7 +89,7 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
   };
 
   // Handle updating the week number when navigating between weeks
-  const handlePreviousWeek = () => {
+  const handlePreviousWeek = (): void => {
     setCurrentWeekNumber((prevWeek) => {
       const updatedWeek = prevWeek - 1;
       onPreviousWeek();
@@ -109,7 +97,7 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
     });
   };
 
-  const handleNextWeek = () => {
+  const handleNextWeek = (): void => {
     setCurrentWeekNumber((prevWeek) => {
       const updatedWeek = prevWeek + 1;
       onNextWeek();
@@ -157,7 +145,7 @@ const WeeklyView: React.FC<IWeeklyViewProps> = ({
         <div className={styles.syncScrollContainer}>
           <div className={styles.gridContainer}>
             <div className={styles.gridHeader}>
-              <div className={styles.timeHeader}></div>
+              <div className={styles.timeHeader} />
               {days.map((day, i) => (
                 <div key={day} className={styles.dayHeader}>
                   <Text>{`${day} - ${weekDays[i].toLocaleDateString()}`}</Text>

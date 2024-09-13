@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDom from "react-dom";
 import { Version } from "@microsoft/sp-core-library";
 import {
-  type IPropertyPaneConfiguration,
+  IPropertyPaneConfiguration,
   PropertyPaneTextField,
 } from "@microsoft/sp-property-pane";
 import { BaseClientSideWebPart } from "@microsoft/sp-webpart-base";
@@ -12,6 +12,7 @@ import * as strings from "ResourceManagementWebPartStrings";
 import ResourceManagement, {
   IResourceManagementProps,
 } from "./components/ResourceManagement";
+import BackEndService from "./services/BackEnd";
 
 export interface IResourceManagementWebPartProps {
   description: string;
@@ -22,16 +23,26 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
   private _environmentMessage: string = "";
 
   public render(): void {
-    const element: React.ReactElement<IResourceManagementProps> =
-      React.createElement(ResourceManagement, {
+    const coworkers = [
+      { key: 'coworker1', text: 'Coworker 1' },
+      { key: 'coworker2', text: 'Coworker 2' },
+    ];
+
+    const element: React.ReactElement<IResourceManagementProps> = React.createElement(
+      ResourceManagement,
+      {
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
-      });
+        coworkers: coworkers,
+        context: this.context
+      }
+    );
 
     ReactDom.render(element, this.domElement);
   }
 
   protected onInit(): Promise<void> {
+    BackEndService.Init();
     return this._getEnvironmentMessage().then((message) => {
       this._environmentMessage = message;
     });
@@ -39,23 +50,22 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
 
   private _getEnvironmentMessage(): Promise<string> {
     if (!!this.context.sdks.microsoftTeams) {
-      // running in Teams, office.com or Outlook
       return this.context.sdks.microsoftTeams.teamsJs.app
         .getContext()
         .then((context) => {
           let environmentMessage: string = "";
           switch (context.app.host.name) {
-            case "Office": // running in Office
+            case "Office":
               environmentMessage = this.context.isServedFromLocalhost
                 ? strings.AppLocalEnvironmentOffice
                 : strings.AppOfficeEnvironment;
               break;
-            case "Outlook": // running in Outlook
+            case "Outlook":
               environmentMessage = this.context.isServedFromLocalhost
                 ? strings.AppLocalEnvironmentOutlook
                 : strings.AppOutlookEnvironment;
               break;
-            case "Teams": // running in Teams
+            case "Teams":
             case "TeamsModern":
               environmentMessage = this.context.isServedFromLocalhost
                 ? strings.AppLocalEnvironmentTeams

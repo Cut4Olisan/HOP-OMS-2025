@@ -13,6 +13,7 @@
     "outDir": "lib",
     "inlineSources": false,
     "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
 
     "typeRoots": [
       "./node_modules/@types",
@@ -28,8 +29,5 @@
       "es2015.promise"
     ]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

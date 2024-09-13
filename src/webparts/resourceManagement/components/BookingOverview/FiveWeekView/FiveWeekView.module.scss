@@ -1,0 +1,129 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+.container {
+  padding: 5px;
+}
+
+.controlsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.filterContainer {
+  display: flex;
+  justify-content: flex-start;
+  max-width: 50%;
+  gap: 10px;
+  .filterContainerProps {
+    min-width: 150px;
+  }
+}
+
+.navigationContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.weeksContainer {
+  display: flex;
+  gap: 5px;
+  flex-grow: 1;
+  justify-content: space-between;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.weekBlock {
+  border-radius: 8px;
+  padding: 15px;
+  flex: 1;
+  min-width: 200px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  max-height: 600px;
+}
+
+.weekHeader {
+  background-color: var(--themePrimary);
+  color: var(--white);
+  padding: 10px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.addIcon {
+  cursor: pointer;
+  color: var(--themePrimary);
+}
+
+.dateBlock {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.bookingsList {
+  margin-top: 10px;
+  border-color: var(--colorBrandBackground1);
+  overflow-y: auto;
+  flex-grow: 1;
+  max-height: 100%;
+}
+
+.bookingCard {
+  background-color: var(--white);
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 2px solid var(--colorBrandBackground2);
+}
+
+.projectName {
+  font-weight: bold;
+}
+
+.employeeName {
+  color: var(--themePrimary);
+  cursor: pointer;
+}
+
+.customerName {
+  color: var(--neutralPrimary);
+}
+
+.Bold {
+  font-weight: bold;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.clearButton {
+  margin-left: 10px;
+  background-color: var(--themePrimary);
+  border: none;
+  padding: 10px;
+}
+
+.arrowButton {
+  cursor: pointer;
+  font-size: 24px;
+  color: var(--themePrimary);
+}
+.arrowButton:hover {
+  color: var(--themeDark);
+}

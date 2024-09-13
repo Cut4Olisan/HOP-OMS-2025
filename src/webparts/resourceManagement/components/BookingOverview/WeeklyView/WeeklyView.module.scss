@@ -1,0 +1,118 @@
+.weeklyViewContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.controlsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.weekInfo {
+  text-align: center;
+  flex-grow: 1;
+}
+
+.dateRange {
+  margin-top: 5px;
+}
+
+.navigationArrows {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.syncScrollContainer {
+  display: flex;
+  flex-grow: 1;
+  position: relative;
+  overflow-y: auto;
+  height: 600px; /* Adjust height to fit the view */
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: 100px repeat(5, 1fr); /* One fixed column for time, and 5 flexible columns for days */
+  width: 100%; /* Ensure it uses the full available width */
+}
+
+.gridHeader {
+  display: contents; /* Allow sticky headers */
+}
+
+.timeHeader {
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.dayHeader {
+  text-align: center;
+  padding: 10px;
+  font-weight: bold;
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid #ccc;
+  height: 40px; /* Adjust header height */
+}
+
+.gridRow {
+  display: contents;
+}
+
+.timeColumn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px; /* 4 time slots (15px each) = 1 hour */
+  border-bottom: 1px solid #ccc;
+}
+
+.dayColumn {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ccc;
+}
+
+.hourRow {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #eee;
+  height: 60px; /* 4 time slots (15px each) = 1 hour */
+}
+
+.timeSlot {
+  height: 15px; /* Each time slot is 15 minutes (4 per hour) */
+  position: relative;
+  background-color: #f9f9f9;
+  border-right: 1px solid #eee;
+}
+
+.booking {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #0078d4;
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+  cursor: move;
+}
+
+.arrowButton {
+  cursor: pointer;
+  font-size: 24px;
+  color: var(--themePrimary);
+}
+
+.arrowButton:hover {
+  color: var(--themeDark);
+}

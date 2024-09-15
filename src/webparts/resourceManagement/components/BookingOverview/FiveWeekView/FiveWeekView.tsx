@@ -1,59 +1,120 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
+import { useDrag, useDrop, DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { Dropdown, Text, DefaultButton } from "@fluentui/react";
-import {
-  AddSquare24Regular,
-  ArrowLeftRegular,
-  ArrowRightRegular,
-} from "@fluentui/react-icons";
+import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./FiveWeekView.module.scss";
 import WeeklyView from "../WeeklyView/WeeklyView";
-import { mockRegistrations, mockProjects } from "../mock/mockData";
-import { RegistrationDTO } from "../mock/iMockData";
+import BackEndService, { Registration } from "../../../services/BackEnd";
+import {
+  Customer,
+  Project,
+} from "../../../components/booking/BookingComponent";
+import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 
-// Helper functions to calculate week number and week range
-const getWeekRange = (date: Date): { start: Date; end: Date } => {
-  const firstDayOfWeek = new Date(
-    date.setDate(date.getDate() - date.getDay() + 1)
+const ItemType = "BOOKING"; // Draggable item type
+
+// Booking Card component
+const BookingCard: React.FC<{
+  booking: Registration;
+  onDrop: (booking: Registration, newWeekNumber: number) => void;
+  onEmployeeClick: (booking: Registration) => void;
+}> = ({ booking, onDrop, onEmployeeClick }) => {
+  const [, drag] = useDrag({
+    type: ItemType,
+    item: booking,
+  });
+
+  return (
+    <div ref={drag} className={styles.bookingCard}>
+      <Text className={styles.projectName} variant="large">
+        {booking.shortDescription}
+      </Text>
+      <Text
+        className={styles.employeeName}
+        onClick={() => onEmployeeClick(booking)} // Navigate to WeeklyView on click
+      >
+        {booking.employee}
+      </Text>
+      <Text className={styles.customerName}>
+        Project {booking.projectId}{" "}
+        {/* Hent projekt navn ned senere vi projectid og pass det her til */}
+      </Text>
+    </div>
   );
-  const lastDayOfWeek = new Date(date.setDate(firstDayOfWeek.getDate() + 6));
-  return { start: firstDayOfWeek, end: lastDayOfWeek };
 };
 
-const getWeekNumber = (date: Date): number => {
-  const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-  const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
-  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-};
+// Weekly Column component
+const WeekColumn: React.FC<{
+  weekNumber: number;
+  bookings: Registration[];
+  onDrop: (booking: Registration, newWeekNumber: number) => void;
+  onEmployeeClick: (booking: Registration) => void;
+}> = ({ weekNumber, bookings, onDrop, onEmployeeClick }) => {
+  const [, drop] = useDrop({
+    accept: ItemType,
+    drop: (item: Registration) => {
+      onDrop(item, weekNumber);
+    },
+  });
 
-// Get 5 weeks starting from a given date
-const getWeeksFromDate = (startDate: Date): { start: Date; end: Date }[] => {
-  const weeks = [];
-  // Using const for the initial date, no reassignment
-  for (let i = 0; i < 5; i++) {
-    const currentDate = new Date(startDate); // create a new date object inside the loop
-    currentDate.setDate(startDate.getDate() + i * 7); // Move forward by 'i' weeks
-    const { start, end } = getWeekRange(currentDate);
-    weeks.push({ start, end });
-  }
-  return weeks;
+  return (
+    <div ref={drop} className={styles.weekColumn}>
+      <Text variant="large">Uge {weekNumber}</Text>
+      {bookings.length > 0 ? (
+        bookings.map((booking) => (
+          <BookingCard
+            key={booking.id}
+            booking={booking}
+            onDrop={onDrop}
+            onEmployeeClick={onEmployeeClick}
+          />
+        ))
+      ) : (
+        <Text>Ingen bookinger</Text>
+      )}
+    </div>
+  );
 };
 
 const FiveWeekView: React.FC = () => {
-  const [selectedEmployee, setSelectedEmployee] = React.useState<
-    string | undefined
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedCustomer, setSelectedCustomer] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedProject, setSelectedProject] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedBooking, setSelectedBooking] = useState<
+    Registration | undefined
   >(undefined);
-  const [selectedCustomer, setSelectedCustomer] = React.useState<
-    string | undefined
-  >(undefined);
-  const [selectedProject, setSelectedProject] = React.useState<
-    string | undefined
-  >(undefined);
-  const [selectedBooking, setSelectedBooking] = React.useState<
-    RegistrationDTO | undefined
-  >(undefined);
-  const [currentDate, setCurrentDate] = React.useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Generate 5 weeks dynamically starting from currentDate
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const fetchedCustomers = await BackEndService.Instance.getCustomers();
+        const fetchedProjects = await BackEndService.Instance.getProjects();
+        const fetchedRegistrations =
+          await BackEndService.Instance.getRegistrationsByType();
+
+        setCustomers(fetchedCustomers);
+        setProjects(fetchedProjects);
+        setRegistrations(fetchedRegistrations);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const weeksToDisplay = getWeeksFromDate(currentDate);
 
   const clearFilters = (): void => {
@@ -74,38 +135,47 @@ const FiveWeekView: React.FC = () => {
     setCurrentDate(newDate);
   };
 
-  // Filter bookings based on selected filters
-  const filteredBookings = mockRegistrations.filter((booking) => {
-    const project = mockProjects.find((p) => p.id === booking.projectId);
+  const handleDrop = (movedBooking: Registration, newWeekNumber: number) => {
+    const updatedBookings = registrations.map((booking) => {
+      if (booking.id === movedBooking.id) {
+        return { ...booking, date: `2024-W${newWeekNumber}` }; // Adjust date format as needed
+      }
+      return booking;
+    });
+    setRegistrations(updatedBookings);
+  };
+
+  // Handle employee name click to navigate to WeeklyView
+  const handleEmployeeClick = (booking: Registration) => {
+    setSelectedBooking(booking);
+  };
+
+  // Filter bookings based on registration type (ID: 2) and other selected filters
+  const filteredBookings = registrations.filter((booking) => {
     return (
+      booking.registrationType === 2 && // Only include bookings with registrationType ID 2
       (!selectedEmployee || booking.employee === selectedEmployee) &&
       (!selectedCustomer ||
-        project?.customerId.toString() === selectedCustomer) &&
-      (!selectedProject || booking.projectId.toString() === selectedProject)
+        booking.projectId?.toString() === selectedCustomer) &&
+      (!selectedProject || booking.projectId?.toString() === selectedProject)
     );
   });
 
-  // Filter bookings for the selected employee and week
-  const filteredBookingsForEmployee = (
-    weekNumber: number,
-    employee: string
-  ): RegistrationDTO[] => {
-    return filteredBookings.filter(
-      (booking) =>
-        booking.weekNumber === weekNumber && booking.employee === employee
-    );
-  };
-
-  // When selectedBooking is not undefined, show WeeklyView
   if (selectedBooking) {
-    const weekBookings = filteredBookingsForEmployee(
-      selectedBooking.weekNumber,
-      selectedBooking.employee
+    // Get the week number for the selected booking's date
+    const selectedWeekNumber = getWeekNumber(new Date(selectedBooking.date));
+
+    // Filter the bookings for the selected week and employee
+    const weekBookings = registrations.filter(
+      (booking) =>
+        getWeekNumber(new Date(booking.date)) === selectedWeekNumber &&
+        booking.employee === selectedBooking.employee &&
+        booking.registrationType === 2 // Only include bookings with registrationType ID 2
     );
 
     return (
       <WeeklyView
-        weekNumber={selectedBooking.weekNumber.toString()}
+        weekNumber={selectedWeekNumber.toString()}
         employeeId={selectedBooking.employee}
         weekBookings={weekBookings}
         employeeName={selectedBooking.employee}
@@ -117,132 +187,83 @@ const FiveWeekView: React.FC = () => {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.controlsContainer}>
-        {/* Filter Controls */}
-        <div className={styles.filterContainer}>
-          <Dropdown
-            placeholder="Vælg Medarbejder"
-            options={mockRegistrations.map((booking) => ({
-              key: booking.employee,
-              text: booking.employee,
-            }))}
-            onChange={(e, opt) =>
-              setSelectedEmployee(opt ? opt.key.toString() : undefined)
-            }
-            className={styles.filterContainerProps}
-            selectedKey={selectedEmployee}
-          />
+    <DndProvider backend={HTML5Backend}>
+      <div className={styles.container}>
+        <div className={styles.controlsContainer}>
+          {/* Filter Controls */}
+          <div className={styles.filterContainer}>
+            <Dropdown
+              placeholder="Vælg Medarbejder"
+              options={registrations.map((booking) => ({
+                key: booking.employee,
+                text: booking.employee,
+              }))}
+              onChange={(e, opt) =>
+                setSelectedEmployee(opt ? opt.key.toString() : undefined)
+              }
+              selectedKey={selectedEmployee}
+            />
+            <Dropdown
+              placeholder="Vælg Kunde"
+              options={customers.map((customer) => ({
+                key: customer.id.toString(),
+                text: `Kunde ${customer.name}`,
+              }))}
+              onChange={(e, opt) =>
+                setSelectedCustomer(opt ? opt.key.toString() : undefined)
+              }
+              selectedKey={selectedCustomer}
+            />
+            <Dropdown
+              placeholder="Vælg Projekt"
+              options={projects.map((project) => ({
+                key: project.id.toString(),
+                text: project.name,
+              }))}
+              onChange={(e, opt) =>
+                setSelectedProject(opt ? opt.key.toString() : undefined)
+              }
+              selectedKey={selectedProject}
+            />
+            {(selectedEmployee || selectedCustomer || selectedProject) && (
+              <DefaultButton text="Ryd filter" onClick={clearFilters} />
+            )}
+          </div>
 
-          <Dropdown
-            placeholder="Vælg Kunde"
-            options={mockProjects.map((project) => ({
-              key: project.customerId.toString(),
-              text: `Kunde ${project.customerId}`,
-            }))}
-            onChange={(e, opt) =>
-              setSelectedCustomer(opt ? opt.key.toString() : undefined)
-            }
-            selectedKey={selectedCustomer}
-          />
-
-          <Dropdown
-            placeholder="Vælg Projekt"
-            options={mockProjects.map((project) => ({
-              key: project.id.toString(),
-              text: project.name,
-            }))}
-            onChange={(e, opt) =>
-              setSelectedProject(opt ? opt.key.toString() : undefined)
-            }
-            className={styles.filterContainerProps}
-            selectedKey={selectedProject}
-          />
-
-          {(selectedEmployee || selectedCustomer || selectedProject) && (
-            <DefaultButton text="Ryd filter" onClick={clearFilters} />
-          )}
+          {/* Navigation Arrows */}
+          <div className={styles.navigationContainer}>
+            <ArrowLeftRegular
+              className={styles.arrowButton}
+              onClick={handlePreviousWeeks}
+            />
+            <ArrowRightRegular
+              className={styles.arrowButton}
+              onClick={handleNextWeeks}
+            />
+          </div>
         </div>
 
-        {/* Navigation Arrows */}
-        <div className={styles.navigationContainer}>
-          <ArrowLeftRegular
-            className={styles.arrowButton}
-            onClick={handlePreviousWeeks}
-          />
-          <ArrowRightRegular
-            className={styles.arrowButton}
-            onClick={handleNextWeeks}
-          />
+        {/* Week Columns */}
+        <div className={styles.weekGrid}>
+          {weeksToDisplay.map((week, index) => {
+            const weekNumber = week.weekNumber;
+            const weekBookings = filteredBookings.filter(
+              (booking) => getWeekNumber(new Date(booking.date)) === weekNumber
+            );
+
+            return (
+              <WeekColumn
+                key={index}
+                weekNumber={weekNumber}
+                bookings={weekBookings}
+                onDrop={handleDrop}
+                onEmployeeClick={handleEmployeeClick}
+              />
+            );
+          })}
         </div>
       </div>
-
-      <div className={styles.weeksContainer}>
-        {weeksToDisplay.map((week, index) => {
-          const weekNumber = getWeekNumber(week.start);
-
-          const bookingsForWeek = filteredBookings.filter(
-            (booking) => booking.weekNumber === weekNumber
-          );
-
-          return (
-            <div key={index} className={styles.weekBlock}>
-              <div className={styles.weekHeader}>
-                <AddSquare24Regular className={styles.addIcon} />
-                <Text variant="large" className={styles.Bold}>
-                  Uge {weekNumber}
-                </Text>
-                <Text variant="small">
-                  (Timer:{" "}
-                  {bookingsForWeek.reduce(
-                    (total, booking) => total + (booking.time || 0),
-                    0
-                  )}
-                  )
-                </Text>
-              </div>
-              <div className={styles.dateBlock}>
-                <Text variant="medium">
-                  {week.start.toLocaleDateString()} -{" "}
-                  {week.end.toLocaleDateString()}
-                </Text>
-              </div>
-
-              <div className={styles.bookingsList}>
-                {bookingsForWeek.length > 0 ? (
-                  bookingsForWeek.map((booking) => (
-                    <div
-                      key={booking.id}
-                      className={styles.bookingCard}
-                      onClick={() => setSelectedBooking(booking)} // Click to open week view
-                    >
-                      <Text className={styles.projectName} variant="large">
-                        {
-                          mockProjects.find((p) => p.id === booking.projectId)
-                            ?.name
-                        }
-                      </Text>
-                      <Text className={styles.employeeName}>
-                        {booking.employee}
-                      </Text>
-                      <Text className={styles.customerName}>
-                        Kunde{" "}
-                        {
-                          mockProjects.find((p) => p.id === booking.projectId)
-                            ?.customerId
-                        }
-                      </Text>
-                    </div>
-                  ))
-                ) : (
-                  <Text>Ingen bookinger for denne uge</Text>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    </DndProvider>
   );
 };
 

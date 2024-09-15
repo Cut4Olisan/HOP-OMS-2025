@@ -79,6 +79,7 @@
   display: flex;
   flex-direction: column;
   border-left: 1px solid #ccc;
+  position: relative; /* Set to relative to contain absolutely positioned bookings */
 }
 
 .hourRow {
@@ -96,8 +97,8 @@
 }
 
 .booking {
-  position: absolute;
-  top: 0;
+  position: absolute; /* Use absolute positioning */
+  top: 0; /* Align to the top of the time slot */
   left: 0;
   right: 0;
   background-color: #0078d4;
@@ -105,6 +106,9 @@
   padding: 5px;
   border-radius: 4px;
   cursor: move;
+  overflow: hidden; /* Prevent overflow of text */
+  white-space: nowrap; /* Prevent text from wrapping */
+  text-overflow: ellipsis; /* Show ellipsis (...) for overflowing text */
 }
 
 .arrowButton {

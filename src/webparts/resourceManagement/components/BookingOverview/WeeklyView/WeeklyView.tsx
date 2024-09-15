@@ -4,18 +4,29 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { Text, DefaultButton } from "@fluentui/react";
 import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./WeeklyView.module.scss";
-import { RegistrationDTO } from "../mock/iMockData"; // Mock data
-import { WeeklyViewProps } from "./Interfaces/iWeeklyViewProps";
-import { TimeSlotProps } from "./Interfaces/iTimeSlotProps";
+import { Registration } from "../../../services/BackEnd";
+import BackEndService from "../../../services/BackEnd";
+import { getWeekNumber } from "../../dateUtils";
 
 const ItemType = "BOOKING"; // Draggable item type
 
-const TimeSlot: React.FC<TimeSlotProps> = ({ timeSlotId, booking, onDrop }) => {
+interface TimeSlotProps {
+  timeSlotId: string;
+  booking: Registration | undefined;
+  onDrop: (booking: Registration, newStart: string) => void;
+  span: number;
+}
+
+const TimeSlot: React.FC<TimeSlotProps> = ({
+  timeSlotId,
+  booking,
+  onDrop,
+  span,
+}) => {
   const [, drop] = useDrop({
     accept: ItemType,
-    drop: (item: RegistrationDTO) => {
-      const newStart = timeSlotId; // Calculate new start time from timeSlotId
-      onDrop(item, newStart);
+    drop: (item: Registration) => {
+      onDrop(item, timeSlotId);
     },
   });
 
@@ -24,10 +35,28 @@ const TimeSlot: React.FC<TimeSlotProps> = ({ timeSlotId, booking, onDrop }) => {
     item: booking,
   });
 
+  const topOffset = booking ? parseTime(booking.start).minute : 0;
+  const bookingHeight = booking
+    ? Math.ceil(
+        (parseTime(booking.end).hour * 60 +
+          parseTime(booking.end).minute -
+          (parseTime(booking.start).hour * 60 +
+            parseTime(booking.start).minute)) /
+          15
+      ) * 15
+    : 15; // Default to 15 minutes
+
   return (
     <div ref={drop} className={styles.timeSlot}>
       {booking && (
-        <div ref={drag} className={styles.booking}>
+        <div
+          ref={drag}
+          className={styles.booking}
+          style={{
+            top: `${topOffset}px`,
+            height: `${bookingHeight}px`,
+          }}
+        >
           <Text>{booking.shortDescription}</Text>
         </div>
       )}
@@ -35,16 +64,15 @@ const TimeSlot: React.FC<TimeSlotProps> = ({ timeSlotId, booking, onDrop }) => {
   );
 };
 
-const getWeekStartDate = (weekNumber: number, year: number): Date => {
-  const firstDayOfYear = new Date(year, 0, 1);
-  const daysOffset = (weekNumber - 1) * 7;
-  const firstMonday = new Date(
-    firstDayOfYear.setDate(
-      firstDayOfYear.getDate() - firstDayOfYear.getDay() + 1
-    )
-  );
-  return new Date(firstMonday.setDate(firstMonday.getDate() + daysOffset));
-};
+interface WeeklyViewProps {
+  weekNumber: string;
+  employeeId: string;
+  weekBookings: Registration[];
+  employeeName: string;
+  onBack: () => void;
+  onPreviousWeek: () => void;
+  onNextWeek: () => void;
+}
 
 const WeeklyView: React.FC<WeeklyViewProps> = ({
   weekNumber,
@@ -55,26 +83,37 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   onPreviousWeek,
   onNextWeek,
 }) => {
-  const [currentBookings, setCurrentBookings] = React.useState<
-    RegistrationDTO[]
-  >([]);
+  const [currentBookings, setCurrentBookings] = React.useState<Registration[]>(
+    []
+  );
   const [currentWeekNumber, setCurrentWeekNumber] = React.useState(
     parseInt(weekNumber, 10)
   );
+  const [startOfWeek, setStartOfWeek] = React.useState<Date>(
+    getWeekStartDate(currentWeekNumber)
+  );
 
-  // Update the bookings whenever the week or employee changes
-  React.useEffect((): void => {
-    const employeeBookings = weekBookings.filter(
-      (b) => b.employee === employeeId
-    );
-    setCurrentBookings(employeeBookings);
-  }, [weekBookings, employeeId, currentWeekNumber]);
+  React.useEffect(() => {
+    fetchWeekBookings(currentWeekNumber);
+  }, [currentWeekNumber, employeeId]);
 
-  // Handle booking drop
-  const onBookingDrop = (
-    movedBooking: RegistrationDTO,
-    newStart: string
-  ): void => {
+  const fetchWeekBookings = async (weekNum: number) => {
+    try {
+      const fetchedBookings =
+        await BackEndService.Instance.getRegistrationsByType(2);
+      const filteredBookings = fetchedBookings.filter(
+        (b) =>
+          b.employee === employeeId &&
+          getWeekNumber(new Date(b.date)) === weekNum
+      );
+      setCurrentBookings(filteredBookings);
+      setStartOfWeek(getWeekStartDate(weekNum)); // Update startOfWeek
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    }
+  };
+
+  const onBookingDrop = (movedBooking: Registration, newStart: string) => {
     const updatedBookings = currentBookings.map((b) => {
       if (b.id === movedBooking.id) {
         const newDate = new Date(b.date);
@@ -88,24 +127,24 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     setCurrentBookings(updatedBookings);
   };
 
-  // Handle updating the week number when navigating between weeks
-  const handlePreviousWeek = (): void => {
+  const handlePreviousWeek = () => {
     setCurrentWeekNumber((prevWeek) => {
       const updatedWeek = prevWeek - 1;
+      fetchWeekBookings(updatedWeek);
       onPreviousWeek();
       return updatedWeek;
     });
   };
 
-  const handleNextWeek = (): void => {
+  const handleNextWeek = () => {
     setCurrentWeekNumber((prevWeek) => {
       const updatedWeek = prevWeek + 1;
+      fetchWeekBookings(updatedWeek);
       onNextWeek();
       return updatedWeek;
     });
   };
 
-  const startOfWeek = getWeekStartDate(currentWeekNumber, 2024);
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 4);
 
@@ -118,12 +157,25 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   const hours = Array.from({ length: 24 }, (_, i) => i); // From 00:00 to 23:00
   const days = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"];
 
+  // Helper function to calculate span based on start and end times
+  const calculateSpan = (start: string, end: string): number => {
+    const startParts = start.split(":").map(Number);
+    const endParts = end.split(":").map(Number);
+
+    const startMinutes = startParts[0] * 60 + startParts[1];
+    const endMinutes = endParts[0] * 60 + endParts[1];
+
+    // Calculate the difference in minutes and convert to 15-minute intervals
+    const durationInMinutes = endMinutes - startMinutes;
+    return Math.ceil(durationInMinutes / 15);
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className={styles.weeklyViewContainer}>
         <div className={styles.controlsContainer}>
           <DefaultButton onClick={onBack}>
-            Tilbage til 5 ugers oversigt
+            Tilbage til 5-ugers oversigt
           </DefaultButton>
           <div className={styles.weekInfo}>
             <Text variant="large">
@@ -145,7 +197,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
         <div className={styles.syncScrollContainer}>
           <div className={styles.gridContainer}>
             <div className={styles.gridHeader}>
-              <div className={styles.timeHeader} />
+              <div className={styles.timeHeader}></div>
               {days.map((day, i) => (
                 <div key={day} className={styles.dayHeader}>
                   <Text>{`${day} - ${weekDays[i].toLocaleDateString()}`}</Text>
@@ -159,31 +211,41 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
                   <Text variant="large">{`${hour}:00`}</Text>
                 </div>
 
-                {days.map((day, i) => (
-                  <div key={day} className={styles.dayColumn}>
-                    {Array.from({ length: 4 }).map((_, j) => {
-                      const timeSlotId = `${hour}:${j * 15}`;
-                      const booking =
-                        currentBookings.find((b) => {
+                {days.map((day, i) => {
+                  const dayDate = weekDays[i];
+                  return (
+                    <div key={day} className={styles.dayColumn}>
+                      {Array.from({ length: 4 }).map((_, j) => {
+                        const timeSlotId = `${hour}:${j * 15}`;
+                        const booking = currentBookings.find((b) => {
                           const bookingDate = new Date(b.date);
+                          const [startHour, startMinute] = b.start
+                            .split(":")
+                            .map(Number);
                           return (
-                            bookingDate.getHours() === hour &&
-                            bookingDate.getMinutes() === j * 15 &&
-                            bookingDate.getDate() === weekDays[i].getDate()
+                            bookingDate.getDate() === dayDate.getDate() &&
+                            startHour === hour &&
+                            startMinute === j * 15
                           );
-                        }) || undefined;
+                        });
 
-                      return (
-                        <TimeSlot
-                          key={timeSlotId}
-                          timeSlotId={timeSlotId}
-                          booking={booking}
-                          onDrop={onBookingDrop}
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
+                        const span = booking
+                          ? calculateSpan(booking.start, booking.end)
+                          : 1;
+
+                        return (
+                          <TimeSlot
+                            key={timeSlotId}
+                            timeSlotId={timeSlotId}
+                            booking={booking}
+                            onDrop={onBookingDrop}
+                            span={span}
+                          />
+                        );
+                      })}
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
@@ -191,6 +253,21 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
       </div>
     </DndProvider>
   );
+};
+
+// Helper function to calculate the start date of a week number
+const getWeekStartDate = (weekNumber: number): Date => {
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0; // Adjust if the year starts on a Sunday
+  const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
+  startOfYear.setDate(startOfYear.getDate() + daysToAdd);
+  return startOfYear;
+};
+
+// Helper function to parse time string (e.g., "08:30")
+const parseTime = (timeString: string) => {
+  const [hour, minute] = timeString.split(":").map(Number);
+  return { hour, minute };
 };
 
 export default WeeklyView;

@@ -90,3 +90,44 @@ export const calculateRecurrenceDates = (
   }
   return recurrenceDates;
 };
+
+//used in the booking-overview
+export const getWeekNumber = (date: Date): number => {
+  const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+  const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
+  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+};
+
+export const getWeekRange = (date: Date): { start: Date; end: Date } => {
+  const firstDayOfWeek = new Date(
+    date.setDate(date.getDate() - date.getDay() + 1)
+  );
+  const lastDayOfWeek = new Date(date.setDate(firstDayOfWeek.getDate() + 6));
+  return { start: firstDayOfWeek, end: lastDayOfWeek };
+};
+
+export const getWeeksFromDate = (
+  startDate: Date
+): { start: Date; end: Date; weekNumber: number }[] => {
+  const weeks = [];
+  for (let i = 0; i < 5; i++) {
+    const currentDate = new Date(startDate);
+    currentDate.setDate(startDate.getDate() + i * 7);
+    const { start, end } = getWeekRange(currentDate);
+    weeks.push({ start, end, weekNumber: getWeekNumber(start) });
+  }
+  return weeks;
+};
+
+export const getWeekStartDate = (weekNumber: number): Date => {
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0; // Adjust if the year starts on a Sunday
+  const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
+  startOfYear.setDate(startOfYear.getDate() + daysToAdd);
+  return startOfYear;
+};
+
+export const parseTime = (timeString: string) => {
+  const [hour, minute] = timeString.split(":").map(Number);
+  return { hour, minute };
+};

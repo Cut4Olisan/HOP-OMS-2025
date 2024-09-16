@@ -25,7 +25,10 @@ import {
 } from "../dateUtils";
 import RecursionPanel from "./RecursionDate";
 import DateTimePickerComponent from "./DateTimePicker";
-import { Customer, Project } from "./CustomerAndProjects/interfaces/ICustomerProjectsProps";
+import {
+  Customer,
+  Project,
+} from "./CustomerAndProjects/interfaces/ICustomerProjectsProps";
 import { Registration } from "./interfaces/IRegistrationProps";
 import BackEndService from "../../services/BackEnd";
 import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
@@ -37,7 +40,10 @@ export interface IPeoplePickerItem {
   email: string;
 }
 
-const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
+const BookingComponent: React.FC<IBookingComponentProps> = ({
+  context,
+  onFinish,
+}) => {
   const [title, setTitle] = React.useState<string>("");
   const [error, setError] = React.useState<string | undefined>();
   const [info, setInfo] = React.useState<string>("");
@@ -77,16 +83,16 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
       return setError("Vælg en start- og slutdato!");
     }
     if (!title) {
-      return setError("Titel manger");
+      return setError("Titel mangler");
     }
     if (!selectedCustomer) {
       return setError("Vælg en kunde");
     }
-    if (!selectedCoworkers) {
+    if (!selectedCoworkers || selectedCoworkers.length === 0) {
       return setError("Vælg en medarbejder");
     }
 
-    let dates: Date[] | [] = [];
+    let dates: Date[] = [];
     const dateResult = getDatesBetween(startDateTime, endDateTime);
     if (dateResult instanceof Error) {
       setError(dateResult.message);
@@ -102,6 +108,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
       );
       dates = [...dates, ...recurrenceDates];
     }
+
     const startTime = extractTime(startDateTime);
     const endTime = extractTime(endDateTime);
     const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
@@ -114,31 +121,41 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
       return setError(estimatedHours.message);
     }
 
-    // Laver en registrering for hver dag
-    const registrations = dates.map((date) => {
-      const registrationData: Partial<Registration> = {
-        shortDescription: title,
-        description: info,
-        date: formatDateForApi(date),
-        start: startTime,
-        end: endTime,
-        time: estimatedHours,
-        employee: selectedCoworkers.join(","),
-        registrationType: 2, // = "Booking"
-      };
+    // Create a registration for each coworker for each date
+    const registrations = selectedCoworkers.flatMap((coworker) =>
+      dates.map((date) => {
+        const registrationData: Partial<Registration> = {
+          shortDescription: title,
+          description: info,
+          date: formatDateForApi(date),
+          start: startTime,
+          end: endTime,
+          time: estimatedHours,
+          employee: coworker, // Assign individual coworker
+          registrationType: 2, // Booking
+        };
 
-      return registrationData;
-    });
+        return registrationData;
+      })
+    );
+
     console.log("Debugging mode is: ", debuggingMode);
-    registrations.forEach(async (registration) => {
-      if (!debuggingMode) {
-        // POST'er kun til DB hvis debugging mode er slået fra
-        await BackEndService.Instance.createRegistration(registration);
-        console.log("Booking oprettet: ", registration);
-      } else {
-        console.log("Debugging mode: Booking not posted to DB: ", registration);
-      }
-    });
+    const finishedRegistrations = await Promise.all(
+      registrations.map(async (r: Registration) => {
+        return await BackEndService.Instance.createRegistration(r);
+      })
+    );
+
+    if (!debuggingMode) {
+      //POST'er kun til DB hvis debugging mode er slået fra
+      console.log("Booking oprettet: ", finishedRegistrations);
+      return onFinish(finishedRegistrations);
+    } else {
+      console.log(
+        "Debugging mode: Booking not posted to DB: ",
+        finishedRegistrations
+      );
+    }
   };
 
   React.useEffect(() => {

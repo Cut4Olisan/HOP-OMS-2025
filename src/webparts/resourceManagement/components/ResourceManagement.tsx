@@ -24,6 +24,7 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
         context={context}
         customers={[]}
         projects={[]}
+        onFinish={(registrations) => console.log(registrations)}
       />
     </div>
   );

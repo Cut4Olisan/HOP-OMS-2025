@@ -1,7 +1,12 @@
 import * as React from "react";
-import { DateTimePicker, DateConvention, TimeConvention, TimeDisplayControlType } from "@pnp/spfx-controls-react";
+import {
+  DateTimePicker,
+  DateConvention,
+  TimeConvention,
+  TimeDisplayControlType,
+} from "@pnp/spfx-controls-react";
 import { DayOfWeek } from "@fluentui/react";
-import { formatDateForDisplay } from "../dateUtils";
+import { formatDateForDisplay, getDateOfTomorrow } from "../dateUtils";
 
 export interface IDateTimeProps {
   label: string;
@@ -9,7 +14,12 @@ export interface IDateTimeProps {
   onChange: (date: Date | undefined) => void;
 }
 
-const DateTimePickerComponent: React.FC<IDateTimeProps> = ({ label, value, onChange }) => {
+const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
+  label,
+  value,
+  onChange,
+}) => {
+  const defaultDate = label === "Sluttid" ? getDateOfTomorrow() : new Date();
   return (
     <DateTimePicker
       label={label}
@@ -21,8 +31,10 @@ const DateTimePickerComponent: React.FC<IDateTimeProps> = ({ label, value, onCha
       minutesIncrementStep={5}
       showMonthPickerAsOverlay
       showSeconds={false}
-      value={value}
-      formatDate={(date) => (date ? formatDateForDisplay(date.toISOString()) : "")}
+      value={value || defaultDate}
+      formatDate={(date) =>
+        date ? formatDateForDisplay(date.toISOString()) : ""
+      }
       onChange={onChange}
     />
   );

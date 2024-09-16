@@ -1,15 +1,11 @@
 import * as React from "react";
 import { Dropdown, IDropdownStyles } from "@fluentui/react";
 import { ICustomerProjectsProps } from "./interfaces/ICustomerProjectsProps";
-import styles from "./CustomerProjects.module.scss";
 
 const dropdownStyles: Partial<IDropdownStyles> = {
   callout: {
     maxHeight: 200,
     overflowY: "auto",
-  },
-  dropdown: {
-    maxWidth: 400,
   },
   dropdownItem: {
     height: "auto",
@@ -31,7 +27,7 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
   return (
     <>
       <Dropdown
-        label="Vælg en kunde"
+        label="Kunde"
         placeholder="Vælg en kunde"
         options={customers
           .filter((c) => c.active)
@@ -48,8 +44,8 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
             : undefined
         }
         styles={dropdownStyles}
-        calloutProps={{ className: styles.calloutStyle }}
         required
+        // calloutProps={{ className: styles.<className_Here> }}
       />
 
       {selectedCustomer && (

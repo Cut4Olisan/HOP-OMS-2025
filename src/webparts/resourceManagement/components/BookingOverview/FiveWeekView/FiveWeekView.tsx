@@ -28,18 +28,18 @@ const BookingCard: React.FC<{
 
   return (
     <div ref={drag} className={styles.bookingCard}>
-      <Text className={styles.projectName} variant="large">
+      <Text className={styles.projectName} variant="medium">
         {booking.shortDescription}
       </Text>
       <Text
         className={styles.employeeName}
+        variant="small"
         onClick={() => onEmployeeClick(booking)} // Navigate to WeeklyView on click
       >
         {booking.employee}
       </Text>
-      <Text className={styles.customerName}>
-        Project {booking.projectId}{" "}
-        {/* Hent projekt navn ned senere vi projectid og pass det her til */}
+      <Text className={styles.customerName} variant="small">
+        Project {booking.projectId}
       </Text>
     </div>
   );
@@ -48,10 +48,19 @@ const BookingCard: React.FC<{
 // Weekly Column component
 const WeekColumn: React.FC<{
   weekNumber: number;
+  startDate: string;
+  endDate: string;
   bookings: Registration[];
   onDrop: (booking: Registration, newWeekNumber: number) => void;
   onEmployeeClick: (booking: Registration) => void;
-}> = ({ weekNumber, bookings, onDrop, onEmployeeClick }) => {
+}> = ({
+  weekNumber,
+  startDate,
+  endDate,
+  bookings,
+  onDrop,
+  onEmployeeClick,
+}) => {
   const [, drop] = useDrop({
     accept: ItemType,
     drop: (item: Registration) => {
@@ -61,7 +70,6 @@ const WeekColumn: React.FC<{
 
   return (
     <div ref={drop} className={styles.weekColumn}>
-      <Text variant="large">Uge {weekNumber}</Text>
       {bookings.length > 0 ? (
         bookings.map((booking) => (
           <BookingCard
@@ -145,15 +153,13 @@ const FiveWeekView: React.FC = () => {
     setRegistrations(updatedBookings);
   };
 
-  // Handle employee name click to navigate to WeeklyView
   const handleEmployeeClick = (booking: Registration) => {
     setSelectedBooking(booking);
   };
 
-  // Filter bookings based on registration type (ID: 2) and other selected filters
   const filteredBookings = registrations.filter((booking) => {
     return (
-      booking.registrationType === 2 && // Only include bookings with registrationType ID 2
+      booking.registrationType === 2 &&
       (!selectedEmployee || booking.employee === selectedEmployee) &&
       (!selectedCustomer ||
         booking.projectId?.toString() === selectedCustomer) &&
@@ -162,15 +168,12 @@ const FiveWeekView: React.FC = () => {
   });
 
   if (selectedBooking) {
-    // Get the week number for the selected booking's date
     const selectedWeekNumber = getWeekNumber(new Date(selectedBooking.date));
-
-    // Filter the bookings for the selected week and employee
     const weekBookings = registrations.filter(
       (booking) =>
         getWeekNumber(new Date(booking.date)) === selectedWeekNumber &&
         booking.employee === selectedBooking.employee &&
-        booking.registrationType === 2 // Only include bookings with registrationType ID 2
+        booking.registrationType === 2
     );
 
     return (
@@ -190,7 +193,6 @@ const FiveWeekView: React.FC = () => {
     <DndProvider backend={HTML5Backend}>
       <div className={styles.container}>
         <div className={styles.controlsContainer}>
-          {/* Filter Controls */}
           <div className={styles.filterContainer}>
             <Dropdown
               placeholder="Vælg Medarbejder"
@@ -229,8 +231,6 @@ const FiveWeekView: React.FC = () => {
               <DefaultButton text="Ryd filter" onClick={clearFilters} />
             )}
           </div>
-
-          {/* Navigation Arrows */}
           <div className={styles.navigationContainer}>
             <ArrowLeftRegular
               className={styles.arrowButton}
@@ -241,6 +241,19 @@ const FiveWeekView: React.FC = () => {
               onClick={handleNextWeeks}
             />
           </div>
+        </div>
+
+        {/* Week Header */}
+        <div className={styles.gridHeader}>
+          {weeksToDisplay.map((week, index) => (
+            <div key={index} className={styles.weekHeader}>
+              <Text variant="large">Uge {week.weekNumber}</Text>
+              <Text variant="small">
+                {week.start.toLocaleDateString()} -{" "}
+                {week.end.toLocaleDateString()}
+              </Text>
+            </div>
+          ))}
         </div>
 
         {/* Week Columns */}
@@ -255,6 +268,8 @@ const FiveWeekView: React.FC = () => {
               <WeekColumn
                 key={index}
                 weekNumber={weekNumber}
+                startDate={week.start.toLocaleDateString()}
+                endDate={week.end.toLocaleDateString()}
                 bookings={weekBookings}
                 onDrop={handleDrop}
                 onEmployeeClick={handleEmployeeClick}
@@ -268,3 +283,4 @@ const FiveWeekView: React.FC = () => {
 };
 
 export default FiveWeekView;
+``;

@@ -1,26 +1,20 @@
 @import "~@fluentui/react/dist/sass/References.scss";
 
-.filterContainer {
+.weekHeader {
   display: flex;
-  justify-content: flex-start;
-  max-width: 50%;
-  gap: 10px;
-
-  .filterContainerProps {
-    min-width: 150px;
-  }
+  text-align: center;
+  flex-direction: column;
+  padding: 10px;
+  font-weight: bold;
+  background-color: #f4f4f4;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
 }
-
-.weekGrid {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  width: 100%;
-}
-@import "~@fluentui/react/dist/sass/References.scss";
 
 .container {
-  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
 }
 
 .controlsContainer {
@@ -33,12 +27,7 @@
 .filterContainer {
   display: flex;
   justify-content: flex-start;
-  max-width: 50%;
   gap: 10px;
-
-  .filterContainerProps {
-    min-width: 150px;
-  }
 }
 
 .navigationContainer {
@@ -46,59 +35,66 @@
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
-  margin-bottom: 20px;
+}
+
+.gridHeader {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background-color: #f4f4f4;
+  padding-top: 10px;
+  border-bottom: 1px solid #ccc;
+  text-align: center;
+  font-weight: bold;
+  position: sticky; /* Keep header fixed at the top */
+  top: 0;
+  z-index: 1;
 }
 
 .weekGrid {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 equal columns for weeks */
+  gap: 0; /* No gap between weeks */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .weekColumn {
-  flex-grow: 1;
-  min-width: 200px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: #f9f9f9;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  padding: 10px;
+  max-height: 600px; /* Set a max height for scrolling */
+  overflow-y: auto; /* Enable vertical scrolling within each column */
+  overflow-x: hidden;
 }
 
 .bookingCard {
-  background-color: var(--white);
-  padding: 15px;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
+  justify-content: space-around;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  background-color: lightgrey;
+  cursor: move;
   gap: 10px;
-  border-bottom: 2px solid var(--colorBrandBackground2);
 }
 
 .projectName {
   font-weight: bold;
+  overflow-wrap: break-word;
 }
 
 .employeeName {
-  color: var(--themePrimary);
+  color: #0078d4;
   cursor: pointer;
+  overflow-wrap: break-word;
 }
 
 .customerName {
-  color: var(--neutralPrimary);
-}
-
-.Bold {
-  font-weight: bold;
-}
-
-.hidden {
-  visibility: hidden;
+  color: #555;
+  overflow-wrap: break-word;
 }
 
 .arrowButton {

@@ -15,6 +15,7 @@ interface TimeSlotProps {
   booking: Registration | undefined;
   onDrop: (booking: Registration, newStart: string) => void;
   span: number;
+  topOffset: number;
 }
 
 const TimeSlot: React.FC<TimeSlotProps> = ({
@@ -35,6 +36,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
     item: booking,
   });
 
+  // Adjust topOffset based on booking's start time
   const topOffset = booking ? parseTime(booking.start).minute : 0;
   const bookingHeight = booking
     ? Math.ceil(
@@ -46,18 +48,45 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
       ) * 15
     : 15; // Default to 15 minutes
 
+  // Determine if we need to adjust the offset
+  const shouldAdjustOffset = booking
+    ? parseTime(booking.start).minute !== 0
+    : false;
+
   return (
-    <div ref={drop} className={styles.timeSlot}>
+    <div
+      ref={drop}
+      className={styles.timeSlot}
+      style={{ position: "relative" }}
+    >
       {booking && (
         <div
           ref={drag}
           className={styles.booking}
           style={{
-            top: `${topOffset}px`,
+            top: shouldAdjustOffset
+              ? `calc(${topOffset}px - 30px)`
+              : `${topOffset}px`,
             height: `${bookingHeight}px`,
           }}
         >
-          <Text>{booking.shortDescription}</Text>
+          <div className={styles.bookingContent}>
+            <Text className={styles.bookingTitle}>
+              {booking.shortDescription}
+            </Text>
+            <Text className={styles.bookingEmployee}>{booking.employee}</Text>
+            <Text className={styles.bookingProject}>
+              Project ID: {booking.projectId}{" "}
+              {/* Fetch project name using project ID */}
+            </Text>
+            <Text className={styles.bookingDescription}>
+              {booking.description}
+            </Text>
+            <Text className={styles.bookingDate}>{booking.date}</Text>
+            <Text className={styles.bookingTime}>
+              {booking.start} - {booking.end}
+            </Text>
+          </div>
         </div>
       )}
     </div>
@@ -154,20 +183,23 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     return date;
   });
 
-  const hours = Array.from({ length: 24 }, (_, i) => i); // From 00:00 to 23:00
+  const hours = Array.from({ length: 24 }, (_, i) => i);
   const days = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"];
 
   // Helper function to calculate span based on start and end times
   const calculateSpan = (start: string, end: string): number => {
     const startParts = start.split(":").map(Number);
     const endParts = end.split(":").map(Number);
-
     const startMinutes = startParts[0] * 60 + startParts[1];
     const endMinutes = endParts[0] * 60 + endParts[1];
-
-    // Calculate the difference in minutes and convert to 15-minute intervals
     const durationInMinutes = endMinutes - startMinutes;
     return Math.ceil(durationInMinutes / 15);
+  };
+
+  // New helper function to calculate top offset based on start time
+  const calculateTopOffset = (start: string): number => {
+    const startParts = start.split(":").map(Number);
+    return (startParts[1] / 60) * 100; // Convert minutes to a percentage for offset
   };
 
   return (
@@ -194,17 +226,17 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           </div>
         </div>
 
+        <div className={styles.gridHeader}>
+          <div className={styles.timeHeader}></div>
+          {days.map((day, i) => (
+            <div key={day} className={styles.dayHeader}>
+              <Text>{`${day} - ${weekDays[i].toLocaleDateString()}`}</Text>
+            </div>
+          ))}
+        </div>
+
         <div className={styles.syncScrollContainer}>
           <div className={styles.gridContainer}>
-            <div className={styles.gridHeader}>
-              <div className={styles.timeHeader}></div>
-              {days.map((day, i) => (
-                <div key={day} className={styles.dayHeader}>
-                  <Text>{`${day} - ${weekDays[i].toLocaleDateString()}`}</Text>
-                </div>
-              ))}
-            </div>
-
             {hours.map((hour) => (
               <div key={hour} className={styles.gridRow}>
                 <div className={styles.timeColumn}>
@@ -225,13 +257,17 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
                           return (
                             bookingDate.getDate() === dayDate.getDate() &&
                             startHour === hour &&
-                            startMinute === j * 15
+                            startMinute >= j * 15 &&
+                            startMinute < (j + 1) * 15
                           );
                         });
 
                         const span = booking
                           ? calculateSpan(booking.start, booking.end)
                           : 1;
+                        const topOffset = booking
+                          ? calculateTopOffset(booking.start)
+                          : 0;
 
                         return (
                           <TimeSlot
@@ -240,6 +276,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
                             booking={booking}
                             onDrop={onBookingDrop}
                             span={span}
+                            topOffset={topOffset}
                           />
                         );
                       })}
@@ -258,7 +295,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
 // Helper function to calculate the start date of a week number
 const getWeekStartDate = (weekNumber: number): Date => {
   const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0; // Adjust if the year starts on a Sunday
+  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0;
   const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
   startOfYear.setDate(startOfYear.getDate() + daysToAdd);
   return startOfYear;

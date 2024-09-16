@@ -29,19 +29,25 @@
 .syncScrollContainer {
   display: flex;
   flex-grow: 1;
-  position: relative;
   overflow-y: auto;
-  height: 600px; /* Adjust height to fit the view */
+  overflow-x: hidden;
+  height: 600px;
 }
 
 .gridContainer {
   display: grid;
   grid-template-columns: 100px repeat(5, 1fr); /* One fixed column for time, and 5 flexible columns for days */
   width: 100%; /* Ensure it uses the full available width */
+  position: relative;
 }
 
 .gridHeader {
-  display: contents; /* Allow sticky headers */
+  display: grid;
+  grid-template-columns: 100px repeat(5, 1fr);
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .timeHeader {
@@ -90,25 +96,58 @@
 }
 
 .timeSlot {
-  height: 15px; /* Each time slot is 15 minutes (4 per hour) */
-  position: relative;
+  height: 15px; /* Each time slot is 15 minutes */
+  position: relative; /* Ensure the booking element is positioned relative to this */
   background-color: #f9f9f9;
   border-right: 1px solid #eee;
+  overflow: visible; /* Ensure the overflow is visible so bookings can extend */
 }
 
 .booking {
-  position: absolute; /* Use absolute positioning */
-  top: 0; /* Align to the top of the time slot */
+  position: absolute;
   left: 0;
   right: 0;
-  background-color: #0078d4;
-  color: white;
-  padding: 5px;
+  background-color: lightgrey;
   border-radius: 4px;
   cursor: move;
-  overflow: hidden; /* Prevent overflow of text */
-  white-space: nowrap; /* Prevent text from wrapping */
-  text-overflow: ellipsis; /* Show ellipsis (...) for overflowing text */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 1;
+  color: #333; /* Darker text color for better readability */
+}
+
+.bookingContent {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Add space between each content block */
+}
+
+.bookingTitle {
+  font-weight: bold;
+  font-size: 1.4em;
+  margin-bottom: 4px;
+}
+
+.bookingEmployee,
+.bookingProject,
+.bookingDescription,
+.bookingDate,
+.bookingTime {
+  font-size: 0.9em;
+  margin-bottom: 2px;
+}
+
+.bookingEmployee {
+  color: #0078d4; /* Highlight the employee name */
+}
+
+.bookingTime {
+  font-style: italic;
+  color: #555;
 }
 
 .arrowButton {

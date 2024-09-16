@@ -80,16 +80,16 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
   const onSave = async (): Promise<void> => {
     if (!startDateTime || !endDateTime) {
-      return setError("Vælg en start- og slutdato!");
+      return setError("Manglende start- og/eller slutdato!");
     }
     if (!title) {
-      return setError("Titel mangler");
+      return setError("Titel mangler at udfyldes");
     }
     if (!selectedCustomer) {
-      return setError("Vælg en kunde");
+      return setError("Kunde mangler at udfyldes");
     }
     if (!selectedCoworkers || selectedCoworkers.length === 0) {
-      return setError("Vælg en medarbejder");
+      return setError("Medarbejder mangler at udfyldes");
     }
 
     let dates: Date[] = [];

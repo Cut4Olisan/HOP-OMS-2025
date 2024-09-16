@@ -1,20 +1,7 @@
 import * as React from "react";
-import { Dropdown, IDropdownStyles } from "@fluentui/react";
+import { ComboBox} from "@fluentui/react";
 import { ICustomerProjectsProps } from "./interfaces/ICustomerProjectsProps";
-
-const dropdownStyles: Partial<IDropdownStyles> = {
-  callout: {
-    maxHeight: 200,
-    overflowY: "auto",
-  },
-  dropdownItem: {
-    height: "auto",
-  },
-  dropdownOptionText: {
-    overflow: "visible",
-    whiteSpace: "normal",
-  },
-};
+import styles from "./CustomerProjects.module.scss";
 
 const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
   customers,
@@ -26,8 +13,8 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
 }) => {
   return (
     <>
-      <Dropdown
-        label="Kunde"
+      <ComboBox
+        label="Vælg kunde"
         placeholder="Vælg en kunde"
         options={customers
           .filter((c) => c.active)
@@ -43,14 +30,15 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
               )
             : undefined
         }
-        styles={dropdownStyles}
+        calloutProps={{ doNotLayer: true, className: styles.limitCalloutSize }}
+        allowFreeInput
+        autoComplete="on"
         required
-        // calloutProps={{ className: styles.<className_Here> }}
       />
 
       {selectedCustomer && (
-        <Dropdown
-          label="Projekt"
+        <ComboBox
+          label="Vælg projekt"
           placeholder="Vælg projekt for kunde"
           options={projects
             .filter((p) => p.customerId === selectedCustomer.id)
@@ -60,7 +48,9 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
             }))}
           selectedKey={selectedProject}
           onChange={(e, option) => setSelectedProject(option?.key as string)}
-          styles={dropdownStyles}
+          calloutProps={{ doNotLayer: true, className: styles.limitCalloutSize }}
+          allowFreeInput
+          autoComplete="on"
           required
         />
       )}

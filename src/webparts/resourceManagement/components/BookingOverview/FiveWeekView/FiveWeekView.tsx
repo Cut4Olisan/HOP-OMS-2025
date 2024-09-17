@@ -86,7 +86,8 @@ const WeekColumn: React.FC<{
   );
 };
 
-const FiveWeekView: React.FC = () => {
+// Fix for lint warnings
+const FiveWeekView: React.FC = (): JSX.Element => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -104,8 +105,8 @@ const FiveWeekView: React.FC = () => {
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  useEffect(() => {
-    const fetchData = async () => {
+  useEffect((): void => {
+    const fetchData = async (): Promise<void> => {
       try {
         const fetchedCustomers = await BackEndService.Instance.getCustomers();
         const fetchedProjects = await BackEndService.Instance.getProjects();
@@ -120,7 +121,8 @@ const FiveWeekView: React.FC = () => {
       }
     };
 
-    fetchData();
+    // Handle the promise
+    void fetchData();
   }, []);
 
   const weeksToDisplay = getWeeksFromDate(currentDate);
@@ -143,7 +145,10 @@ const FiveWeekView: React.FC = () => {
     setCurrentDate(newDate);
   };
 
-  const handleDrop = (movedBooking: Registration, newWeekNumber: number) => {
+  const handleDrop = (
+    movedBooking: Registration,
+    newWeekNumber: number
+  ): void => {
     const updatedBookings = registrations.map((booking) => {
       if (booking.id === movedBooking.id) {
         return { ...booking, date: `2024-W${newWeekNumber}` }; // Adjust date format as needed
@@ -153,7 +158,7 @@ const FiveWeekView: React.FC = () => {
     setRegistrations(updatedBookings);
   };
 
-  const handleEmployeeClick = (booking: Registration) => {
+  const handleEmployeeClick = (booking: Registration): void => {
     setSelectedBooking(booking);
   };
 
@@ -283,4 +288,3 @@ const FiveWeekView: React.FC = () => {
 };
 
 export default FiveWeekView;
-``;

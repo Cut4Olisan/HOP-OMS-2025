@@ -10,6 +10,27 @@ import { getWeekNumber } from "../../dateUtils";
 
 const ItemType = "BOOKING"; // Draggable item type
 
+// Helper function to parse time string (e.g., "08:30")
+const parseTime = (timeString: string): { hour: number; minute: number } => {
+  const [hour, minute] = timeString.split(":").map(Number);
+  return { hour, minute };
+};
+
+// Helper function to calculate top offset based on start time
+const calculateTopOffset = (start: string): number => {
+  const startParts = start.split(":").map(Number);
+  return (startParts[1] / 60) * 100; // Convert minutes to a percentage for offset
+};
+
+// Helper function to calculate the start date of a week number
+const getWeekStartDate = (weekNumber: number): Date => {
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0;
+  const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
+  startOfYear.setDate(startOfYear.getDate() + daysToAdd);
+  return startOfYear;
+};
+
 interface TimeSlotProps {
   timeSlotId: string;
   booking: Registration | undefined;
@@ -23,6 +44,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
   booking,
   onDrop,
   span,
+  topOffset,
 }) => {
   const [, drop] = useDrop({
     accept: ItemType,
@@ -36,8 +58,6 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
     item: booking,
   });
 
-  // Adjust topOffset based on booking's start time
-  const topOffset = booking ? parseTime(booking.start).minute : 0;
   const bookingHeight = booking
     ? Math.ceil(
         (parseTime(booking.end).hour * 60 +
@@ -48,7 +68,6 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
       ) * 15
     : 15; // Default to 15 minutes
 
-  // Determine if we need to adjust the offset
   const shouldAdjustOffset = booking
     ? parseTime(booking.start).minute !== 0
     : false;
@@ -76,8 +95,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
             </Text>
             <Text className={styles.bookingEmployee}>{booking.employee}</Text>
             <Text className={styles.bookingProject}>
-              Project ID: {booking.projectId}{" "}
-              {/* Fetch project name using project ID */}
+              Project ID: {booking.projectId}
             </Text>
             <Text className={styles.bookingDescription}>
               {booking.description}
@@ -111,22 +129,19 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   onBack,
   onPreviousWeek,
   onNextWeek,
-}) => {
+}): JSX.Element => {
   const [currentBookings, setCurrentBookings] = React.useState<Registration[]>(
     []
   );
-  const [currentWeekNumber, setCurrentWeekNumber] = React.useState(
+  const [currentWeekNumber, setCurrentWeekNumber] = React.useState<number>(
     parseInt(weekNumber, 10)
   );
   const [startOfWeek, setStartOfWeek] = React.useState<Date>(
     getWeekStartDate(currentWeekNumber)
   );
 
-  React.useEffect(() => {
-    fetchWeekBookings(currentWeekNumber);
-  }, [currentWeekNumber, employeeId]);
-
-  const fetchWeekBookings = async (weekNum: number) => {
+  // Move fetchWeekBookings here to fix the `no-use-before-define` issue
+  const fetchWeekBookings = async (weekNum: number): Promise<void> => {
     try {
       const fetchedBookings =
         await BackEndService.Instance.getRegistrationsByType(2);
@@ -142,36 +157,38 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     }
   };
 
-  const onBookingDrop = (movedBooking: Registration, newStart: string) => {
+  React.useEffect((): void => {
+    fetchWeekBookings(currentWeekNumber);
+  }, [currentWeekNumber, employeeId]);
+
+  const onBookingDrop = (
+    movedBooking: Registration,
+    newStart: string
+  ): void => {
     const updatedBookings = currentBookings.map((b) => {
       if (b.id === movedBooking.id) {
         const newDate = new Date(b.date);
         newDate.setHours(Number(newStart.split(":")[0]));
         newDate.setMinutes(Number(newStart.split(":")[1]));
-        const newBooking = { ...b, date: newDate.toISOString() };
-        return newBooking;
+        return { ...b, date: newDate.toISOString() };
       }
       return b;
     });
     setCurrentBookings(updatedBookings);
   };
 
-  const handlePreviousWeek = () => {
-    setCurrentWeekNumber((prevWeek) => {
-      const updatedWeek = prevWeek - 1;
-      fetchWeekBookings(updatedWeek);
-      onPreviousWeek();
-      return updatedWeek;
-    });
+  const handlePreviousWeek = async (): Promise<void> => {
+    const updatedWeek = currentWeekNumber - 1;
+    await fetchWeekBookings(updatedWeek);
+    onPreviousWeek();
+    setCurrentWeekNumber(updatedWeek);
   };
 
-  const handleNextWeek = () => {
-    setCurrentWeekNumber((prevWeek) => {
-      const updatedWeek = prevWeek + 1;
-      fetchWeekBookings(updatedWeek);
-      onNextWeek();
-      return updatedWeek;
-    });
+  const handleNextWeek = async (): Promise<void> => {
+    const updatedWeek = currentWeekNumber + 1;
+    await fetchWeekBookings(updatedWeek);
+    onNextWeek();
+    setCurrentWeekNumber(updatedWeek);
   };
 
   const endOfWeek = new Date(startOfWeek);
@@ -186,7 +203,6 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const days = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"];
 
-  // Helper function to calculate span based on start and end times
   const calculateSpan = (start: string, end: string): number => {
     const startParts = start.split(":").map(Number);
     const endParts = end.split(":").map(Number);
@@ -194,12 +210,6 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     const endMinutes = endParts[0] * 60 + endParts[1];
     const durationInMinutes = endMinutes - startMinutes;
     return Math.ceil(durationInMinutes / 15);
-  };
-
-  // New helper function to calculate top offset based on start time
-  const calculateTopOffset = (start: string): number => {
-    const startParts = start.split(":").map(Number);
-    return (startParts[1] / 60) * 100; // Convert minutes to a percentage for offset
   };
 
   return (
@@ -227,7 +237,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
         </div>
 
         <div className={styles.gridHeader}>
-          <div className={styles.timeHeader}></div>
+          <div className={styles.timeHeader} />
           {days.map((day, i) => (
             <div key={day} className={styles.dayHeader}>
               <Text>{`${day} - ${weekDays[i].toLocaleDateString()}`}</Text>
@@ -290,21 +300,6 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
       </div>
     </DndProvider>
   );
-};
-
-// Helper function to calculate the start date of a week number
-const getWeekStartDate = (weekNumber: number): Date => {
-  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0;
-  const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
-  startOfYear.setDate(startOfYear.getDate() + daysToAdd);
-  return startOfYear;
-};
-
-// Helper function to parse time string (e.g., "08:30")
-const parseTime = (timeString: string) => {
-  const [hour, minute] = timeString.split(":").map(Number);
-  return { hour, minute };
 };
 
 export default WeeklyView;

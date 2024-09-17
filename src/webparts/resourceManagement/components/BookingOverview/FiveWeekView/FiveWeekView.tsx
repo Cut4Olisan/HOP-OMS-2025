@@ -2,8 +2,12 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { Dropdown, Text, DefaultButton } from "@fluentui/react";
-import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
+import { Text, DefaultButton, ComboBox, IPersonaProps } from "@fluentui/react";
+import {
+  ArrowLeftRegular,
+  ArrowRightRegular,
+  AddSquareMultipleRegular,
+} from "@fluentui/react-icons";
 import styles from "./FiveWeekView.module.scss";
 import WeeklyView from "../WeeklyView/WeeklyView";
 import BackEndService, { Registration } from "../../../services/BackEnd";
@@ -12,6 +16,12 @@ import {
   Project,
 } from "../../../components/booking/BookingComponent";
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
+import {
+  PeoplePicker,
+  PrincipalType,
+} from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import BookingComponent from "../../../components/booking/BookingComponent";
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -86,14 +96,15 @@ const WeekColumn: React.FC<{
   );
 };
 
-// Fix for lint warnings
-const FiveWeekView: React.FC = (): JSX.Element => {
+interface IFiveWeekViewProps {
+  context: WebPartContext; // Add WebPartContext to props
+}
+
+const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [selectedEmployee, setSelectedEmployee] = useState<string | undefined>(
-    undefined
-  );
+  const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string | undefined>(
     undefined
   );
@@ -104,6 +115,9 @@ const FiveWeekView: React.FC = (): JSX.Element => {
     Registration | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  const [showBookingComponent, setShowBookingComponent] =
+    useState<boolean>(false);
 
   useEffect((): void => {
     const fetchData = async (): Promise<void> => {
@@ -121,14 +135,21 @@ const FiveWeekView: React.FC = (): JSX.Element => {
       }
     };
 
-    // Handle the promise
     void fetchData();
   }, []);
+
+  const handleAddBookingClick = (): void => {
+    setShowBookingComponent(true);
+  };
+
+  /*const handleCloseBookingComponent = (): void => {
+    setShowBookingComponent(false);
+  };*/
 
   const weeksToDisplay = getWeeksFromDate(currentDate);
 
   const clearFilters = (): void => {
-    setSelectedEmployee(undefined);
+    setSelectedEmployee([]);
     setSelectedCustomer(undefined);
     setSelectedProject(undefined);
   };
@@ -162,10 +183,16 @@ const FiveWeekView: React.FC = (): JSX.Element => {
     setSelectedBooking(booking);
   };
 
+  const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
+    const emails = items.map((item) => item.secondaryText);
+    setSelectedEmployee(emails.filter((e) => !!e) as string[]);
+  };
+
   const filteredBookings = registrations.filter((booking) => {
     return (
       booking.registrationType === 2 &&
-      (!selectedEmployee || booking.employee === selectedEmployee) &&
+      (selectedEmployee.length === 0 ||
+        selectedEmployee.includes(booking.employee)) && // Check if employee is in the selectedEmployee array
       (!selectedCustomer ||
         booking.projectId?.toString() === selectedCustomer) &&
       (!selectedProject || booking.projectId?.toString() === selectedProject)
@@ -199,40 +226,67 @@ const FiveWeekView: React.FC = (): JSX.Element => {
       <div className={styles.container}>
         <div className={styles.controlsContainer}>
           <div className={styles.filterContainer}>
-            <Dropdown
-              placeholder="Vælg Medarbejder"
-              options={registrations.map((booking) => ({
-                key: booking.employee,
-                text: booking.employee,
-              }))}
-              onChange={(e, opt) =>
-                setSelectedEmployee(opt ? opt.key.toString() : undefined)
-              }
-              selectedKey={selectedEmployee}
+            <AddSquareMultipleRegular
+              className={styles.iconWrapper}
+              onClick={handleAddBookingClick}
             />
-            <Dropdown
-              placeholder="Vælg Kunde"
+
+            <PeoplePicker
+              placeholder="Vælg medarbejder"
+              context={{
+                absoluteUrl: context.pageContext.web.absoluteUrl,
+                msGraphClientFactory: context.msGraphClientFactory,
+                spHttpClient: context.spHttpClient,
+              }}
+              personSelectionLimit={3}
+              groupName={""} // Empty = filter from all users
+              showtooltip={false}
+              required={false}
+              onChange={_getPeoplePickerItems}
+              principalTypes={[
+                PrincipalType.User,
+                PrincipalType.SharePointGroup,
+              ]}
+              resolveDelay={1500}
+            />
+            <ComboBox
+              placeholder="Vælg en kunde"
               options={customers.map((customer) => ({
                 key: customer.id.toString(),
                 text: `Kunde ${customer.name}`,
               }))}
-              onChange={(e, opt) =>
-                setSelectedCustomer(opt ? opt.key.toString() : undefined)
+              selectedKey={selectedCustomer || ""}
+              onChange={(e, option) =>
+                setSelectedCustomer(option ? option.key.toString() : undefined)
               }
-              selectedKey={selectedCustomer}
+              calloutProps={{
+                doNotLayer: true,
+                className: styles.limitCalloutSize,
+              }}
+              allowFreeInput
+              autoComplete="on"
             />
-            <Dropdown
-              placeholder="Vælg Projekt"
+
+            <ComboBox
+              placeholder="Vælg et projekt"
               options={projects.map((project) => ({
                 key: project.id.toString(),
                 text: project.name,
               }))}
-              onChange={(e, opt) =>
-                setSelectedProject(opt ? opt.key.toString() : undefined)
+              selectedKey={selectedProject || ""}
+              onChange={(e, option) =>
+                setSelectedProject(option ? option.key.toString() : undefined)
               }
-              selectedKey={selectedProject}
+              calloutProps={{
+                doNotLayer: true,
+                className: styles.limitCalloutSize,
+              }}
+              allowFreeInput
+              autoComplete="on"
             />
-            {(selectedEmployee || selectedCustomer || selectedProject) && (
+            {(selectedEmployee.length > 0 ||
+              selectedCustomer ||
+              selectedProject) && (
               <DefaultButton text="Ryd filter" onClick={clearFilters} />
             )}
           </div>
@@ -247,6 +301,19 @@ const FiveWeekView: React.FC = (): JSX.Element => {
             />
           </div>
         </div>
+
+        {/* Conditionally render BookingComponent */}
+        {showBookingComponent && (
+          <BookingComponent
+            context={context}
+            customers={customers.map((c) => ({
+              key: c.id.toString(),
+              text: c.name,
+            }))}
+            coworkers={[]}
+            projects={projects.map((p) => ({ key: p.id, text: p.name }))}
+          />
+        )}
 
         {/* Week Header */}
         <div className={styles.gridHeader}>

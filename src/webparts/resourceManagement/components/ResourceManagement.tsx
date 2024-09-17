@@ -14,7 +14,7 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
 }) => {
   return (
     <div>
-      <BookingOverviewComponent></BookingOverviewComponent>
+      <BookingOverviewComponent context={context} /> {/* Pass context prop */}
     </div>
   );
 };

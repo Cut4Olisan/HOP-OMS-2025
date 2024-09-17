@@ -106,3 +106,23 @@
 .arrowButton:hover {
   color: var(--themeDark);
 }
+
+.limitCalloutSize {
+  max-height: 300px !important;
+  width: 90%;
+  height: auto;
+  overflow: auto;
+}
+
+.iconWrapper {
+  display: inline-block;
+  cursor: pointer; /* Change cursor to pointer */
+  transition: transform 0.3s ease, color 0.3s ease;
+  height: 32px;
+  width: 32px;
+
+  &:hover {
+    /* Hover effect */
+    transform: scale(1.1); /* Slightly scale up the icon */
+  }
+}

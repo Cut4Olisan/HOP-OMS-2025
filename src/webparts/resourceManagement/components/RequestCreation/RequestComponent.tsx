@@ -20,6 +20,7 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
   const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(undefined);
   const [endDateTime, setEndDateTime] = React.useState<Date | undefined>(undefined);
   const [dateToggle, setDateToggle] = React.useState<boolean>(false);
+//   const [customerToggle, setCustomerToggle] = React.useState<boolean>(false);
 
   // People picker handler
   const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
@@ -60,7 +61,7 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
         />
       )}
 
-      {dateToggle || isReadOnly && (
+      {(dateToggle || isReadOnly) && (
         <>
           <DateTimePickerComponent
             label="Starttid"

@@ -1,6 +1,7 @@
 import * as React from "react";
 import BookingComponent from "./BookingCreation/BookingComponent";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
+import RequestComponent from "./RequestCreation/RequestComponent";
 
 export interface IResourceManagementProps {
   isDarkTheme: boolean;
@@ -26,6 +27,7 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
         projects={[]}
         onFinish={(registrations) => console.log(registrations)}
       />
+      <RequestComponent context={context} />
     </div>
   );
 };

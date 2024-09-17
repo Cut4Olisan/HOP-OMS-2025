@@ -63,7 +63,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   const [selectedCoworkers, setSelectedCoworkers] = React.useState<string[]>(
     []
   );
-  const [debuggingMode, setDebuggingMode] = React.useState<boolean>(false);
   const [isRecurring, setIsRecurring] = React.useState<boolean>(false);
   const [recursionData, setRecursionData] = React.useState<{
     days: DayOfWeek[];
@@ -82,10 +81,11 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     setSelectedCoworkers(emails.filter((e) => !!e) as string[]);
   };
 
-  
   const onSave = async (): Promise<void> => {
-    if (!title) return setError("Kunne ikke oprette booking - Titel er påkrævet");
-    if (!selectedCustomer) return setError("Kunne ikke oprette booking - Manglende kunde");
+    if (!title)
+      return setError("Kunne ikke oprette booking - Titel er påkrævet");
+    if (!selectedCustomer)
+      return setError("Kunne ikke oprette booking - Manglende kunde");
     if (!startDateTime || !endDateTime)
       return setError("Kunne ikke oprette booking - Manglende datoer");
     if (!selectedCoworkers || selectedCoworkers.length === 0)
@@ -138,24 +138,14 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       })
     );
 
-    console.log("Debugging mode is: ", debuggingMode);
     const finishedRegistrations = await Promise.all(
       registrations.map(async (r: Registration) => {
         return await BackEndService.Instance.createRegistration(r);
       })
     );
 
-    if (!debuggingMode) {
-      //POST'er kun til DB hvis debugging mode er slået fra
-      console.log("Booking oprettet: ", finishedRegistrations);
-      return onFinish(finishedRegistrations);
-    } else {
-      console.log(
-        "Debugging mode: Booking not posted to DB: ",
-        finishedRegistrations
-      );
-    }
     setSuccess("Booking oprettet!");
+    return onFinish(finishedRegistrations);
   };
 
   React.useEffect(() => {
@@ -209,25 +199,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           <Text variant={"xxLargePlus"} className={styles.headingMargin}>
             Opret booking
           </Text>
-
-          <Toggle
-            label="Debugging mode (ingen DB posts)"
-            checked={debuggingMode}
-            onChange={(e, checked) => {
-              if (checked) {
-                console.log(
-                  "Debugging mode: " + !!checked + " - no database actions."
-                );
-              } else {
-                console.warn(
-                  "Debugging mode: " +
-                    !!checked +
-                    " - database actions enabled!"
-                );
-              }
-              setDebuggingMode(!!checked);
-            }}
-          />
 
           <TextField
             label="Titel"

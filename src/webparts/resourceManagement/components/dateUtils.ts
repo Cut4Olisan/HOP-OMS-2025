@@ -91,9 +91,16 @@ export const calculateRecurrenceDates = (
   return recurrenceDates;
 };
 
-export const getDateOfTomorrow = ():Date => {
+export const getFormattedDateTimeOfToday = ():Date => {
+    const today = new Date();
+    today.setMinutes(0,0,0);
+    return today;
+}
+
+export const getFormattedDateTimeOfTomorrow = ():Date => {
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setMinutes(0,0,0);
   return tomorrow;
 };

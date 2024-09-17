@@ -46,6 +46,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 }) => {
   const [title, setTitle] = React.useState<string>("");
   const [error, setError] = React.useState<string | undefined>();
+  const [success, setSuccess] = React.useState<string | undefined>();
   const [info, setInfo] = React.useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = React.useState<
     Customer | undefined
@@ -70,6 +71,9 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   } | null>(null);
 
   React.useEffect(() => {
+    setTimeout(() => setSuccess(undefined), 5000);
+  }, [success]);
+  React.useEffect(() => {
     setTimeout(() => setError(undefined), 5000);
   }, [error]);
 
@@ -78,24 +82,19 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     setSelectedCoworkers(emails.filter((e) => !!e) as string[]);
   };
 
+  
   const onSave = async (): Promise<void> => {
-    if (!startDateTime || !endDateTime) {
-      return setError("Manglende start- og/eller slutdato!");
-    }
-    if (!title) {
-      return setError("Titel mangler at udfyldes");
-    }
-    if (!selectedCustomer) {
-      return setError("Kunde mangler at udfyldes");
-    }
-    if (!selectedCoworkers || selectedCoworkers.length === 0) {
-      return setError("Medarbejder mangler at udfyldes");
-    }
+    if (!title) return setError("Kunne ikke oprette booking - Titel er påkrævet");
+    if (!selectedCustomer) return setError("Kunne ikke oprette booking - Manglende kunde");
+    if (!startDateTime || !endDateTime)
+      return setError("Kunne ikke oprette booking - Manglende datoer");
+    if (!selectedCoworkers || selectedCoworkers.length === 0)
+      return setError("Kunne ikke oprette booking - Manglende medarbejdere");
 
     let dates: Date[] = [];
     const dateResult = getDatesBetween(startDateTime, endDateTime);
     if (dateResult instanceof Error) {
-      setError(dateResult.message);
+      console.log(dateResult.message);
     } else {
       dates = dateResult;
     }
@@ -131,7 +130,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           start: startTime,
           end: endTime,
           time: estimatedHours,
-          employee: coworker, // Assign individual coworker
+          employee: coworker,
           registrationType: 2, // Booking
         };
 
@@ -156,6 +155,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
         finishedRegistrations
       );
     }
+    setSuccess("Booking oprettet!");
   };
 
   React.useEffect(() => {
@@ -197,6 +197,11 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   return (
     <>
       <Stack className={styles.componentBody}>
+        {success && (
+          <MessageBar messageBarType={MessageBarType.success}>
+            {success}
+          </MessageBar>
+        )}
         {error && (
           <MessageBar messageBarType={MessageBarType.error}>{error}</MessageBar>
         )}
@@ -229,6 +234,10 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             placeholder="Titel"
             value={title}
             onChange={(e, newValue) => setTitle(newValue || "")}
+            onGetErrorMessage={(value) => {
+              return !!value.length ? "" : "Titel er påkrævet";
+            }}
+            validateOnLoad={false}
             required
           />
 

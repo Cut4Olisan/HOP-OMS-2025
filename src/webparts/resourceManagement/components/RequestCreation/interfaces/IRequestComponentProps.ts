@@ -1,9 +1,11 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 
+export enum FormMode {
+  CreateRequest = "CreateRequest",
+  ConfirmRequest = "ConfirmRequest",
+}
+
 export interface IRequestProps {
   context: WebPartContext;
-//   customers: { key: string; text: string }[];
-//   coworkers: { key: string; text: string }[];
-//   projects: { key: string; text: string }[];
-//   onFinish: (bookings: unknown[]) => void;
+  mode: FormMode;
 }

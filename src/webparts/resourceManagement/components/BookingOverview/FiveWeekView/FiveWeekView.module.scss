@@ -126,3 +126,29 @@
     transform: scale(1.1); /* Slightly scale up the icon */
   }
 }
+
+//style for peoplepickercomponent
+
+.peoplePickerContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selectedPeopleInline {
+  display: flex;
+  align-items: center;
+  gap: 4px; // Spacing between selected people avatars
+  overflow: hidden; // Ensure items don't overflow the container
+  white-space: nowrap;
+}
+
+.peoplePickerComboBox {
+  max-width: 300px;
+}
+
+.comboBoxTitle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}

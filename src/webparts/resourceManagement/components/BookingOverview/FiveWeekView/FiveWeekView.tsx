@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { Text, DefaultButton, ComboBox, IPersonaProps } from "@fluentui/react";
+import { Text, DefaultButton, ComboBox } from "@fluentui/react";
 import {
   ArrowLeftRegular,
   ArrowRightRegular,
@@ -17,11 +17,8 @@ import {
 } from "../../../components/booking/BookingComponent";
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import {
-  PeoplePicker,
-  PrincipalType,
-} from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import BookingComponent from "../../../components/booking/BookingComponent";
+import PeoplePickerComponent from "./peoplePickerComponent";
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -183,11 +180,6 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     setSelectedBooking(booking);
   };
 
-  const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
-    const emails = items.map((item) => item.secondaryText);
-    setSelectedEmployee(emails.filter((e) => !!e) as string[]);
-  };
-
   const filteredBookings = registrations.filter((booking) => {
     return (
       booking.registrationType === 2 &&
@@ -231,24 +223,13 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               onClick={handleAddBookingClick}
             />
 
-            <PeoplePicker
-              placeholder="Vælg medarbejder"
-              context={{
-                absoluteUrl: context.pageContext.web.absoluteUrl,
-                msGraphClientFactory: context.msGraphClientFactory,
-                spHttpClient: context.spHttpClient,
+            <PeoplePickerComponent
+              context={context}
+              onChange={(selectedKeys) => {
+                // Handle the selected keys here
               }}
-              personSelectionLimit={3}
-              groupName={""} // Empty = filter from all users
-              showtooltip={false}
-              required={false}
-              onChange={_getPeoplePickerItems}
-              principalTypes={[
-                PrincipalType.User,
-                PrincipalType.SharePointGroup,
-              ]}
-              resolveDelay={1500}
             />
+
             <ComboBox
               placeholder="Vælg en kunde"
               options={customers.map((customer) => ({

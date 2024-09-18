@@ -1,0 +1,8 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+.limitCalloutSize {
+  max-height: 300px !important;
+  width: 50%;
+  height: auto;
+  overflow: auto;
+}

@@ -7,7 +7,7 @@ import {
   ITextFieldStyles,
   DayOfWeek,
 } from "@fluentui/react";
-import styles from "./Recursion.module.scss";
+import styles from "./BookingComponent.module.scss";
 
 export interface IRecursionProps {
   onRecursionChange: (days: DayOfWeek[], weeks: number) => void;

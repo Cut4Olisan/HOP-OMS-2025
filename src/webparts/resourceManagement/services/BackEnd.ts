@@ -1,25 +1,8 @@
-import { Customer, Project } from "../components/booking/BookingComponent";
-
-export interface Registration {
-  id: number;
-  shortDescription: string;
-  description: string | undefined;
-  projectId: number | undefined;
-  date: string;
-  start: string;
-  end: string;
-  time: number | undefined;
-  invoiceable: boolean;
-  hourlyRate: number | undefined;
-  employee: string;
-  registrationType: number | undefined;
-  forecastEstimate: number | undefined;
-}
-
-export interface RegistrationType {
-  id: number;
-  name: string;
-}
+import {
+  Customer,
+  Project,
+} from "../components/BookingCreation/CustomerAndProjects/interfaces/ICustomerProjectsProps";
+import { Registration } from "../components/BookingCreation/interfaces/IRegistrationProps";
 
 class BackEndService {
   private static _instance: BackEndService;
@@ -89,7 +72,9 @@ class BackEndService {
     return await BackEndService.handleResponse<Project[]>(response);
   }
 
-  public async createRegistration(data: Partial<Registration>): Promise<void> {
+  public async createRegistration(
+    data: Partial<Registration | undefined>
+  ): Promise<Registration> {
     const response = await fetch(BackEndService.API_URL_Registration, {
       method: "POST",
       headers: {
@@ -97,7 +82,7 @@ class BackEndService {
       },
       body: JSON.stringify(data),
     });
-    return await BackEndService.handleResponse(response);
+    return await BackEndService.handleResponse<Registration>(response);
   }
 
   public async getRegistrationsByType(

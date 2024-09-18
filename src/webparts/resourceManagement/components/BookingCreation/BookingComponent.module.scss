@@ -2,8 +2,6 @@
 
 .componentBody {
   width: 100%;
-  min-width: 250px;
-  max-width: 400px;
   display: flex;
   flex-direction: column;
 }
@@ -12,8 +10,8 @@
   margin: 0 0 0.2em 0;
 }
 
-.isShorter {
-  width: 75%;
+.verticalAligned {
+    align-items: center;
 }
 
 /* Selector for at få fat i rækkerne i dateTimePickers

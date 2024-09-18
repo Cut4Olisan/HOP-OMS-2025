@@ -3,12 +3,10 @@ import styles from "./BookingComponent.module.scss";
 import {
   Text,
   TextField,
-  Dropdown,
   DefaultButton,
   PrimaryButton,
   Stack,
   DayOfWeek,
-  IDropdownStyles,
   Toggle,
   IPersonaProps,
   MessageBar,
@@ -18,30 +16,23 @@ import {
   PeoplePicker,
   PrincipalType,
 } from "@pnp/spfx-controls-react/lib/PeoplePicker";
-import { WebPartContext } from "@microsoft/sp-webpart-base";
 import {
   formatDateForApi,
-  formatDateForDisplay,
   extractTime,
   calculateEstimatedHours,
   getDatesBetween,
   calculateRecurrenceDates,
 } from "../dateUtils";
-import BackEndService, { Registration } from "../../services/BackEnd";
+import RecursionPanel from "./RecursionDate";
+import DateTimePickerComponent from "./DateTimePicker";
 import {
-  DateConvention,
-  DateTimePicker,
-  TimeConvention,
-  TimeDisplayControlType,
-} from "@pnp/spfx-controls-react";
-import RecursionPanel from "./recursion";
-
-export interface IBookingComponentProps {
-  context: WebPartContext;
-  customers: { key: string; text: string }[];
-  coworkers: { key: string; text: string }[];
-  projects: { key: string; text: string }[];
-}
+  Customer,
+  Project,
+} from "./CustomerAndProjects/interfaces/ICustomerProjectsProps";
+import { Registration } from "./interfaces/IRegistrationProps";
+import BackEndService from "../../services/BackEnd";
+import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
+import { IBookingComponentProps } from "./interfaces/IBookingComponentProps";
 
 export interface IPeoplePickerItem {
   id: string;
@@ -49,21 +40,13 @@ export interface IPeoplePickerItem {
   email: string;
 }
 
-export interface Customer {
-  id: number;
-  name: string;
-  active: boolean;
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  customerId: number;
-}
-
-const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
+const BookingComponent: React.FC<IBookingComponentProps> = ({
+  context,
+  onFinish,
+}) => {
   const [title, setTitle] = React.useState<string>("");
   const [error, setError] = React.useState<string | undefined>();
+  const [success, setSuccess] = React.useState<string | undefined>();
   const [info, setInfo] = React.useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = React.useState<
     Customer | undefined
@@ -80,13 +63,15 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
   const [selectedCoworkers, setSelectedCoworkers] = React.useState<string[]>(
     []
   );
-  const [debuggingMode, setDebuggingMode] = React.useState<boolean>(false);
   const [isRecurring, setIsRecurring] = React.useState<boolean>(false);
   const [recursionData, setRecursionData] = React.useState<{
     days: DayOfWeek[];
     weeks: number;
   } | null>(null);
 
+  React.useEffect(() => {
+    setTimeout(() => setSuccess(undefined), 5000);
+  }, [success]);
   React.useEffect(() => {
     setTimeout(() => setError(undefined), 5000);
   }, [error]);
@@ -97,23 +82,19 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
   };
 
   const onSave = async (): Promise<void> => {
-    if (!startDateTime || !endDateTime) {
-      return setError("Vælg en start- og slutdato!");
-    }
-    if (!title) {
-      return setError("Titel manger");
-    }
-    if (!selectedCustomer) {
-      return setError("Vælg en kunde");
-    }
-    if (!selectedCoworkers) {
-      return setError("Vælg en medarbejder");
-    }
+    if (!title)
+      return setError("Kunne ikke oprette booking - Titel er påkrævet");
+    if (!selectedCustomer)
+      return setError("Kunne ikke oprette booking - Manglende kunde");
+    if (!startDateTime || !endDateTime)
+      return setError("Kunne ikke oprette booking - Manglende datoer");
+    if (!selectedCoworkers || selectedCoworkers.length === 0)
+      return setError("Kunne ikke oprette booking - Manglende medarbejdere");
 
-    let dates: Date[] | [] = [];
+    let dates: Date[] = [];
     const dateResult = getDatesBetween(startDateTime, endDateTime);
     if (dateResult instanceof Error) {
-      setError(dateResult.message);
+      console.log(dateResult.message);
     } else {
       dates = dateResult;
     }
@@ -126,6 +107,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
       );
       dates = [...dates, ...recurrenceDates];
     }
+
     const startTime = extractTime(startDateTime);
     const endTime = extractTime(endDateTime);
     const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
@@ -138,48 +120,32 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
       return setError(estimatedHours.message);
     }
 
-    // Laver en registrering for hver dag
-    const registrations = dates.map((date) => {
-      const registrationData: Partial<Registration> = {
-        shortDescription: title,
-        description: info,
-        date: formatDateForApi(date),
-        start: startTime,
-        end: endTime,
-        time: estimatedHours,
-        employee: selectedCoworkers.join(","),
-        registrationType: 2, // = "Booking"
-      };
+    // Create a registration for each coworker for each date
+    const registrations = selectedCoworkers.flatMap((coworker) =>
+      dates.map((date) => {
+        const registrationData: Partial<Registration> = {
+          shortDescription: title,
+          description: info,
+          date: formatDateForApi(date),
+          start: startTime,
+          end: endTime,
+          time: estimatedHours,
+          employee: coworker,
+          registrationType: 2, // Booking
+        };
 
-      return registrationData;
-    });
-    console.log("Debugging mode is: ", debuggingMode);
-    registrations.forEach(async (registration) => {
-      if (!debuggingMode) {
-        // POST'er kun til DB hvis debugging mode er slået fra
-        await BackEndService.Instance.createRegistration(registration);
-        console.log("Booking oprettet: ", registration);
-      } else {
-        console.log("Debugging mode: Booking not posted to DB: ", registration);
-      }
-    });
-  };
+        return registrationData;
+      })
+    );
 
-  const dropdownStyles: Partial<IDropdownStyles> = {
-    callout: {
-      maxHeight: 200,
-      overflowY: "auto",
-    },
-    dropdown: {
-      maxWidth: 400,
-    },
-    dropdownItem: {
-      height: "auto",
-    },
-    dropdownOptionText: {
-      overflow: "visible",
-      whiteSpace: "normal",
-    },
+    const finishedRegistrations = await Promise.all(
+      registrations.map(async (r: Registration) => {
+        return await BackEndService.Instance.createRegistration(r);
+      })
+    );
+
+    setSuccess("Booking oprettet!");
+    return onFinish(finishedRegistrations);
   };
 
   React.useEffect(() => {
@@ -221,6 +187,11 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
   return (
     <>
       <Stack className={styles.componentBody}>
+        {success && (
+          <MessageBar messageBarType={MessageBarType.success}>
+            {success}
+          </MessageBar>
+        )}
         {error && (
           <MessageBar messageBarType={MessageBarType.error}>{error}</MessageBar>
         )}
@@ -229,105 +200,37 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({ context }) => {
             Opret booking
           </Text>
 
-          <Toggle
-            label="Debugging mode (ingen DB posts)"
-            checked={debuggingMode}
-            onChange={(e, checked) => {
-              if (checked) {
-                console.log(
-                  "Debugging mode: " + !!checked + " - no database actions."
-                );
-              } else {
-                console.warn(
-                  "Debugging mode: " +
-                    !!checked +
-                    " - database actions enabled!"
-                );
-              }
-              setDebuggingMode(!!checked);
-            }}
-          />
-
           <TextField
             label="Titel"
             placeholder="Titel"
             value={title}
             onChange={(e, newValue) => setTitle(newValue || "")}
+            onGetErrorMessage={(value) => {
+              return !!value.length ? "" : "Titel er påkrævet";
+            }}
+            validateOnLoad={false}
             required
           />
 
-          <Dropdown
-            label="Vælg en kunde"
-            placeholder="Vælg en kunde"
-            options={customers
-              .filter((c) => c.active)
-              .map((customer) => ({
-                key: customer.id,
-                text: customer.name,
-              }))}
-            selectedKey={selectedCustomer?.id}
-            onChange={(e, option) =>
-              option
-                ? setSelectedCustomer(
-                    customers.find((c) => c.id === Number(option.key))
-                  )
-                : undefined
-            }
-            styles={dropdownStyles}
-            required
+          <CustomerProjects
+            customers={customers}
+            projects={projects}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            selectedProject={selectedProject}
+            setSelectedProject={setSelectedProject}
           />
-          {selectedCustomer && (
-            <Dropdown
-              label="Projekt"
-              placeholder="Vælg projekt for kunde"
-              options={projects
-                .filter((p) => p.customerId === selectedCustomer.id)
-                .map((project) => ({
-                  key: project.id,
-                  text: project.name,
-                }))}
-              selectedKey={selectedProject}
-              onChange={(e, option) =>
-                setSelectedProject(option?.key as string)
-              }
-              styles={dropdownStyles}
-              className={styles.isShorter}
-              required
-            />
-          )}
 
-          <DateTimePicker
+          <DateTimePickerComponent
             label="Starttid"
-            placeholder="Vælg en dato"
-            dateConvention={DateConvention.DateTime}
-            timeConvention={TimeConvention.Hours24}
-            firstDayOfWeek={DayOfWeek.Monday}
-            timeDisplayControlType={TimeDisplayControlType.Dropdown}
-            minutesIncrementStep={5}
-            showMonthPickerAsOverlay
-            showSeconds={false}
             value={startDateTime}
-            formatDate={(date) =>
-              date ? formatDateForDisplay(date.toISOString()) : ""
-            }
-            onChange={(date) => setStartDateTime(date || undefined)}
+            onChange={setStartDateTime}
           />
 
-          <DateTimePicker
+          <DateTimePickerComponent
             label="Sluttid"
-            placeholder="Vælg en dato"
-            dateConvention={DateConvention.DateTime}
-            timeConvention={TimeConvention.Hours24}
-            firstDayOfWeek={DayOfWeek.Monday}
-            timeDisplayControlType={TimeDisplayControlType.Dropdown}
-            minutesIncrementStep={5}
-            showMonthPickerAsOverlay
-            showSeconds={false}
             value={endDateTime}
-            formatDate={(date) =>
-              date ? formatDateForDisplay(date.toISOString()) : ""
-            }
-            onChange={(date) => setEndDateTime(date || undefined)}
+            onChange={setEndDateTime}
           />
 
           <Toggle

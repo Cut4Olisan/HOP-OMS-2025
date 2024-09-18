@@ -18,7 +18,7 @@ import {
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import BookingComponent from "../../../components/booking/BookingComponent";
-import PeoplePickerComponent from "./peoplePickerComponent";
+import PeoplePickerComboBox from "./peoplePickerComponent";
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -102,6 +102,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
+  const [clearSelection, setClearSelection] = useState<boolean>(false);
   const [selectedCustomer, setSelectedCustomer] = useState<string | undefined>(
     undefined
   );
@@ -135,6 +136,12 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     void fetchData();
   }, []);
 
+  useEffect(() => {
+    if (clearSelection) {
+      setClearSelection(false);
+    }
+  }, [clearSelection]);
+
   const handleAddBookingClick = (): void => {
     setShowBookingComponent(true);
   };
@@ -147,6 +154,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
   const clearFilters = (): void => {
     setSelectedEmployee([]);
+    setClearSelection(true);
     setSelectedCustomer(undefined);
     setSelectedProject(undefined);
   };
@@ -184,7 +192,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     return (
       booking.registrationType === 2 &&
       (selectedEmployee.length === 0 ||
-        selectedEmployee.includes(booking.employee)) && // Check if employee is in the selectedEmployee array
+        selectedEmployee.includes(booking.employee)) &&
       (!selectedCustomer ||
         booking.projectId?.toString() === selectedCustomer) &&
       (!selectedProject || booking.projectId?.toString() === selectedProject)
@@ -223,18 +231,19 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               onClick={handleAddBookingClick}
             />
 
-            <PeoplePickerComponent
+            <PeoplePickerComboBox
               context={context}
               onChange={(selectedKeys) => {
-                // Handle the selected keys here
+                setSelectedEmployee(selectedKeys);
               }}
+              clearSelection={clearSelection} // Pass the clearSelection prop
             />
 
             <ComboBox
               placeholder="Vælg en kunde"
               options={customers.map((customer) => ({
                 key: customer.id.toString(),
-                text: `Kunde ${customer.name}`,
+                text: customer.name,
               }))}
               selectedKey={selectedCustomer || ""}
               onChange={(e, option) =>
@@ -247,7 +256,6 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               allowFreeInput
               autoComplete="on"
             />
-
             <ComboBox
               placeholder="Vælg et projekt"
               options={projects.map((project) => ({

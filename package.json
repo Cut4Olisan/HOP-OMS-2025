@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@fluentui/react": "^8.106.4",
+    "@microsoft/microsoft-graph-client": "^3.0.2",
     "@microsoft/sp-component-base": "1.19.0",
     "@microsoft/sp-core-library": "1.19.0",
     "@microsoft/sp-lodash-subset": "1.19.0",
@@ -20,6 +21,9 @@
     "@microsoft/sp-property-pane": "1.19.0",
     "@microsoft/sp-webpart-base": "1.19.0",
     "@pnp/spfx-controls-react": "3.19.0",
+    "@types/microsoft-graph": "^2.40.0",
+    "install": "^0.13.0",
+    "npm": "^10.8.3",
     "react": "17.0.1",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",

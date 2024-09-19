@@ -17,6 +17,7 @@ import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import BookingComponent from "../../BookingCreation/BookingComponent";
 import PeoplePickerComboBox from "./peoplePickerComponent";
+//import Registration from "../../../services/BackEnd"
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -324,12 +325,12 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
         {showBookingComponent && (
           <BookingComponent
             context={context}
-            customers={customers.map((c) => ({
-              key: c.id.toString(),
-              text: c.name,
-            }))}
+            customers={customers}
             coworkers={[]}
-            projects={projects.map((p) => ({ key: p.id, text: p.name }))}
+            projects={projects}
+            onFinish={(registrations) => {
+              console.log("Finished bookings", registrations);
+            }}
           />
         )}
 

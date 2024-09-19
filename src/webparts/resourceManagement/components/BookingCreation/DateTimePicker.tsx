@@ -6,7 +6,11 @@ import {
   TimeDisplayControlType,
 } from "@pnp/spfx-controls-react";
 import { DayOfWeek } from "@fluentui/react";
-import { formatDateForDisplay, getFormattedDateTimeOfToday, getFormattedDateTimeOfTomorrow } from "../dateUtils";
+import {
+  formatDateForDisplay,
+  getFormattedDateTimeOfToday,
+  getFormattedDateTimeOfTomorrow,
+} from "../dateUtils";
 
 export interface IDateTimeProps {
   label: string;
@@ -19,7 +23,10 @@ const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
   value,
   onChange,
 }) => {
-  const defaultDate = label === "Sluttid" ? getFormattedDateTimeOfTomorrow() : getFormattedDateTimeOfToday();
+  const defaultDate =
+    label === "Sluttid"
+      ? getFormattedDateTimeOfTomorrow()
+      : getFormattedDateTimeOfToday();
   return (
     <DateTimePicker
       label={label}

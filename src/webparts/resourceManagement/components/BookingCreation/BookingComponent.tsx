@@ -25,10 +25,7 @@ import {
 } from "../dateUtils";
 import RecursionPanel from "./RecursionDate";
 import DateTimePickerComponent from "./DateTimePicker";
-import {
-  ICustomer,
-  IProject,
-} from "../interfaces/ICustomerProjectsProps";
+import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
 import {
   Registration,
   RegistrationData,
@@ -48,7 +45,8 @@ export interface IBookingComponentProps {
 const BookingComponent: React.FC<IBookingComponentProps> = ({
   context,
   onFinish,
-  customers, projects
+  customers,
+  projects,
 }) => {
   const [title, setTitle] = React.useState<string>("");
   const [error, setError] = React.useState<string | undefined>();
@@ -57,7 +55,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   const [selectedCustomer, setSelectedCustomer] = React.useState<
     ICustomer | undefined
   >(undefined);
-/*   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  /*   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [projects, setProjects] = React.useState<Project[]>([]);
  */
   const [selectedProject, setSelectedProject] = React.useState<string>("");

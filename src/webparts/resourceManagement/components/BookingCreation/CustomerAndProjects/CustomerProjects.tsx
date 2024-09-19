@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ComboBox} from "@fluentui/react";
+import { ComboBox } from "@fluentui/react";
 import { ICustomerProjectsProps } from "../../interfaces/ICustomerProjectsProps";
 import styles from "./CustomerProjects.module.scss";
 
@@ -48,7 +48,10 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
             }))}
           selectedKey={selectedProject}
           onChange={(e, option) => setSelectedProject(option?.key as string)}
-          calloutProps={{ doNotLayer: true, className: styles.limitCalloutSize }}
+          calloutProps={{
+            doNotLayer: true,
+            className: styles.limitCalloutSize,
+          }}
           allowFreeInput
           autoComplete="on"
           required

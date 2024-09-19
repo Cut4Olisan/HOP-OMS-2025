@@ -1,8 +1,11 @@
 import {
-  Customer,
-  Project,
-} from "../components/BookingCreation/CustomerAndProjects/interfaces/ICustomerProjectsProps";
-import { Registration } from "../components/BookingCreation/interfaces/IRegistrationProps";
+  ICustomer,
+  IProject,
+} from "../components/interfaces/ICustomerProjectsProps";
+import {
+  Registration,
+  RegistrationData,
+} from "../components/interfaces/IRegistrationProps";
 
 class BackEndService {
   private static _instance: BackEndService;
@@ -50,7 +53,7 @@ class BackEndService {
     return await BackEndService.handleResponse(response);
   }
 
-  public async getCustomers(): Promise<Customer[]> {
+  public async getCustomers(): Promise<ICustomer[]> {
     const response = await fetch(BackEndService.API_URL_Customers, {
       method: "GET",
       headers: {
@@ -58,10 +61,10 @@ class BackEndService {
       },
     });
 
-    return await BackEndService.handleResponse<Customer[]>(response);
+    return await BackEndService.handleResponse<ICustomer[]>(response);
   }
 
-  public async getProjects(): Promise<Project[]> {
+  public async getProjects(): Promise<IProject[]> {
     const response = await fetch(BackEndService.API_URL_Projects, {
       method: "GET",
       headers: {
@@ -69,11 +72,11 @@ class BackEndService {
       },
     });
 
-    return await BackEndService.handleResponse<Project[]>(response);
+    return await BackEndService.handleResponse<IProject[]>(response);
   }
 
   public async createRegistration(
-    data: Partial<Registration | undefined>
+    data: RegistrationData
   ): Promise<Registration> {
     const response = await fetch(BackEndService.API_URL_Registration, {
       method: "POST",

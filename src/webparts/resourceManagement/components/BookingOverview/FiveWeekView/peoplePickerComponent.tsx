@@ -13,7 +13,7 @@ import styles from "./FiveWeekView.module.scss";
 
 interface IPeoplePickerComboBoxProps {
   context: WebPartContext;
-  onChange: (selectedKeys: string[]) => void;
+  onChange: (selectedEmails: string[]) => void; // Now accepts an array of email strings
   clearSelection: boolean;
 }
 
@@ -22,11 +22,11 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
   onChange,
   clearSelection,
 }) => {
-  const [selectedKeys, setSelectedKeys] = React.useState<string[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(true);
   const [employeeOptions, setEmployeeOptions] = React.useState<
     IComboBoxOption[]
   >([]);
+  const [selectedKeys, setSelectedKeys] = React.useState<string[]>([]);
+  const [loading, setLoading] = React.useState<boolean>(true);
 
   const fetchUserProfilePicture = async (userId: string): Promise<string> => {
     try {
@@ -42,7 +42,7 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
         `Error fetching profile picture for user ${userId}:`,
         error
       );
-      return ""; // Return an empty string if fetching fails
+      return "";
     }
   };
 
@@ -65,30 +65,24 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
       const users = await Promise.all(
         filteredUsers.map(async (user: any) => {
           const imageUrl = await fetchUserProfilePicture(user.id);
-          const initials = user.displayName
-            .split(" ")
-            .map((name: string) => name[0])
-            .join("");
-
           return {
             key: user.id,
             text: user.displayName || "No Name",
             data: {
-              mail: user.mail,
               id: user.id,
+              mail: user.mail,
               text: user.displayName || "No Name",
               imageUrl: imageUrl || "",
-              initials: initials,
+              initials: user.displayName
+                .split(" ")
+                .map((name: string) => name[0])
+                .join(""),
             },
           };
         })
       );
 
-      const completeUsers = users.filter(
-        (user) => user && user.text && user.key && user.data?.text
-      );
-
-      setEmployeeOptions(completeUsers);
+      setEmployeeOptions(users);
     } catch (error) {
       console.error("Error fetching users from Microsoft Graph:", error);
     } finally {
@@ -100,13 +94,11 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
     fetchUsers();
   }, []);
 
-  // Effect to handle clearing of selection
   React.useEffect(() => {
     if (clearSelection) {
-      setSelectedKeys([]); // Clear selected keys
-      onChange([]); // Pass an empty array to the parent component
+      setSelectedKeys([]);
     }
-  }, [clearSelection, onChange]);
+  }, [clearSelection]);
 
   const handleComboBoxChange = (
     event: React.FormEvent<IComboBox>,
@@ -118,22 +110,25 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
         : selectedKeys.filter((key) => key !== option.key);
 
       setSelectedKeys(newSelectedKeys);
-      onChange(newSelectedKeys);
+
+      // Extract only the `mail` strings
+      const selectedEmails = newSelectedKeys
+        .map((key) => {
+          const selectedOption = employeeOptions.find((opt) => opt.key === key);
+          return selectedOption?.data?.mail || "";
+        })
+        .filter((email) => email); // Remove empty strings
+
+      // Pass only the array of email strings
+      onChange(selectedEmails);
     }
   };
 
   const onRenderOption = (option: IComboBoxOption): JSX.Element => {
     const { text, data } = option;
-    const isSelected = selectedKeys.includes(option.key as string);
     return (
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "5px 10px",
-          backgroundColor: isSelected ? "#e0e0e0" : "transparent",
-          cursor: "pointer",
-        }}
+        style={{ display: "flex", alignItems: "center", padding: "5px 10px" }}
       >
         <Persona
           name={text || "No Name"}

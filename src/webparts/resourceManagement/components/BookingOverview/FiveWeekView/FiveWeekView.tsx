@@ -94,7 +94,7 @@ const WeekColumn: React.FC<{
 };
 
 interface IFiveWeekViewProps {
-  context: WebPartContext; // Add WebPartContext to props
+  context: WebPartContext;
 }
 
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
@@ -102,6 +102,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
+
   const [clearSelection, setClearSelection] = useState<boolean>(false);
   const [selectedCustomer, setSelectedCustomer] = useState<string | undefined>(
     undefined
@@ -113,11 +114,11 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     Registration | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
-
   const [showBookingComponent, setShowBookingComponent] =
     useState<boolean>(false);
 
-  useEffect((): void => {
+  // Fetch data on component mount
+  useEffect(() => {
     const fetchData = async (): Promise<void> => {
       try {
         const fetchedCustomers = await BackEndService.Instance.getCustomers();
@@ -142,13 +143,33 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     }
   }, [clearSelection]);
 
+  const filteredCustomers =
+    selectedEmployee.length > 0
+      ? customers.filter((customer) =>
+          registrations.some(
+            (booking) =>
+              selectedEmployee.includes(booking.employee) && // Directly check if the email is included
+              booking.projectId &&
+              projects.find((project) => project.customerId === customer.id)
+          )
+        )
+      : customers; // Show all customers if no employee is selected
+
+  const filteredProjects = selectedCustomer
+    ? projects.filter(
+        (project) =>
+          project.customerId === Number(selectedCustomer) &&
+          registrations.some(
+            (booking) =>
+              selectedEmployee.includes(booking.employee) && // Directly check if the email is included
+              booking.projectId?.toString() === project.id.toString()
+          )
+      )
+    : projects; // Show all projects if no customer is selected
+
   const handleAddBookingClick = (): void => {
     setShowBookingComponent(true);
   };
-
-  /*const handleCloseBookingComponent = (): void => {
-    setShowBookingComponent(false);
-  };*/
 
   const weeksToDisplay = getWeeksFromDate(currentDate);
 
@@ -192,7 +213,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     return (
       booking.registrationType === 2 &&
       (selectedEmployee.length === 0 ||
-        selectedEmployee.includes(booking.employee)) &&
+        selectedEmployee.includes(booking.employee)) && // Directly check if the email is in the selectedEmployee array
       (!selectedCustomer ||
         booking.projectId?.toString() === selectedCustomer) &&
       (!selectedProject || booking.projectId?.toString() === selectedProject)
@@ -233,21 +254,21 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
             <PeoplePickerComboBox
               context={context}
-              onChange={(selectedKeys) => {
-                setSelectedEmployee(selectedKeys);
+              onChange={(selectedEmails) => {
+                setSelectedEmployee(selectedEmails); // Directly set the array of emails
               }}
-              clearSelection={clearSelection} // Pass the clearSelection prop
+              clearSelection={clearSelection}
             />
 
             <ComboBox
               placeholder="Vælg en kunde"
-              options={customers.map((customer) => ({
+              options={filteredCustomers.map((customer) => ({
                 key: customer.id.toString(),
                 text: customer.name,
               }))}
               selectedKey={selectedCustomer || ""}
               onChange={(e, option) =>
-                setSelectedCustomer(option ? option.key.toString() : undefined)
+                setSelectedCustomer(option ? option.key?.toString() : undefined)
               }
               calloutProps={{
                 doNotLayer: true,
@@ -256,15 +277,16 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               allowFreeInput
               autoComplete="on"
             />
+
             <ComboBox
               placeholder="Vælg et projekt"
-              options={projects.map((project) => ({
+              options={filteredProjects.map((project) => ({
                 key: project.id.toString(),
                 text: project.name,
               }))}
               selectedKey={selectedProject || ""}
               onChange={(e, option) =>
-                setSelectedProject(option ? option.key.toString() : undefined)
+                setSelectedProject(option ? option.key?.toString() : undefined)
               }
               calloutProps={{
                 doNotLayer: true,
@@ -273,12 +295,14 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               allowFreeInput
               autoComplete="on"
             />
+
             {(selectedEmployee.length > 0 ||
               selectedCustomer ||
               selectedProject) && (
               <DefaultButton text="Ryd filter" onClick={clearFilters} />
             )}
           </div>
+
           <div className={styles.navigationContainer}>
             <ArrowLeftRegular
               className={styles.arrowButton}
@@ -291,7 +315,6 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
           </div>
         </div>
 
-        {/* Conditionally render BookingComponent */}
         {showBookingComponent && (
           <BookingComponent
             context={context}
@@ -304,7 +327,6 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
           />
         )}
 
-        {/* Week Header */}
         <div className={styles.gridHeader}>
           {weeksToDisplay.map((week, index) => (
             <div key={index} className={styles.weekHeader}>
@@ -317,7 +339,6 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
           ))}
         </div>
 
-        {/* Week Columns */}
         <div className={styles.weekGrid}>
           {weeksToDisplay.map((week, index) => {
             const weekNumber = week.weekNumber;

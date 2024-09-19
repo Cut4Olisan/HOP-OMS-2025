@@ -74,10 +74,18 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
         )}
         {wp === DEV_WP_VIEW.BookingOverview && <BookingOverviewComponent />}
         {wp === DEV_WP_VIEW.CreateRequestComponent && (
-          <RequestComponent context={context} mode={FormMode.CreateRequest} />
+          <RequestComponent
+            context={context}
+            mode={FormMode.CreateRequest}
+            onFinish={(requests) => console.log(requests)}
+          />
         )}
         {wp === DEV_WP_VIEW.ConfirmRequestComponent && (
-          <RequestComponent context={context} mode={FormMode.ConfirmRequest} />
+          <RequestComponent
+            context={context}
+            mode={FormMode.ConfirmRequest}
+            onFinish={(requests) => console.log(requests)}
+          />
         )}
       </div>
     </div>

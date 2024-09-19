@@ -23,8 +23,7 @@ import { FormMode } from "./interfaces/IRequestComponentProps";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 import BackEndService from "../../services/BackEnd";
 import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
-import { calculateEstimatedHours, extractTime, formatDateForApi } from "../dateUtils";
-import { IRegistration } from "../interfaces/IRegistrationProps";
+import { calculateEstimatedHours } from "../dateUtils";
 
 const RequestComponent: React.FC<IRequestProps> = ({
   context,
@@ -32,6 +31,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
   onFinish,
 }) => {
   const [error, setError] = React.useState<string | undefined>();
+  const [warning, setWarning] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
   const [title, setTitle] = React.useState<string>("");
   const [info, setInfo] = React.useState<string>("");
@@ -63,63 +63,57 @@ const RequestComponent: React.FC<IRequestProps> = ({
     }));
   };
 
-  // People picker handler
   const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
     const emails = items.map((item) => item.secondaryText);
     setSelectedCoworkers(emails.filter((e) => !!e) as string[]);
   };
 
   const isReadOnly = mode === FormMode.ConfirmRequest;
+  const isCompleteBooking =
+    title && selectedCoworkers.length > 0 && startDateTime && endDateTime;
 
   const onCreate = async (): Promise<void> => {
-    if (!title) return setError("Please provide a title.");
-    if (!startDateTime || !endDateTime) return setError("Start and End times are required.");
-    if (!selectedCoworkers || selectedCoworkers.length === 0) return setError("Please select coworkers.");
-    if (!selectedProject) return setError("Project is required.");
-  
-    const projectId = parseInt(selectedProject, 10);
-    const date = formatDateForApi(startDateTime);
-    const startTime = extractTime(startDateTime);
-    const endTime = extractTime(endDateTime);
-  
+    if (!title) return setError("Titel er påkrævet");
+    if (!selectedCoworkers || selectedCoworkers.length === 0)
+      return setError("Medarbejder er påkrævet");
+
     const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
     if (estimatedHours instanceof Error) {
       return setError(estimatedHours.message);
     }
-  
-    const registration: IRegistration = {
-      id: 0,
-      shortDescription: title,
-      description: info || undefined,
-      projectId,
-      date,
-      start: startTime,
-      end: endTime,
-      time: estimatedHours,
-      invoiceable: true,
-      hourlyRate: undefined,
-      employee: selectedCoworkers.join(', '),
-      registrationType: 5, // = Template
-      forecastEstimate: undefined,
-    };
-  
+
     const requestDTO: IRequestCreateDTO = {
       id: 0,
       shortDescription: title,
-      registration,
+      registrationId: undefined,
+      accepted: undefined,
     };
-  
+
     try {
       const result = await BackEndService.Instance.createRequest(requestDTO);
-      setSuccess("Request created successfully!");
+      setWarning(undefined);
+      if (isCompleteBooking) {
+        setSuccess("Booking oprettet succesfuldt!");
+      } else {
+        setSuccess(
+          "Request oprettet med manglende information. En kladde er gemt."
+        );
+      }
+      console.warn("Request oprettet", result);
       return onFinish(result);
     } catch (error) {
       console.error("Error creating request:", error);
       setError("Failed to create request. Please try again.");
     }
   };
-  
- 
+
+  React.useEffect(() => {
+    setWarning(
+      isCompleteBooking
+        ? undefined
+        : "Kan ikke oprette en færdig booking med den angivne information - en kladde gemmes i stedet"
+    );
+  }, [title, selectedCoworkers, startDateTime, endDateTime]);
 
   React.useEffect(() => {
     const fetchCustomers = async (): Promise<void> => {
@@ -140,8 +134,18 @@ const RequestComponent: React.FC<IRequestProps> = ({
       }
     };
 
+    const fetchRequests = async (): Promise<void> => {
+      try {
+        const data = await BackEndService.Instance.getRequests();
+        console.log(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
     fetchCustomers().catch((e) => console.error(e));
     fetchProjects().catch((e) => console.error(e));
+    fetchRequests().catch((e) => console.error(e));
   }, []);
 
   return (
@@ -149,6 +153,11 @@ const RequestComponent: React.FC<IRequestProps> = ({
       {success && (
         <MessageBar messageBarType={MessageBarType.success}>
           {success}
+        </MessageBar>
+      )}
+      {warning && (
+        <MessageBar messageBarType={MessageBarType.warning}>
+          {warning}
         </MessageBar>
       )}
       {error && (
@@ -165,17 +174,17 @@ const RequestComponent: React.FC<IRequestProps> = ({
         placeholder="Titel"
         value={title}
         onChange={(e, newValue) => setTitle(newValue || "")}
-        onGetErrorMessage={(value) => {
-          return !!value.length ? "" : "Titel er påkrævet";
-        }}
-        validateOnLoad={false}
         required={!isReadOnly}
         disabled={isReadOnly}
       />
 
       {mode === FormMode.CreateRequest && (
         <DefaultButton
-          text={toggles.customerToggle ? "Skjul kunde" : "Angiv en kunde"}
+          text={
+            toggles.customerToggle
+              ? "Fortryd angivelse af kunde"
+              : "Angiv en kunde"
+          }
           onClick={() => handleToggle("customerToggle")}
         />
       )}
@@ -189,27 +198,12 @@ const RequestComponent: React.FC<IRequestProps> = ({
           setSelectedProject={setSelectedProject}
         />
       )}
-      {mode === FormMode.ConfirmRequest && selectedCustomer && (
-        <>
-          <TextField
-            label="Kunde"
-            placeholder="Kunde"
-            value={selectedCustomer.name}
-            disabled={isReadOnly}
-          />
-          {selectedProject && (
-            <TextField
-              label="Projekt"
-              placeholder="Projekt"
-              value={selectedProject}
-              disabled={isReadOnly}
-            />
-          )}
-        </>
-      )}
+
       {mode === FormMode.CreateRequest && (
         <DefaultButton
-          text={toggles.dateToggle ? "Skjul dato" : "Angiv en dato"}
+          text={
+            toggles.dateToggle ? "Fortryd angivelse af dato" : "Angiv en dato"
+          }
           onClick={() => handleToggle("dateToggle")}
         />
       )}
@@ -240,9 +234,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
         }}
         titleText="Vælg medarbejder"
         personSelectionLimit={3}
-        groupName={""} // Empty = filter from all users
-        showtooltip={false}
-        required={false}
+        groupName={""}
         onChange={_getPeoplePickerItems}
         principalTypes={[PrincipalType.User]}
         resolveDelay={1000}
@@ -262,22 +254,13 @@ const RequestComponent: React.FC<IRequestProps> = ({
       <Stack horizontal tokens={{ childrenGap: 10 }}>
         {mode === FormMode.CreateRequest ? (
           <>
-            <PrimaryButton
-              text="Opret"
-              onClick={() => console.log(selectedCoworkers)}
-            />
-            <DefaultButton
-              text="Annuller"
-              onClick={() => console.log("Cancelled")}
-            />
+            <PrimaryButton text="Opret" onClick={onCreate} />
+            <DefaultButton text="Annuller" />
           </>
         ) : (
           <>
             <PrimaryButton text="Godkend" onClick={onCreate} />
-            <DefaultButton
-              text="Afvis"
-              onClick={() => console.log("Decline request")}
-            />
+            <DefaultButton text="Afvis" />
           </>
         )}
       </Stack>

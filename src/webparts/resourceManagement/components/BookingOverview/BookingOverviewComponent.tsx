@@ -13,7 +13,7 @@ const BookingOverviewComponent: React.FC<OverviewComponentsProps> = ({
 }) => {
   return (
     <DndProvider backend={HTML5Backend}>
-      <FiveWeekView context={context} /> {/* Pass the context prop here */}
+      <FiveWeekView context={context} />
     </DndProvider>
   );
 };

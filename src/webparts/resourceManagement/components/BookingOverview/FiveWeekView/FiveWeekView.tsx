@@ -10,14 +10,12 @@ import {
 } from "@fluentui/react-icons";
 import styles from "./FiveWeekView.module.scss";
 import WeeklyView from "../WeeklyView/WeeklyView";
-import BackEndService, { Registration } from "../../../services/BackEnd";
-import {
-  Customer,
-  Project,
-} from "../../../components/booking/BookingComponent";
+import BackEndService from "../../../services/BackEnd";
+import { Registration } from "../../interfaces/IRegistrationProps";
+import { ICustomer, IProject } from "../../interfaces/ICustomerProjectsProps";
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import BookingComponent from "../../../components/booking/BookingComponent";
+import BookingComponent from "../../BookingCreation/BookingComponent";
 import PeoplePickerComboBox from "./peoplePickerComponent";
 
 const ItemType = "BOOKING"; // Draggable item type
@@ -97,9 +95,17 @@ interface IFiveWeekViewProps {
   context: WebPartContext;
 }
 
+export interface IBookingComponentProps {
+  context: WebPartContext;
+  customers: ICustomer[];
+  coworkers: { key: string; text: string }[];
+  projects: IProject[];
+  onFinish: (bookings: unknown[]) => void;
+}
+
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
+  const [projects, setProjects] = useState<IProject[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
 

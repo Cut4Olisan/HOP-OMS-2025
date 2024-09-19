@@ -7,7 +7,7 @@ import {
   ITextFieldStyles,
   DayOfWeek,
 } from "@fluentui/react";
-import styles from "./Recursion.module.scss";
+import styles from "./BookingComponent.module.scss";
 
 export interface IRecursionProps {
   onRecursionChange: (days: DayOfWeek[], weeks: number) => void;
@@ -53,9 +53,16 @@ const RecursionPanel: React.FC<IRecursionProps> = ({ onRecursionChange }) => {
   }, [TextFieldValue, selectedDays]);
 
   return (
-    <div>
-      <Text variant="large">Gentag booking hver:</Text>
-      <Stack tokens={{ childrenGap: 5 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <Text style={{ fontWeight: 600 }}>Gentag booking hver:</Text>
+      <Stack
+        tokens={{ childrenGap: 5 }}
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          maxWidth: 400,
+        }}
+      >
         <Checkbox
           label="Mandag"
           onChange={() => toggleDaySelection(DayOfWeek.Monday)}
@@ -82,14 +89,14 @@ const RecursionPanel: React.FC<IRecursionProps> = ({ onRecursionChange }) => {
         tokens={{ childrenGap: 5 }}
         className={styles.verticalAligned}
       >
-        <Text variant={"large"}>I de næste</Text>
+        <Text style={{ fontWeight: 600 }}>I de næste</Text>
         <TextField
           placeholder="..."
           value={TextFieldValue}
           styles={narrowTextFieldStyles}
           onChange={limitTextFieldLength}
         />
-        <Text variant={"large"}>uger</Text>
+        <Text style={{ fontWeight: 600 }}>uger</Text>
       </Stack>
     </div>
   );

@@ -26,33 +26,40 @@ import {
 import RecursionPanel from "./RecursionDate";
 import DateTimePickerComponent from "./DateTimePicker";
 import {
-  Customer,
-  Project,
-} from "./CustomerAndProjects/interfaces/ICustomerProjectsProps";
-import { Registration } from "./interfaces/IRegistrationProps";
+  ICustomer,
+  IProject,
+} from "../interfaces/ICustomerProjectsProps";
+import {
+  Registration,
+  RegistrationData,
+} from "../interfaces/IRegistrationProps";
 import BackEndService from "../../services/BackEnd";
 import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
-import { IBookingComponentProps } from "./interfaces/IBookingComponentProps";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
 
-export interface IPeoplePickerItem {
-  id: string;
-  fullName: string;
-  email: string;
+export interface IBookingComponentProps {
+  context: WebPartContext;
+  customers: ICustomer[];
+  coworkers: { key: string; text: string }[];
+  projects: IProject[];
+  onFinish: (bookings: unknown[]) => void;
 }
 
 const BookingComponent: React.FC<IBookingComponentProps> = ({
   context,
   onFinish,
+  customers, projects
 }) => {
   const [title, setTitle] = React.useState<string>("");
   const [error, setError] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
   const [info, setInfo] = React.useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = React.useState<
-    Customer | undefined
+    ICustomer | undefined
   >(undefined);
-  const [customers, setCustomers] = React.useState<Customer[]>([]);
+/*   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [projects, setProjects] = React.useState<Project[]>([]);
+ */
   const [selectedProject, setSelectedProject] = React.useState<string>("");
   const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
     undefined
@@ -123,7 +130,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     // Create a registration for each coworker for each date
     const registrations = selectedCoworkers.flatMap((coworker) =>
       dates.map((date) => {
-        const registrationData: Partial<Registration> = {
+        const registrationData: RegistrationData = {
           shortDescription: title,
           description: info,
           date: formatDateForApi(date),
@@ -147,42 +154,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     setSuccess("Booking oprettet!");
     return onFinish(finishedRegistrations);
   };
-
-  React.useEffect(() => {
-    const getBookings = async (): Promise<void> => {
-      try {
-        const bookings = await BackEndService.Instance.getRegistrationsByType(
-          2
-        );
-        console.log(bookings);
-      } catch (error) {
-        console.error("Error fetching registrations:", error);
-      }
-    };
-
-    getBookings().catch((e) => console.error(e));
-
-    const fetchCustomers = async (): Promise<void> => {
-      try {
-        const data = await BackEndService.Instance.getCustomers();
-        setCustomers(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    const fetchProjects = async (): Promise<void> => {
-      try {
-        const data = await BackEndService.Instance.getProjects();
-        setProjects(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchCustomers().catch((e) => console.error(e));
-    fetchProjects().catch((e) => console.error(e));
-  }, []);
 
   return (
     <>

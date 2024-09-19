@@ -1,13 +1,11 @@
 import {
-  Customer,
-  Project,
-} from "../components/BookingCreation/CustomerAndProjects/interfaces/ICustomerProjectsProps";
-import { Registration } from "../components/BookingCreation/interfaces/IRegistrationProps";
+  ICustomer,
+  IProject,
+} from "../components/interfaces/ICustomerProjectsProps";
 import {
-  IRequest,
-  IRequestAcceptDTO,
-  IRequestCreateDTO,
-} from "../components/RequestCreation/interfaces/IRequestComponentProps";
+  Registration,
+  RegistrationData,
+} from "../components/interfaces/IRegistrationProps";
 
 class BackEndService {
   private static _instance: BackEndService;
@@ -56,7 +54,7 @@ class BackEndService {
     return await BackEndService.handleResponse(response);
   }
 
-  public async getCustomers(): Promise<Customer[]> {
+  public async getCustomers(): Promise<ICustomer[]> {
     const response = await fetch(BackEndService.API_URL_Customers, {
       method: "GET",
       headers: {
@@ -64,10 +62,10 @@ class BackEndService {
       },
     });
 
-    return await BackEndService.handleResponse<Customer[]>(response);
+    return await BackEndService.handleResponse<ICustomer[]>(response);
   }
 
-  public async getProjects(): Promise<Project[]> {
+  public async getProjects(): Promise<IProject[]> {
     const response = await fetch(BackEndService.API_URL_Projects, {
       method: "GET",
       headers: {
@@ -75,11 +73,11 @@ class BackEndService {
       },
     });
 
-    return await BackEndService.handleResponse<Project[]>(response);
+    return await BackEndService.handleResponse<IProject[]>(response);
   }
 
   public async createRegistration(
-    data: Partial<Registration | undefined>
+    data: RegistrationData
   ): Promise<Registration> {
     const response = await fetch(BackEndService.API_URL_Registration, {
       method: "POST",
@@ -132,14 +130,17 @@ class BackEndService {
     return await BackEndService.handleResponse<IRequestCreateDTO>(response);
   }
 
-  public async acceptRequest(id: number, data: Omit<IRequestAcceptDTO, 'Accepted'>): Promise<void> {
+  public async acceptRequest(
+    id: number,
+    data: Omit<IRequestAcceptDTO, "Accepted">
+  ): Promise<void> {
     const url = `${BackEndService.API_URL_Requests}/${id}/accept`;
-  
+
     const requestData: IRequestAcceptDTO = {
       ...data,
       Accepted: true,
     };
-  
+
     const response = await fetch(url, {
       method: "PATCH",
       headers: {
@@ -147,17 +148,17 @@ class BackEndService {
       },
       body: JSON.stringify(requestData),
     });
-  
+
     await BackEndService.handleResponse<void>(response);
   }
 
   public async rejectRequest(id: number): Promise<void> {
     const url = `${BackEndService.API_URL_Requests}/${id}/reject`;
-  
+
     const requestData: Partial<IRequestAcceptDTO> = {
       Accepted: false,
     };
-  
+
     const response = await fetch(url, {
       method: "PATCH",
       headers: {
@@ -165,7 +166,7 @@ class BackEndService {
       },
       body: JSON.stringify(requestData),
     });
-  
+
     await BackEndService.handleResponse<void>(response);
   }
 }

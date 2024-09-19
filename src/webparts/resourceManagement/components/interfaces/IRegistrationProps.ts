@@ -18,3 +18,8 @@ export interface RegistrationType {
   id: number;
   name: string;
 }
+
+export type RegistrationData = Omit<
+  Registration,
+  "id" | "projectId" | "invoiceable" | "hourlyRate" | "forecastEstimate"
+>;

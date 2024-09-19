@@ -1,5 +1,8 @@
 import * as React from "react";
-import { IRequestProps } from "./interfaces/IRequestComponentProps";
+import {
+  IRequestCreateDTO,
+  IRequestProps,
+} from "./interfaces/IRequestComponentProps";
 import globalStyles from "../BookingCreation/BookingComponent.module.scss";
 import {
   DefaultButton,
@@ -8,6 +11,8 @@ import {
   Stack,
   TextField,
   Text,
+  MessageBar,
+  MessageBarType,
 } from "@fluentui/react";
 import {
   PeoplePicker,
@@ -18,8 +23,16 @@ import { FormMode } from "./interfaces/IRequestComponentProps";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 import BackEndService from "../../services/BackEnd";
 import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
+import { calculateEstimatedHours, extractTime, formatDateForApi } from "../dateUtils";
+import { IRegistration } from "../interfaces/IRegistrationProps";
 
-const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
+const RequestComponent: React.FC<IRequestProps> = ({
+  context,
+  mode,
+  onFinish,
+}) => {
+  const [error, setError] = React.useState<string | undefined>();
+  const [success, setSuccess] = React.useState<string | undefined>();
   const [title, setTitle] = React.useState<string>("");
   const [info, setInfo] = React.useState<string>("");
   const [selectedCoworkers, setSelectedCoworkers] = React.useState<string[]>(
@@ -38,13 +51,11 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
   const [projects, setProjects] = React.useState<IProject[]>([]);
   const [selectedProject, setSelectedProject] = React.useState<string>("");
 
-  // Unified state for toggling different sections
   const [toggles, setToggles] = React.useState<{ [key: string]: boolean }>({
     dateToggle: false,
     customerToggle: false,
   });
 
-  // Generalized toggle handler
   const handleToggle = (key: string): void => {
     setToggles((prevToggles) => ({
       ...prevToggles,
@@ -58,8 +69,57 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
     setSelectedCoworkers(emails.filter((e) => !!e) as string[]);
   };
 
-  // Function to check if the form is in read-only mode
   const isReadOnly = mode === FormMode.ConfirmRequest;
+
+  const onCreate = async (): Promise<void> => {
+    if (!title) return setError("Please provide a title.");
+    if (!startDateTime || !endDateTime) return setError("Start and End times are required.");
+    if (!selectedCoworkers || selectedCoworkers.length === 0) return setError("Please select coworkers.");
+    if (!selectedProject) return setError("Project is required.");
+  
+    const projectId = parseInt(selectedProject, 10);
+    const date = formatDateForApi(startDateTime);
+    const startTime = extractTime(startDateTime);
+    const endTime = extractTime(endDateTime);
+  
+    const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
+    if (estimatedHours instanceof Error) {
+      return setError(estimatedHours.message);
+    }
+  
+    const registration: IRegistration = {
+      id: 0,
+      shortDescription: title,
+      description: info || undefined,
+      projectId,
+      date,
+      start: startTime,
+      end: endTime,
+      time: estimatedHours,
+      invoiceable: true,
+      hourlyRate: undefined,
+      employee: selectedCoworkers.join(', '),
+      registrationType: 5, // = Template
+      forecastEstimate: undefined,
+    };
+  
+    const requestDTO: IRequestCreateDTO = {
+      id: 0,
+      shortDescription: title,
+      registration,
+    };
+  
+    try {
+      const result = await BackEndService.Instance.createRequest(requestDTO);
+      setSuccess("Request created successfully!");
+      return onFinish(result);
+    } catch (error) {
+      console.error("Error creating request:", error);
+      setError("Failed to create request. Please try again.");
+    }
+  };
+  
+ 
 
   React.useEffect(() => {
     const fetchCustomers = async (): Promise<void> => {
@@ -86,6 +146,14 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
 
   return (
     <Stack tokens={{ childrenGap: 15 }}>
+      {success && (
+        <MessageBar messageBarType={MessageBarType.success}>
+          {success}
+        </MessageBar>
+      )}
+      {error && (
+        <MessageBar messageBarType={MessageBarType.error}>{error}</MessageBar>
+      )}
       <Text variant={"xxLargePlus"} className={globalStyles.headingMargin}>
         {mode === FormMode.CreateRequest
           ? "Anmod om booking"
@@ -111,7 +179,7 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
           onClick={() => handleToggle("customerToggle")}
         />
       )}
-      {(toggles.customerToggle || isReadOnly) && (
+      {toggles.customerToggle && (
         <CustomerProjects
           customers={customers}
           projects={projects}
@@ -120,6 +188,24 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
           selectedProject={selectedProject}
           setSelectedProject={setSelectedProject}
         />
+      )}
+      {mode === FormMode.ConfirmRequest && selectedCustomer && (
+        <>
+          <TextField
+            label="Kunde"
+            placeholder="Kunde"
+            value={selectedCustomer.name}
+            disabled={isReadOnly}
+          />
+          {selectedProject && (
+            <TextField
+              label="Projekt"
+              placeholder="Projekt"
+              value={selectedProject}
+              disabled={isReadOnly}
+            />
+          )}
+        </>
       )}
       {mode === FormMode.CreateRequest && (
         <DefaultButton
@@ -187,10 +273,7 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
           </>
         ) : (
           <>
-            <PrimaryButton
-              text="Godkend"
-              onClick={() => console.log("Confirm booking")}
-            />
+            <PrimaryButton text="Godkend" onClick={onCreate} />
             <DefaultButton
               text="Afvis"
               onClick={() => console.log("Decline request")}

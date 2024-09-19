@@ -9,6 +9,7 @@ export enum FormMode {
 export interface IRequestProps {
   context: WebPartContext;
   mode: FormMode;
+  onFinish: (requests: IRequestCreateDTO) => void;
 }
 
 export interface IRequest {

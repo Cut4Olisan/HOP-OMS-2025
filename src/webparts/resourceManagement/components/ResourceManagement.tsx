@@ -18,6 +18,8 @@ export interface IResourceManagementProps {
 export enum DEV_WP_VIEW {
   BookingComponent,
   BookingOverview,
+  CreateRequestComponent,
+  ConfirmRequestComponent,
 }
 
 const ResourceManagement: React.FC<IResourceManagementProps> = ({
@@ -51,6 +53,14 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
           text="Booking overview"
           onClick={() => setWp(DEV_WP_VIEW.BookingOverview)}
         />
+        <DefaultButton
+          text="Opret request"
+          onClick={() => setWp(DEV_WP_VIEW.CreateRequestComponent)}
+        />
+        <DefaultButton
+          text="Bekræft request"
+          onClick={() => setWp(DEV_WP_VIEW.ConfirmRequestComponent)}
+        />
       </div>
       <div>
         {wp === DEV_WP_VIEW.BookingComponent && (
@@ -63,6 +73,12 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
           />
         )}
         {wp === DEV_WP_VIEW.BookingOverview && <BookingOverviewComponent />}
+        {wp === DEV_WP_VIEW.CreateRequestComponent && (
+          <RequestComponent context={context} mode={FormMode.CreateRequest} />
+        )}
+        {wp === DEV_WP_VIEW.ConfirmRequestComponent && (
+          <RequestComponent context={context} mode={FormMode.ConfirmRequest} />
+        )}
       </div>
     </div>
   );

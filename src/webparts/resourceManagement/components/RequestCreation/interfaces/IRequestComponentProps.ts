@@ -1,5 +1,5 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { Registration } from "../../BookingCreation/interfaces/IRegistrationProps";
+import { IRegistration } from "../../interfaces/IRegistrationProps";
 
 export enum FormMode {
   CreateRequest = "CreateRequest",
@@ -17,21 +17,21 @@ export interface IRequest {
   registrationId?: number;
   accepted?: boolean; // null = pending, 0 = rejected, 1 = accepted
 }
- 
+
 export interface IRequestCreateDTO {
   id: number;
   shortDescription?: string;
   registrationId?: number;
   accepted?: boolean; // null = pending, 0 = rejected, 1 = accepted
-  registration?: Registration;
+  registration?: IRegistration;
 }
- 
+
 export interface IRequestEditDTO {
   id: number;
   shortDescription?: string;
   registrationId?: number;
 }
- 
+
 export interface IRequestAcceptDTO {
   id: number;
   registrationId?: number;

@@ -3,9 +3,14 @@ import {
   IProject,
 } from "../components/interfaces/ICustomerProjectsProps";
 import {
-  Registration,
+  IRegistration,
   RegistrationData,
 } from "../components/interfaces/IRegistrationProps";
+import {
+  IRequest,
+  IRequestAcceptDTO,
+  IRequestCreateDTO,
+} from "../components/RequestCreation/interfaces/IRequestComponentProps";
 
 class BackEndService {
   private static _instance: BackEndService;
@@ -78,7 +83,7 @@ class BackEndService {
 
   public async createRegistration(
     data: RegistrationData
-  ): Promise<Registration> {
+  ): Promise<IRegistration> {
     const response = await fetch(BackEndService.API_URL_Registration, {
       method: "POST",
       headers: {
@@ -86,12 +91,12 @@ class BackEndService {
       },
       body: JSON.stringify(data),
     });
-    return await BackEndService.handleResponse<Registration>(response);
+    return await BackEndService.handleResponse<IRegistration>(response);
   }
 
   public async getRegistrationsByType(
     registrationType?: number
-  ): Promise<Registration[]> {
+  ): Promise<IRegistration[]> {
     const url = registrationType
       ? `${BackEndService.API_URL_Registration}/type/${registrationType}`
       : BackEndService.API_URL_Registration;
@@ -103,7 +108,7 @@ class BackEndService {
       },
     });
 
-    return await BackEndService.handleResponse<Registration[]>(response);
+    return await BackEndService.handleResponse<IRegistration[]>(response);
   }
 
   public async getRequests(): Promise<IRequest[]> {

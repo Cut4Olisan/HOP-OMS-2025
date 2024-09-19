@@ -17,10 +17,7 @@ import DateTimePickerComponent from "../BookingCreation/DateTimePicker";
 import { FormMode } from "./interfaces/IRequestComponentProps";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 import BackEndService from "../../services/BackEnd";
-import {
-  Customer,
-  Project,
-} from "../BookingCreation/CustomerAndProjects/interfaces/ICustomerProjectsProps";
+import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
 
 const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
   const [title, setTitle] = React.useState<string>("");
@@ -35,10 +32,10 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
     undefined
   );
   const [selectedCustomer, setSelectedCustomer] = React.useState<
-    Customer | undefined
+    ICustomer | undefined
   >(undefined);
-  const [customers, setCustomers] = React.useState<Customer[]>([]);
-  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [customers, setCustomers] = React.useState<ICustomer[]>([]);
+  const [projects, setProjects] = React.useState<IProject[]>([]);
   const [selectedProject, setSelectedProject] = React.useState<string>("");
 
   // Unified state for toggling different sections
@@ -85,7 +82,6 @@ const RequestComponent: React.FC<IRequestProps> = ({ context, mode }) => {
 
     fetchCustomers().catch((e) => console.error(e));
     fetchProjects().catch((e) => console.error(e));
-
   }, []);
 
   return (

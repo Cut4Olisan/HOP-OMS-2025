@@ -1,4 +1,4 @@
-export interface Registration {
+export interface IRegistration {
   id: number;
   shortDescription: string;
   description: string | undefined;
@@ -20,6 +20,6 @@ export interface RegistrationType {
 }
 
 export type RegistrationData = Omit<
-  Registration,
+  IRegistration,
   "id" | "projectId" | "invoiceable" | "hourlyRate" | "forecastEstimate"
 >;

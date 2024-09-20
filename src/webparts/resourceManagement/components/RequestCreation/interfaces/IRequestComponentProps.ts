@@ -1,5 +1,4 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { IRegistration } from "../../interfaces/IRegistrationProps";
 
 export enum FormMode {
   CreateRequest = "CreateRequest",
@@ -19,12 +18,26 @@ export interface IRequest {
   accepted?: boolean; // null = pending, 0 = rejected, 1 = accepted
 }
 
+export interface IRequestInformationDTO {
+  id: number;
+  shortDescription: string;
+  description: string | undefined;
+  projectId: number | undefined;
+  startDate: string | undefined;
+  startTime: string | undefined;
+  endDate: string | undefined;
+  endTime: string | undefined;
+  time: number | undefined;
+  employee: string;
+  registrationType: number | undefined;
+}
+
 export interface IRequestCreateDTO {
   id: number;
   shortDescription?: string;
   registrationId?: number;
   accepted?: boolean; // null = pending, 0 = rejected, 1 = accepted
-  registration?: IRegistration;
+  registration?: IRequestInformationDTO;
 }
 
 export interface IRequestEditDTO {

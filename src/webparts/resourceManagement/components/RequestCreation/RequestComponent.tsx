@@ -1,6 +1,7 @@
 import * as React from "react";
 import {
   IRequestCreateDTO,
+  IRequestInformationDTO,
   IRequestProps,
 } from "./interfaces/IRequestComponentProps";
 import globalStyles from "../BookingCreation/BookingComponent.module.scss";
@@ -23,7 +24,7 @@ import { FormMode } from "./interfaces/IRequestComponentProps";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 import BackEndService from "../../services/BackEnd";
 import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
-import { calculateEstimatedHours } from "../dateUtils";
+import { calculateEstimatedHours, extractTime, formatDateForApi } from "../dateUtils";
 
 const RequestComponent: React.FC<IRequestProps> = ({
   context,
@@ -69,7 +70,10 @@ const RequestComponent: React.FC<IRequestProps> = ({
   };
 
   const isReadOnly = mode === FormMode.ConfirmRequest;
-  const isCompleteBooking =
+  const isCreationMode = mode === FormMode.CreateRequest;
+  const startTime = extractTime(startDateTime);
+  const endTime = extractTime(endDateTime);
+  const hasSufficientInformation =
     title && selectedCoworkers.length > 0 && startDateTime && endDateTime;
 
   const onCreate = async (): Promise<void> => {
@@ -82,17 +86,32 @@ const RequestComponent: React.FC<IRequestProps> = ({
       return setError(estimatedHours.message);
     }
 
+    const completeBooking:IRequestInformationDTO = {
+      id: 0,
+      shortDescription: title,
+      description: info || undefined,
+      projectId: undefined,
+      startDate: startDateTime? formatDateForApi(startDateTime) : undefined,
+      startTime: startTime,
+      endDate: endDateTime? formatDateForApi(endDateTime) : undefined,
+      endTime: endTime,
+      time: estimatedHours || undefined,
+      employee: selectedCoworkers[0],
+      registrationType: 5, // Template
+    }
+
     const requestDTO: IRequestCreateDTO = {
       id: 0,
       shortDescription: title,
       registrationId: undefined,
       accepted: undefined,
+      registration: hasSufficientInformation? completeBooking : undefined,
     };
 
     try {
       const result = await BackEndService.Instance.createRequest(requestDTO);
       setWarning(undefined);
-      if (isCompleteBooking) {
+      if (hasSufficientInformation) {
         setSuccess("Booking oprettet succesfuldt!");
       } else {
         setSuccess(
@@ -109,7 +128,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
 
   React.useEffect(() => {
     setWarning(
-      isCompleteBooking
+      hasSufficientInformation
         ? undefined
         : "Kan ikke oprette en færdig booking med den angivne information - en kladde gemmes i stedet"
     );
@@ -155,7 +174,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
           {success}
         </MessageBar>
       )}
-      {warning && (
+      {/* Warning bruges kun i creation mode til at informere om manglende information */}
+      {warning && isCreationMode && (
         <MessageBar messageBarType={MessageBarType.warning}>
           {warning}
         </MessageBar>
@@ -164,11 +184,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
         <MessageBar messageBarType={MessageBarType.error}>{error}</MessageBar>
       )}
       <Text variant={"xxLargePlus"} className={globalStyles.headingMargin}>
-        {mode === FormMode.CreateRequest
-          ? "Anmod om booking"
-          : "Bekræft booking"}
+        {isCreationMode ? "Anmod om booking" : "Bekræft booking"}
       </Text>
-
       <TextField
         label="Titel"
         placeholder="Titel"
@@ -177,8 +194,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
         required={!isReadOnly}
         disabled={isReadOnly}
       />
-
-      {mode === FormMode.CreateRequest && (
+      {/* Viser en knap for at vise kunder hvis komponenten er i creation mode */}
+      {isCreationMode && (
         <DefaultButton
           text={
             toggles.customerToggle
@@ -188,6 +205,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
           onClick={() => handleToggle("customerToggle")}
         />
       )}
+      {/* Viser kunde dropdown hvis knappen ovenover er togglet on */}
       {toggles.customerToggle && (
         <CustomerProjects
           customers={customers}
@@ -198,8 +216,9 @@ const RequestComponent: React.FC<IRequestProps> = ({
           setSelectedProject={setSelectedProject}
         />
       )}
-
-      {mode === FormMode.CreateRequest && (
+      {/* Viser en knap for at vise dato/tid-vælger hvis komponenten er i creation
+      mode */}
+      {isCreationMode && (
         <DefaultButton
           text={
             toggles.dateToggle ? "Fortryd angivelse af dato" : "Angiv en dato"
@@ -207,8 +226,9 @@ const RequestComponent: React.FC<IRequestProps> = ({
           onClick={() => handleToggle("dateToggle")}
         />
       )}
-
-      {(toggles.dateToggle || isReadOnly) && (
+      {/* Viser dato/tid-vælgeren hvis knappen ovenover er togglet, eller hvis det
+      er read-only og datoer er angivet */}
+      {(toggles.dateToggle || (isReadOnly && startDateTime && endDateTime)) && (
         <>
           <DateTimePickerComponent
             label="Starttid"
@@ -224,35 +244,55 @@ const RequestComponent: React.FC<IRequestProps> = ({
           />
         </>
       )}
-
-      <PeoplePicker
-        placeholder="Vælg medarbejder"
-        context={{
-          absoluteUrl: context.pageContext.web.absoluteUrl,
-          msGraphClientFactory: context.msGraphClientFactory,
-          spHttpClient: context.spHttpClient,
-        }}
-        titleText="Vælg medarbejder"
-        personSelectionLimit={3}
-        groupName={""}
-        onChange={_getPeoplePickerItems}
-        principalTypes={[PrincipalType.User]}
-        resolveDelay={1000}
-        disabled={isReadOnly}
-      />
-
-      <TextField
-        label="Booking information"
-        placeholder="Skriv information om booking"
-        value={info}
-        onChange={(e, newValue) => setInfo(newValue || "")}
-        multiline
-        rows={5}
-        disabled={isReadOnly}
-      />
-
+      {/* Viser people picker i creation mode */}
+      {isCreationMode && (
+        <PeoplePicker
+          placeholder="Vælg medarbejder"
+          context={{
+            absoluteUrl: context.pageContext.web.absoluteUrl,
+            msGraphClientFactory: context.msGraphClientFactory,
+            spHttpClient: context.spHttpClient,
+          }}
+          titleText="Vælg medarbejder"
+          personSelectionLimit={3}
+          groupName={""}
+          onChange={_getPeoplePickerItems}
+          principalTypes={[PrincipalType.User]}
+          resolveDelay={1000}
+        />
+      )}
+      {/* Viser valgte medarbejdere i et disabled textfield i readOnly */}
+      {isReadOnly && selectedCoworkers.length > 0 && (
+        <TextField
+          label="Valgt medarbejdere"
+          placeholder="Medarbejder"
+          value={selectedCoworkers
+            .map((email) => {
+              const [name] = email.split("@");
+              const formattedName = name
+                .split(".")
+                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                .join(" ");
+              return formattedName;
+            })
+            .join(", ")}
+          required={!isReadOnly}
+          disabled={isReadOnly}
+        />
+      )}
+      {(isCreationMode || (isReadOnly && info)) && (
+        <TextField
+          label="Booking information"
+          placeholder="Skriv information om booking"
+          value={info}
+          onChange={(e, newValue) => setInfo(newValue || "")}
+          multiline
+          rows={5}
+          disabled={isReadOnly}
+        />
+      )}
       <Stack horizontal tokens={{ childrenGap: 10 }}>
-        {mode === FormMode.CreateRequest ? (
+        {isCreationMode ? (
           <>
             <PrimaryButton text="Opret" onClick={onCreate} />
             <DefaultButton text="Annuller" />

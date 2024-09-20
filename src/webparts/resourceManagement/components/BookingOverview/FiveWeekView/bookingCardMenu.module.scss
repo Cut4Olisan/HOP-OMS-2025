@@ -1,0 +1,19 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+.menuPopover {
+  background-color: #f9f9f9;
+  min-width: 128px;
+  min-width: 48px;
+  width: max-content;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+}
+
+.menuListItems {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 4px;
+  margin-top: 2px;
+}

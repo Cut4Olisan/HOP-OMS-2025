@@ -17,6 +17,8 @@ import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import BookingComponent from "../../BookingCreation/BookingComponent";
 import PeoplePickerComboBox from "./peoplePickerComponent";
+import BookingCardMenu from "./bookingCardMenu";
+import { DrawerBody, OverlayDrawer } from "@fluentui/react-components";
 //import Registration from "../../../services/BackEnd"
 
 const ItemType = "BOOKING"; // Draggable item type
@@ -44,9 +46,17 @@ const BookingCard: React.FC<{
       >
         {booking.employee}
       </Text>
-      <Text className={styles.customerName} variant="small">
-        Project {booking.projectId}
-      </Text>
+      <div className={styles.projectAndEditIcon}>
+        <Text
+          className={styles.customerName /*style navn ændres*/}
+          variant="small"
+        >
+          Project: {booking.projectId /*hente project navn baseret på id*/}
+        </Text>
+        <div className={styles.EditIcon}>
+          <BookingCardMenu />
+        </div>
+      </div>
     </div>
   );
 };
@@ -121,8 +131,8 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     Registration | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [showBookingComponent, setShowBookingComponent] =
-    useState<boolean>(false);
+  //const [showBookingComponent, setShowBookingComponent] =
+  useState<boolean>(false);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -174,9 +184,9 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
       )
     : projects; // Show all projects if no customer is selected
 
-  const handleAddBookingClick = (): void => {
+  /*const handleAddBookingClick = (): void => {
     setShowBookingComponent(true);
-  };
+  }; */
 
   const weeksToDisplay = getWeeksFromDate(currentDate);
 
@@ -248,15 +258,40 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
       />
     );
   }
+  const [isOpen, setIsOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={styles.container}>
+      <div className={styles.container} ref={ref}>
+        <OverlayDrawer //skal skiftes ud med panel - alt fluent ui v9 skal skiftes ud til v7 componenter!
+          size="medium"
+          className={styles.drawerOverlay}
+          as="aside"
+          mountNode={ref.current}
+          open={isOpen}
+          onOpenChange={(_, { open }) => setIsOpen(open)}
+        >
+          <DrawerBody>
+            <p>
+              <BookingComponent
+                context={context}
+                customers={customers}
+                coworkers={[]}
+                projects={projects}
+                onFinish={(registrations) => {
+                  console.log("Finished bookings", registrations);
+                }}
+              />
+            </p>
+          </DrawerBody>
+        </OverlayDrawer>
+
         <div className={styles.controlsContainer}>
           <div className={styles.filterContainer}>
             <AddSquareMultipleRegular
               className={styles.iconWrapper}
-              onClick={handleAddBookingClick}
+              onClick={() => setIsOpen(true)}
             />
 
             <PeoplePickerComboBox
@@ -321,18 +356,6 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
             />
           </div>
         </div>
-
-        {showBookingComponent && (
-          <BookingComponent
-            context={context}
-            customers={customers}
-            coworkers={[]}
-            projects={projects}
-            onFinish={(registrations) => {
-              console.log("Finished bookings", registrations);
-            }}
-          />
-        )}
 
         <div className={styles.gridHeader}>
           {weeksToDisplay.map((week, index) => (

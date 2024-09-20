@@ -12,6 +12,7 @@
 }
 
 .container {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -47,7 +48,7 @@
   font-weight: bold;
   position: sticky; /* Keep header fixed at the top */
   top: 0;
-  z-index: 1;
+  //z-index: 1;
 }
 
 .weekGrid {
@@ -65,6 +66,7 @@
   padding: 10px;
   max-height: 600px; /* Set a max height for scrolling */
   overflow-y: auto; /* Enable vertical scrolling within each column */
+  scrollbar-width: none;
   overflow-x: hidden;
 }
 
@@ -76,7 +78,8 @@
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
-  background-color: lightgrey;
+  background-color: #f9f9f9;
+  border-bottom: lightgray;
   cursor: move;
   gap: 10px;
 }
@@ -126,6 +129,17 @@
     transform: scale(1.1); /* Slightly scale up the icon */
   }
 }
+//styles for bookingCardMenu
+.projectAndEditIcon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.EditIcon {
+  display: flex;
+  justify-content: flex-end;
+}
 
 //style for peoplepickercomponent
 
@@ -150,4 +164,12 @@
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+//style for draweroverlay
+
+.drawerOverlay {
+  position: absolute;
+  background-color: #f9f9f9;
+  padding-right: 5px;
 }

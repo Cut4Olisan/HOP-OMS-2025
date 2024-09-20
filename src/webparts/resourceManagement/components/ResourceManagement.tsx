@@ -1,10 +1,9 @@
 import * as React from "react";
 import BookingComponent from "./BookingCreation/BookingComponent";
-import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent"; // Import the overview component
+import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { DefaultButton } from "@fluentui/react";
 
-// Enum to track the view state
 export enum DEV_WP_VIEW {
   BookingComponent,
   BookingOverview,
@@ -22,7 +21,7 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
 }) => {
   const [view, setView] = React.useState<DEV_WP_VIEW>(
     DEV_WP_VIEW.BookingComponent
-  ); // Use state to track the current view
+  );
 
   const coworkers = [
     { key: "coworker1", text: "Coworker 1" },
@@ -32,18 +31,16 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
   return (
     <div>
       <div>
-        {/* Buttons to switch between Booking Creation and Booking Overview */}
         <DefaultButton
           text="Create Booking"
-          onClick={() => setView(DEV_WP_VIEW.BookingComponent)} // Switch to BookingComponent
+          onClick={() => setView(DEV_WP_VIEW.BookingComponent)}
         />
         <DefaultButton
           text="Booking Overview"
-          onClick={() => setView(DEV_WP_VIEW.BookingOverview)} // Switch to BookingOverviewComponent
+          onClick={() => setView(DEV_WP_VIEW.BookingOverview)}
         />
       </div>
 
-      {/* Conditionally render the components based on the selected view */}
       {view === DEV_WP_VIEW.BookingComponent && (
         <BookingComponent
           coworkers={coworkers}

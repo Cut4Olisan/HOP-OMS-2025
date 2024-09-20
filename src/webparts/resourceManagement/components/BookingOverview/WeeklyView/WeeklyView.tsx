@@ -84,7 +84,7 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
           className={styles.booking}
           style={{
             top: shouldAdjustOffset
-              ? `calc(${topOffset}px - 30px)`
+              ? `calc(${topOffset}px - 0px)` //Ingen behov for offset efter merge? a hva'
               : `${topOffset}px`,
             height: `${bookingHeight}px`,
           }}

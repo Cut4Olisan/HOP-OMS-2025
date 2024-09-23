@@ -1,7 +1,6 @@
 import * as React from "react";
 import {
   IRequestCreateDTO,
-  IRequestInformationDTO,
   IRequestProps,
 } from "./interfaces/IRequestComponentProps";
 import globalStyles from "../BookingCreation/BookingComponent.module.scss";
@@ -24,7 +23,12 @@ import { FormMode } from "./interfaces/IRequestComponentProps";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 import BackEndService from "../../services/BackEnd";
 import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
-import { calculateEstimatedHours, extractTime, formatDateForApi } from "../dateUtils";
+import {
+  extractTime,
+  // extractTime,
+  formatDateForApi,
+} from "../dateUtils";
+import { IRegistrationData } from "../interfaces/IRegistrationProps";
 
 const RequestComponent: React.FC<IRequestProps> = ({
   context,
@@ -36,6 +40,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
   const [success, setSuccess] = React.useState<string | undefined>();
   const [title, setTitle] = React.useState<string>("");
   const [info, setInfo] = React.useState<string>("");
+  const [estimatedHours, setEstimatedHours] = React.useState<string>("");
   const [selectedCoworkers, setSelectedCoworkers] = React.useState<string[]>(
     []
   );
@@ -51,18 +56,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
   const [customers, setCustomers] = React.useState<ICustomer[]>([]);
   const [projects, setProjects] = React.useState<IProject[]>([]);
   const [selectedProject, setSelectedProject] = React.useState<string>("");
-
-  const [toggles, setToggles] = React.useState<{ [key: string]: boolean }>({
-    dateToggle: false,
-    customerToggle: false,
-  });
-
-  const handleToggle = (key: string): void => {
-    setToggles((prevToggles) => ({
-      ...prevToggles,
-      [key]: !prevToggles[key],
-    }));
-  };
 
   const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
     const emails = items.map((item) => item.secondaryText);
@@ -81,45 +74,51 @@ const RequestComponent: React.FC<IRequestProps> = ({
     if (!selectedCoworkers || selectedCoworkers.length === 0)
       return setError("Medarbejder er påkrævet");
 
-    const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
-    if (estimatedHours instanceof Error) {
-      return setError(estimatedHours.message);
+    // const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
+    // if (estimatedHours instanceof Error) {
+    //   return setError(estimatedHours.message);
+    // }
+    if (!startDateTime) {
+      return;
     }
 
-    const completeBooking:IRequestInformationDTO = {
-      id: 0,
+    const completeBooking: IRegistrationData = {
       shortDescription: title,
+      date: formatDateForApi(startDateTime),
       description: info || undefined,
-      projectId: undefined,
-      startDate: startDateTime? formatDateForApi(startDateTime) : undefined,
-      startTime: startTime,
-      endDate: endDateTime? formatDateForApi(endDateTime) : undefined,
-      endTime: endTime,
-      time: estimatedHours || undefined,
+      start: startTime,
+      end: endTime,
+      time: parseInt(estimatedHours) || undefined,
       employee: selectedCoworkers[0],
       registrationType: 5, // Template
-    }
-
+    };
     const requestDTO: IRequestCreateDTO = {
-      id: 0,
-      shortDescription: title,
-      registrationId: undefined,
-      accepted: undefined,
-      registration: hasSufficientInformation? completeBooking : undefined,
+      title: title,
+      shortDescription: info,
+      estimatedHours: parseInt(estimatedHours) || undefined,
+      registration: completeBooking,
+      // registration: hasSufficientInformation ? completeBooking : undefined,
     };
 
+    console.log("registration", completeBooking);
+    console.log("requestDTO:", requestDTO);
     try {
-      const result = await BackEndService.Instance.createRequest(requestDTO);
+      const result = await BackEndService.client.api.requestsCreate({
+        createRegistrationRequestDTO: { ...completeBooking },
+        title: requestDTO.title,
+        shortDescription: requestDTO.shortDescription,
+        estimatedHours: requestDTO.estimatedHours,
+      });
+      //const result = await BackEndService.Instance.createRequest(requestDTO);
       setWarning(undefined);
       if (hasSufficientInformation) {
-        setSuccess("Booking oprettet succesfuldt!");
+        setSuccess("Booking oprettet!");
       } else {
         setSuccess(
           "Request oprettet med manglende information. En kladde er gemt."
         );
       }
       console.warn("Request oprettet", result);
-      return onFinish(result);
     } catch (error) {
       console.error("Error creating request:", error);
       setError("Failed to create request. Please try again.");
@@ -194,41 +193,24 @@ const RequestComponent: React.FC<IRequestProps> = ({
         required={!isReadOnly}
         disabled={isReadOnly}
       />
-      {/* Viser en knap for at vise kunder hvis komponenten er i creation mode */}
-      {isCreationMode && (
-        <DefaultButton
-          text={
-            toggles.customerToggle
-              ? "Fortryd angivelse af kunde"
-              : "Angiv en kunde"
-          }
-          onClick={() => handleToggle("customerToggle")}
-        />
-      )}
-      {/* Viser kunde dropdown hvis knappen ovenover er togglet on */}
-      {toggles.customerToggle && (
-        <CustomerProjects
-          customers={customers}
-          projects={projects}
-          selectedCustomer={selectedCustomer}
-          setSelectedCustomer={setSelectedCustomer}
-          selectedProject={selectedProject}
-          setSelectedProject={setSelectedProject}
-        />
-      )}
-      {/* Viser en knap for at vise dato/tid-vælger hvis komponenten er i creation
-      mode */}
-      {isCreationMode && (
-        <DefaultButton
-          text={
-            toggles.dateToggle ? "Fortryd angivelse af dato" : "Angiv en dato"
-          }
-          onClick={() => handleToggle("dateToggle")}
-        />
-      )}
+      <CustomerProjects
+        customers={customers}
+        projects={projects}
+        selectedCustomer={selectedCustomer}
+        setSelectedCustomer={setSelectedCustomer}
+        selectedProject={selectedProject}
+        setSelectedProject={setSelectedProject}
+      />
+      <TextField
+        label="Antal timer (angivet i milisekunder)"
+        placeholder="Antal timer"
+        value={estimatedHours}
+        onChange={(e, newValue) => setEstimatedHours(newValue || "")}
+        disabled={isReadOnly}
+      />
       {/* Viser dato/tid-vælgeren hvis knappen ovenover er togglet, eller hvis det
       er read-only og datoer er angivet */}
-      {(toggles.dateToggle || (isReadOnly && startDateTime && endDateTime)) && (
+      {(isCreationMode || (isReadOnly && startDateTime && endDateTime)) && (
         <>
           <DateTimePickerComponent
             label="Starttid"

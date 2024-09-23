@@ -1,4 +1,5 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
+import { IRegistrationData } from "../../interfaces/IRegistrationProps";
 
 export enum FormMode {
   CreateRequest = "CreateRequest",
@@ -13,43 +14,31 @@ export interface IRequestProps {
 
 export interface IRequest {
   id: number;
+  title: string;
   shortDescription?: string;
   registrationId?: number;
   accepted?: boolean; // null = pending, 0 = rejected, 1 = accepted
+  estimatedHours?: number;
 }
-
-export interface IRequestInformationDTO {
-  id: number;
-  shortDescription: string;
-  description: string | undefined;
-  projectId: number | undefined;
-  startDate: string | undefined;
-  startTime: string | undefined;
-  endDate: string | undefined;
-  endTime: string | undefined;
-  time: number | undefined;
-  employee: string;
-  registrationType: number | undefined;
-}
-
+ 
 export interface IRequestCreateDTO {
-  id: number;
-  shortDescription?: string;
-  registrationId?: number;
-  accepted?: boolean; // null = pending, 0 = rejected, 1 = accepted
-  registration?: IRequestInformationDTO;
+  title: string;
+  shortDescription: string;
+  estimatedHours?: number;
+  registration?: IRegistrationData;
 }
-
+ 
 export interface IRequestEditDTO {
   id: number;
-  shortDescription?: string;
+  title: string;
+  shortDescription: string;
   registrationId?: number;
+  estimatedHours?: number;
+  registration?: IRegistrationData; // overrides the existing registrationid if pressent - Remember to alert the user if this was intended (that there is already a registration connected)
 }
-
+ 
 export interface IRequestAcceptDTO {
-  id: number;
-  registrationId?: number;
-  Accepted?: boolean; // null = pending, 0 = rejected, 1 = accepted
+  // InPath - id: int;
   start: Date;
   end: Date;
   repeated: number;

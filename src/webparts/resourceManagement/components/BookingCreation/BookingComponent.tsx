@@ -28,7 +28,7 @@ import DateTimePickerComponent from "./DateTimePicker";
 import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
 import {
   IRegistration,
-  RegistrationData,
+  IRegistrationData,
 } from "../interfaces/IRegistrationProps";
 import BackEndService from "../../services/BackEnd";
 import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
@@ -128,7 +128,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     // Create a registration for each coworker for each date
     const registrations = selectedCoworkers.flatMap((coworker) =>
       dates.map((date) => {
-        const registrationData: RegistrationData = {
+        const registrationData: IRegistrationData = {
           shortDescription: title,
           description: info,
           date: formatDateForApi(date),

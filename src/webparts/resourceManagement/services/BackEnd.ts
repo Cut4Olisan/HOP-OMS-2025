@@ -1,10 +1,11 @@
+import { Api } from "../components/interfaces";
 import {
   ICustomer,
   IProject,
 } from "../components/interfaces/ICustomerProjectsProps";
 import {
   IRegistration,
-  RegistrationData,
+  IRegistrationData,
 } from "../components/interfaces/IRegistrationProps";
 import {
   IRequest,
@@ -38,6 +39,9 @@ class BackEndService {
   private static API_URL_Projects = BackEndService.baseurl + "api/projects";
   private static API_URL_Requests = BackEndService.baseurl + "api/Requests";
 
+
+  public static client = new Api({baseUrl: this.baseurl});
+  
   private static handleResponse = async <T>(response: Response): Promise<T> => {
     if (!response.ok) {
       const error = await response.text();
@@ -82,7 +86,7 @@ class BackEndService {
   }
 
   public async createRegistration(
-    data: RegistrationData
+    data: IRegistrationData
   ): Promise<IRegistration> {
     const response = await fetch(BackEndService.API_URL_Registration, {
       method: "POST",
@@ -137,15 +141,16 @@ class BackEndService {
 
   public async acceptRequest(
     id: number,
-    data: Omit<IRequestAcceptDTO, "Accepted">
+    data: IRequestAcceptDTO
   ): Promise<void> {
     const url = `${BackEndService.API_URL_Requests}/${id}/accept`;
 
     const requestData: IRequestAcceptDTO = {
-      ...data,
-      Accepted: true,
+      start: data.start,
+      end: data.end,
+      repeated: data.repeated,
     };
-
+  
     const response = await fetch(url, {
       method: "PATCH",
       headers: {
@@ -153,27 +158,23 @@ class BackEndService {
       },
       body: JSON.stringify(requestData),
     });
-
+  
     await BackEndService.handleResponse<void>(response);
   }
-
+  
   public async rejectRequest(id: number): Promise<void> {
     const url = `${BackEndService.API_URL_Requests}/${id}/reject`;
-
-    const requestData: Partial<IRequestAcceptDTO> = {
-      Accepted: false,
-    };
-
+  
     const response = await fetch(url, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
+      }
     });
-
+  
     await BackEndService.handleResponse<void>(response);
   }
+  
 }
 
 export default BackEndService;

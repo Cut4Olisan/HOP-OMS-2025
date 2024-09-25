@@ -47,6 +47,7 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
           context={context}
           customers={[]}
           projects={[]}
+          dismissPanel
           onFinish={(bookings: unknown[]) => {
             console.log("Bookings created: ", bookings);
           }}

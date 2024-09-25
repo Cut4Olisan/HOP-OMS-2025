@@ -216,9 +216,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     <DndProvider backend={HTML5Backend}>
       <div className={styles.weeklyViewContainer}>
         <div className={styles.controlsContainer}>
-          <DefaultButton onClick={onBack}>
-            Tilbage til 5-ugers oversigt
-          </DefaultButton>
+          <DefaultButton onClick={onBack}>Tilbage</DefaultButton>
           <div className={styles.weekInfo}>
             <Text variant="large">
               Uge {currentWeekNumber} - Bookinger for {employeeName}

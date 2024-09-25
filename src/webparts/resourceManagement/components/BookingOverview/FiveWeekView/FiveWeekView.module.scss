@@ -35,7 +35,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 10px;
+  //gap: 10px;
 }
 
 .gridHeader {
@@ -100,19 +100,8 @@
   overflow-wrap: break-word;
 }
 
-.arrowButton {
-  cursor: pointer;
-  font-size: 24px;
-  color: var(--themePrimary);
-}
-
-.arrowButton:hover {
-  color: var(--themeDark);
-}
-
 .limitCalloutSize {
   max-height: 300px !important;
-  width: 90%;
   height: auto;
   overflow: auto;
 }
@@ -164,12 +153,4 @@
   display: flex;
   align-items: center;
   gap: 5px;
-}
-
-//style for draweroverlay
-
-.drawerOverlay {
-  position: absolute;
-  background-color: #f9f9f9;
-  padding-right: 5px;
 }

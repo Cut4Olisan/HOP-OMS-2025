@@ -2,7 +2,13 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { Text, DefaultButton, ComboBox } from "@fluentui/react";
+import {
+  Text,
+  DefaultButton,
+  ComboBox,
+  Panel,
+  //ActionButton,
+} from "@fluentui/react";
 import {
   ArrowLeftRegular,
   ArrowRightRegular,
@@ -15,11 +21,11 @@ import { Registration } from "../../interfaces/IRegistrationProps";
 import { ICustomer, IProject } from "../../interfaces/ICustomerProjectsProps";
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import BookingComponent from "../../BookingCreation/BookingComponent";
+import { useBoolean } from "@fluentui/react-hooks";
 import PeoplePickerComboBox from "./peoplePickerComponent";
 import BookingCardMenu from "./bookingCardMenu";
-import { DrawerBody, OverlayDrawer } from "@fluentui/react-components";
-//import Registration from "../../../services/BackEnd"
+import BookingComponent from "../../BookingCreation/BookingComponent";
+import { Button, Tooltip } from "@fluentui/react-components"; //Bruges til at lave iconButtons
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -121,9 +127,9 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
 
   const [clearSelection, setClearSelection] = useState<boolean>(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<string | undefined>(
-    undefined
-  );
+  const [selectedCustomer, setSelectedCustomer] = React.useState<
+    ICustomer | undefined
+  >(undefined);
   const [selectedProject, setSelectedProject] = useState<string | undefined>(
     undefined
   );
@@ -160,36 +166,18 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     }
   }, [clearSelection]);
 
-  const filteredCustomers =
-    selectedEmployee.length > 0
-      ? customers.filter((customer) =>
-          registrations.some(
-            (booking) =>
-              selectedEmployee.includes(booking.employee) && // Directly check if the email is included
-              booking.projectId &&
-              projects.find((project) => project.customerId === customer.id)
-          )
-        )
-      : customers; // Show all customers if no employee is selected
-
+  //Kunde => project relation i filter
   const filteredProjects = selectedCustomer
-    ? projects.filter(
-        (project) =>
-          project.customerId === Number(selectedCustomer) &&
-          registrations.some(
-            (booking) =>
-              selectedEmployee.includes(booking.employee) && // Directly check if the email is included
-              booking.projectId?.toString() === project.id.toString()
-          )
-      )
-    : projects; // Show all projects if no customer is selected
-
-  /*const handleAddBookingClick = (): void => {
-    setShowBookingComponent(true);
-  }; */
+    ? projects
+        .filter((p) => p.customerId === selectedCustomer.id)
+        .map((project) => ({
+          key: project.id,
+          text: project.name,
+        }))
+    : projects;
 
   const weeksToDisplay = getWeeksFromDate(currentDate);
-
+  //When filters are updated and reflects to the bookingcard - update to actaully clear the filters
   const clearFilters = (): void => {
     setSelectedEmployee([]);
     setClearSelection(true);
@@ -215,7 +203,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   ): void => {
     const updatedBookings = registrations.map((booking) => {
       if (booking.id === movedBooking.id) {
-        return { ...booking, date: `2024-W${newWeekNumber}` }; // Adjust date format as needed
+        return { ...booking, date: `2024-W${newWeekNumber}` }; // Adjust date format
       }
       return booking;
     });
@@ -230,10 +218,9 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     return (
       booking.registrationType === 2 &&
       (selectedEmployee.length === 0 ||
-        selectedEmployee.includes(booking.employee)) && // Directly check if the email is in the selectedEmployee array
-      (!selectedCustomer ||
-        booking.projectId?.toString() === selectedCustomer) &&
-      (!selectedProject || booking.projectId?.toString() === selectedProject)
+        selectedEmployee.includes(booking.employee)) &&
+      (selectedCustomer || selectedCustomer) &&
+      (selectedProject || booking.projectId?.toString() === selectedProject)
     );
   });
 
@@ -258,42 +245,15 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
       />
     );
   }
-  const [isOpen, setIsOpen] = React.useState(false);
-  const ref = React.useRef<HTMLDivElement>(null);
+  //Opret booking panel controller
+  const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] =
+    useBoolean(false);
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={styles.container} ref={ref}>
-        <OverlayDrawer //skal skiftes ud med panel - alt fluent ui v9 skal skiftes ud til v7 componenter!
-          size="medium"
-          className={styles.drawerOverlay}
-          as="aside"
-          mountNode={ref.current}
-          open={isOpen}
-          onOpenChange={(_, { open }) => setIsOpen(open)}
-        >
-          <DrawerBody>
-            <p>
-              <BookingComponent
-                context={context}
-                customers={customers}
-                coworkers={[]}
-                projects={projects}
-                onFinish={(registrations) => {
-                  console.log("Finished bookings", registrations);
-                }}
-              />
-            </p>
-          </DrawerBody>
-        </OverlayDrawer>
-
+      <div className={styles.container}>
         <div className={styles.controlsContainer}>
           <div className={styles.filterContainer}>
-            <AddSquareMultipleRegular
-              className={styles.iconWrapper}
-              onClick={() => setIsOpen(true)}
-            />
-
             <PeoplePickerComboBox
               context={context}
               onChange={(selectedEmails) => {
@@ -304,13 +264,19 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
             <ComboBox
               placeholder="Vælg en kunde"
-              options={filteredCustomers.map((customer) => ({
-                key: customer.id.toString(),
-                text: customer.name,
-              }))}
-              selectedKey={selectedCustomer || ""}
+              options={customers
+                .filter((c) => c.active)
+                .map((customer) => ({
+                  key: customer.id,
+                  text: customer.name,
+                }))}
+              selectedKey={selectedCustomer?.id}
               onChange={(e, option) =>
-                setSelectedCustomer(option ? option.key?.toString() : undefined)
+                option
+                  ? setSelectedCustomer(
+                      customers.find((c) => c.id === Number(option?.key))
+                    )
+                  : undefined
               }
               calloutProps={{
                 doNotLayer: true,
@@ -319,16 +285,16 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               allowFreeInput
               autoComplete="on"
             />
-
+            {/*WIP - ufunktionel as of now - fejlen ligger muligvis i filtringen længere oppe.*/}
             <ComboBox
               placeholder="Vælg et projekt"
               options={filteredProjects.map((project) => ({
-                key: project.id.toString(),
-                text: project.name,
+                key: "",
+                text: "",
               }))}
-              selectedKey={selectedProject || ""}
+              selectedKey={selectedProject}
               onChange={(e, option) =>
-                setSelectedProject(option ? option.key?.toString() : undefined)
+                setSelectedProject(option?.key as string)
               }
               calloutProps={{
                 doNotLayer: true,
@@ -346,14 +312,45 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
           </div>
 
           <div className={styles.navigationContainer}>
-            <ArrowLeftRegular
-              className={styles.arrowButton}
+            <Panel
+              isOpen={isOpen}
+              closeButtonAriaLabel="Close"
+              isHiddenOnDismiss={true}
+              onDismiss={dismissPanel}
+            >
+              <div>
+                <BookingComponent
+                  context={context}
+                  customers={customers}
+                  coworkers={[]}
+                  projects={projects}
+                  dismissPanel //få passed object rigtigt
+                  onFinish={(registrations) => {
+                    console.log("Finished bookings", registrations);
+                  }}
+                />
+              </div>
+            </Panel>
+
+            <Button
+              appearance="subtle"
+              size="large"
+              icon={<ArrowLeftRegular />}
               onClick={handlePreviousWeeks}
             />
-            <ArrowRightRegular
-              className={styles.arrowButton}
+            <Button
+              appearance="subtle"
+              size="large"
+              icon={<ArrowRightRegular />}
               onClick={handleNextWeeks}
             />
+            <Button
+              appearance="subtle"
+              size="large"
+              icon={<AddSquareMultipleRegular />}
+              onClick={openPanel}
+            />
+            <Tooltip content="Opret en booking" relationship="label"></Tooltip>
           </div>
         </div>
 

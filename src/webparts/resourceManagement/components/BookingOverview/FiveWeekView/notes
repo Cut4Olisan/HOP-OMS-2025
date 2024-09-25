@@ -1,0 +1,67 @@
+/*
+            
+            <ComboBox
+              placeholder="Vælg en kunde"
+              options={filteredCustomers.map((customer) => ({
+                key: customer.id.toString(),
+                text: customer.name,
+              }))}
+              selectedKey={selectedCustomer || ""}
+              onChange={(e, option) =>
+                setSelectedCustomer(option ? option.key?.toString() : undefined)
+              }
+              calloutProps={{
+                doNotLayer: true,
+                className: styles.limitCalloutSize,
+              }}
+              allowFreeInput
+              autoComplete="on"
+            />
+
+            <ComboBox
+              placeholder="Vælg et projekt"
+              options={filteredProjects.map((project) => ({
+                key: project.id.toString(),
+                text: project.name,
+              }))}
+              selectedKey={selectedProject || ""}
+              onChange={(e, option) =>
+                setSelectedProject(option ? option.key?.toString() : undefined)
+              }
+              calloutProps={{
+                doNotLayer: true,
+                className: styles.limitCalloutSize,
+              }}
+              allowFreeInput
+              autoComplete="on"
+            /> 
+
+
+              const filteredCustomers =
+    selectedEmployee.length > 0
+      ? customers.filter((customer) =>
+          registrations.some(
+            (booking) =>
+              selectedEmployee.includes(booking.employee) && // Directly check if the email is included
+              booking.projectId &&
+              projects.find((project) => project.customerId === customer.id)
+          )
+        )
+      : customers; // Show all customers if no employee is selected
+
+  const filteredProjects = selectedCustomer
+    ? projects.filter(
+        (project) =>
+          project.customerId === Number(selectedCustomer) &&
+          registrations.some(
+            (booking) =>
+              selectedEmployee.includes(booking.employee) && // Directly check if the email is included
+              booking.projectId?.toString() === project.id.toString()
+          )
+      )
+    : projects; // Show all projects if no customer is selected
+
+
+
+
+    */

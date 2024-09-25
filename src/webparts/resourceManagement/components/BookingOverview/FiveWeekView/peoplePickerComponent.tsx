@@ -5,7 +5,7 @@ import {
   IComboBoxOption,
   IComboBoxStyles,
 } from "@fluentui/react";
-import { Persona } from "@fluentui/react-components"; // Fluent UI v9 Persona
+import { Persona } from "@fluentui/react-components"; // Fluent UI v9 Persona //Ikke skiftes til v7 Avatar - For now atleast..
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { MSGraphClientV3 } from "@microsoft/sp-http";
 import { ResponseType } from "@microsoft/microsoft-graph-client";
@@ -13,7 +13,7 @@ import styles from "./FiveWeekView.module.scss";
 
 interface IPeoplePickerComboBoxProps {
   context: WebPartContext;
-  onChange: (selectedEmails: string[]) => void; // Now accepts an array of email strings
+  onChange: (selectedEmails: string[]) => void;
   clearSelection: boolean;
 }
 

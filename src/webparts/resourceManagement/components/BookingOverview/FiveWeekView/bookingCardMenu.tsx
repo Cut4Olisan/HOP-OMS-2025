@@ -26,7 +26,11 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({}) => {
     <div>
       <Menu>
         <MenuTrigger disableButtonEnhancement>
-          <Button icon={<ClipboardEditRegular />} size="small"></Button>
+          <Button
+            icon={<ClipboardEditRegular />}
+            size="small"
+            appearance="subtle"
+          ></Button>
         </MenuTrigger>
         <MenuPopover className={styles.menuPopover}>
           <MenuList className={styles.menuListItems}>

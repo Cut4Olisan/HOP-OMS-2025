@@ -40,6 +40,7 @@ export interface IBookingComponentProps {
   coworkers: { key: string; text: string }[];
   projects: IProject[];
   onFinish: (bookings: unknown[]) => void;
+  dismissPanel: boolean;
 }
 
 const BookingComponent: React.FC<IBookingComponentProps> = ({
@@ -47,6 +48,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   onFinish,
   customers,
   projects,
+  dismissPanel,
 }) => {
   const [title, setTitle] = React.useState<string>("");
   const [error, setError] = React.useState<string | undefined>();
@@ -55,9 +57,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   const [selectedCustomer, setSelectedCustomer] = React.useState<
     ICustomer | undefined
   >(undefined);
-  /*   const [customers, setCustomers] = React.useState<Customer[]>([]);
-  const [projects, setProjects] = React.useState<Project[]>([]);
- */
   const [selectedProject, setSelectedProject] = React.useState<string>("");
   const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
     undefined
@@ -243,10 +242,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
           <Stack horizontal tokens={{ childrenGap: 10 }}>
             <PrimaryButton text="Gem" onClick={onSave} />
-            <DefaultButton
-              text="Annuller"
-              onClick={() => console.log("Cancelled")}
-            />
+            <DefaultButton text="Annuller" onClick={undefined} />
           </Stack>
         </Stack>
       </Stack>

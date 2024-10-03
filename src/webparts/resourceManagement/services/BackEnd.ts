@@ -31,6 +31,7 @@ class BackEndService {
   private static API_URL_Registration: string =
     BackEndService.baseurl + "api/registrations";
   private static API_URL_Projects = BackEndService.baseurl + "api/projects";
+  private static API_KEY: string = "e67651b1-80a9-41c5-9f1e-acf409d5464b";
 
   private static handleResponse = async <T>(response: Response): Promise<T> => {
     if (!response.ok) {
@@ -42,12 +43,13 @@ class BackEndService {
   };
 
   public async getRegistrationTypes<
-    RegistrationType
+    RegistrationType,
   >(): Promise<RegistrationType> {
     const response = await fetch(BackEndService.API_URL_RegistrationType, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "api-key": BackEndService.API_KEY,
       },
     });
     return await BackEndService.handleResponse(response);
@@ -58,6 +60,7 @@ class BackEndService {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "api-key": BackEndService.API_KEY,
       },
     });
 
@@ -69,6 +72,7 @@ class BackEndService {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "api-key": BackEndService.API_KEY,
       },
     });
 
@@ -82,10 +86,26 @@ class BackEndService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "api-key": BackEndService.API_KEY,
       },
       body: JSON.stringify(data),
     });
     return await BackEndService.handleResponse<Registration>(response);
+  }
+
+  public async deleteBooking(bookingId: number): Promise<void> {
+    const response = await fetch(
+      `${BackEndService.API_URL_Registration}/${bookingId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": BackEndService.API_KEY,
+        },
+      }
+    );
+
+    return await BackEndService.handleResponse<void>(response);
   }
 
   public async getRegistrationsByType(
@@ -95,11 +115,11 @@ class BackEndService {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "api-key": BackEndService.API_KEY,
       },
     });
-    const allRegistrations = await BackEndService.handleResponse<
-      Registration[]
-    >(response);
+    const allRegistrations =
+      await BackEndService.handleResponse<Registration[]>(response);
 
     const filteredRegistrations = registrationType
       ? allRegistrations.filter(

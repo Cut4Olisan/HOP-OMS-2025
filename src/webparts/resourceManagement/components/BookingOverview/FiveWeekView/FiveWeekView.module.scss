@@ -1,14 +1,32 @@
 @import "~@fluentui/react/dist/sass/References.scss";
 
+.FiveWeekView {
+  overflow: hidden;
+  padding: 1em;
+  color: var(--bodyText);
+
+  &.teams {
+    font-family: $ms-font-family-fallbacks;
+  }
+}
+
 .weekHeader {
   display: flex;
   text-align: center;
   flex-direction: column;
   padding: 10px;
   font-weight: bold;
-  background-color: #f4f4f4;
   border-right: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
+}
+
+.teamsContext {
+  overflow: hidden;
+  color: var(--bodyText);
+
+  &.teams {
+    font-family: $ms-font-family-fallbacks;
+  }
 }
 
 .container {
@@ -35,20 +53,18 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  //gap: 10px;
 }
 
 .gridHeader {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  background-color: #f4f4f4;
+  background-color: var(--colorBrandBackground2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
   padding-top: 10px;
-  border-bottom: 1px solid #ccc;
   text-align: center;
   font-weight: bold;
-  position: sticky; /* Keep header fixed at the top */
+  position: sticky;
   top: 0;
-  //z-index: 1;
 }
 
 .weekGrid {
@@ -61,7 +77,7 @@
 .weekColumn {
   display: flex;
   flex-direction: column;
-  border: 1px solid #ccc;
+  //border: 1px solid #ccc;
   background-color: #f9f9f9;
   padding: 10px;
   max-height: 600px; /* Set a max height for scrolling */
@@ -78,7 +94,7 @@
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
   border-bottom: lightgray;
   cursor: move;
   gap: 10px;
@@ -90,12 +106,15 @@
 }
 
 .employeeName {
-  color: #0078d4;
   cursor: pointer;
   overflow-wrap: break-word;
 }
 
-.customerName {
+.customerAndProjectName {
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
+  width: 100%;
   color: #555;
   overflow-wrap: break-word;
 }
@@ -109,7 +128,9 @@
 .iconWrapper {
   display: inline-block;
   cursor: pointer; /* Change cursor to pointer */
-  transition: transform 0.3s ease, color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
   height: 32px;
   width: 32px;
 
@@ -119,7 +140,7 @@
   }
 }
 //styles for bookingCardMenu
-.projectAndEditIcon {
+.TitelAndEditIcon {
   display: flex;
   justify-content: space-between;
   align-items: center;

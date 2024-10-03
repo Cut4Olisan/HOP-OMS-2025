@@ -14,13 +14,32 @@ import {
   CopyAddRegular,
   DeleteRegular,
 } from "@fluentui/react-icons";
+import BackEndService from "../../../services/BackEnd"; // Import BackendService for delete operation
 
-interface IBookingCardMenuProps {}
+interface IBookingCardMenuProps {
+  bookingId: number;
+  onBookingDeleted: (bookingId: number) => void;
+}
 
-const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({}) => {
-  /*
-        Menu punkt til bookingcard - kommer til at indholde kald til => slet, rediger, kopier funktionerne i *MenuItem*
-  */
+const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
+  bookingId,
+  onBookingDeleted,
+}) => {
+  // Function to handle delete action
+  const handleDelete = async () => {
+    const confirmation = window.confirm(
+      "Er du sikker på du vil slette denne booking?"
+    );
+    if (confirmation) {
+      try {
+        await BackEndService.Instance.deleteBooking(bookingId); // Backend call to delete booking
+        onBookingDeleted(bookingId); // Pass the bookingId back to the parent
+      } catch (error) {
+        console.error("Failed to delete booking:", error);
+        alert("Kunne ikke slette booking. Prøv igen."); // Show error message
+      }
+    }
+  };
 
   return (
     <div>
@@ -30,7 +49,7 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({}) => {
             icon={<ClipboardEditRegular />}
             size="small"
             appearance="subtle"
-          ></Button>
+          />
         </MenuTrigger>
         <MenuPopover className={styles.menuPopover}>
           <MenuList className={styles.menuListItems}>
@@ -40,7 +59,7 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({}) => {
             <MenuItem icon={<CopyAddRegular />} onClick={undefined}>
               Kopier
             </MenuItem>
-            <MenuItem icon={<DeleteRegular />} onClick={undefined}>
+            <MenuItem icon={<DeleteRegular />} onClick={handleDelete}>
               Slet
             </MenuItem>
           </MenuList>

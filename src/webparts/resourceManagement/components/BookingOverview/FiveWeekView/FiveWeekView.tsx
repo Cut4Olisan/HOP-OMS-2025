@@ -2,13 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import {
-  Text,
-  DefaultButton,
-  ComboBox,
-  Panel,
-  //ActionButton,
-} from "@fluentui/react";
+import { Text, DefaultButton, ComboBox, Panel } from "@fluentui/react";
 import {
   ArrowLeftRegular,
   ArrowRightRegular,
@@ -23,45 +17,73 @@ import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { useBoolean } from "@fluentui/react-hooks";
 import PeoplePickerComboBox from "./peoplePickerComponent";
-import BookingCardMenu from "./bookingCardMenu";
 import BookingComponent from "../../BookingCreation/BookingComponent";
-import { Button, Tooltip } from "@fluentui/react-components"; //Bruges til at lave iconButtons
+import { Button, Divider } from "@fluentui/react-components";
+import BookingCardMenu from "./bookingCardMenu";
 
-const ItemType = "BOOKING"; // Draggable item type
+const ItemType = "BOOKING";
 
 // Booking Card component
 const BookingCard: React.FC<{
   booking: Registration;
   onDrop: (booking: Registration, newWeekNumber: number) => void;
   onEmployeeClick: (booking: Registration) => void;
-}> = ({ booking, onDrop, onEmployeeClick }) => {
+  projects: IProject[];
+  customers: ICustomer[];
+}> = ({ booking, onDrop, onEmployeeClick, projects, customers }) => {
   const [, drag] = useDrag({
     type: ItemType,
     item: booking,
   });
 
+  const project = projects.find(
+    (project) => Number(project.id) === booking.projectId
+  );
+  const projectName = project?.name || "Unknown Project";
+
+  const customer = customers.find(
+    (customer) => customer.id === project?.customerId
+  );
+  const customerName = customer?.name || "Unknown Customer";
+
+  const capitalize = (word: string) =>
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+
+  const employeeFullName = booking.employee.split("@")[0];
+  const employeeNameParts = employeeFullName.split(".");
+  const formattedEmployeeName = `${capitalize(employeeNameParts[0])} ${capitalize(employeeNameParts[1])}`;
+  const [, setRegistrations] = useState<Registration[]>([]); // This should already be there
+
   return (
     <div ref={drag} className={styles.bookingCard}>
-      <Text className={styles.projectName} variant="medium">
-        {booking.shortDescription}
-      </Text>
+      <div className={styles.TitelAndEditIcon}>
+        <Text className={styles.projectName} variant="medium">
+          {booking.shortDescription}
+        </Text>
+        <BookingCardMenu
+          bookingId={booking.id} // Pass the correct bookingId
+          onBookingDeleted={(deletedBookingId) => {
+            setRegistrations((prevRegistrations) =>
+              prevRegistrations.filter((reg) => reg.id !== deletedBookingId)
+            ); // Update the registrations state by removing the deleted booking
+          }}
+        />
+      </div>
+      <Divider></Divider>
       <Text
         className={styles.employeeName}
         variant="small"
-        onClick={() => onEmployeeClick(booking)} // Navigate to WeeklyView on click
+        onClick={() => onEmployeeClick(booking)}
       >
-        {booking.employee}
+        {formattedEmployeeName}
       </Text>
-      <div className={styles.projectAndEditIcon}>
-        <Text
-          className={styles.customerName /*style navn ændres*/}
-          variant="small"
-        >
-          Project: {booking.projectId /*hente project navn baseret på id*/}
+      <div className={styles.customerAndProjectName}>
+        <Text variant="small">
+          <strong>Kunde </strong> {customerName}
         </Text>
-        <div className={styles.EditIcon}>
-          <BookingCardMenu />
-        </div>
+        <Text variant="small">
+          <strong>Projekt </strong> {projectName}
+        </Text>
       </div>
     </div>
   );
@@ -75,6 +97,8 @@ const WeekColumn: React.FC<{
   bookings: Registration[];
   onDrop: (booking: Registration, newWeekNumber: number) => void;
   onEmployeeClick: (booking: Registration) => void;
+  projects: IProject[];
+  customers: ICustomer[];
 }> = ({
   weekNumber,
   startDate,
@@ -82,6 +106,8 @@ const WeekColumn: React.FC<{
   bookings,
   onDrop,
   onEmployeeClick,
+  projects,
+  customers,
 }) => {
   const [, drop] = useDrop({
     accept: ItemType,
@@ -99,6 +125,8 @@ const WeekColumn: React.FC<{
             booking={booking}
             onDrop={onDrop}
             onEmployeeClick={onEmployeeClick}
+            projects={projects}
+            customers={customers}
           />
         ))
       ) : (
@@ -112,22 +140,13 @@ interface IFiveWeekViewProps {
   context: WebPartContext;
 }
 
-export interface IBookingComponentProps {
-  context: WebPartContext;
-  customers: ICustomer[];
-  coworkers: { key: string; text: string }[];
-  projects: IProject[];
-  onFinish: (bookings: unknown[]) => void;
-}
-
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [projects, setProjects] = useState<IProject[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
-
   const [clearSelection, setClearSelection] = useState<boolean>(false);
-  const [selectedCustomer, setSelectedCustomer] = React.useState<
+  const [selectedCustomer, setSelectedCustomer] = useState<
     ICustomer | undefined
   >(undefined);
   const [selectedProject, setSelectedProject] = useState<string | undefined>(
@@ -137,10 +156,9 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     Registration | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
-  //const [showBookingComponent, setShowBookingComponent] =
-  useState<boolean>(false);
+  const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] =
+    useBoolean(false); // Panel control
 
-  // Fetch data on component mount
   useEffect(() => {
     const fetchData = async (): Promise<void> => {
       try {
@@ -166,23 +184,13 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     }
   }, [clearSelection]);
 
-  //Kunde => project relation i filter
-  const filteredProjects = selectedCustomer
-    ? projects
-        .filter((p) => p.customerId === selectedCustomer.id)
-        .map((project) => ({
-          key: project.id,
-          text: project.name,
-        }))
-    : projects;
-
   const weeksToDisplay = getWeeksFromDate(currentDate);
-  //When filters are updated and reflects to the bookingcard - update to actaully clear the filters
+
   const clearFilters = (): void => {
     setSelectedEmployee([]);
-    setClearSelection(true);
     setSelectedCustomer(undefined);
     setSelectedProject(undefined);
+    setClearSelection(true);
   };
 
   const handlePreviousWeeks = (): void => {
@@ -203,7 +211,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   ): void => {
     const updatedBookings = registrations.map((booking) => {
       if (booking.id === movedBooking.id) {
-        return { ...booking, date: `2024-W${newWeekNumber}` }; // Adjust date format
+        return { ...booking, date: `2024-W${newWeekNumber}` };
       }
       return booking;
     });
@@ -211,19 +219,27 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   };
 
   const handleEmployeeClick = (booking: Registration): void => {
-    setSelectedBooking(booking);
+    setSelectedBooking(booking); // Update selected booking
+    dismissPanel(); // Close panel if open
   };
 
+  // Filter bookings based on selected filters (employee, customer, project)
   const filteredBookings = registrations.filter((booking) => {
+    const project = projects.find((p) => Number(p.id) === booking.projectId);
     return (
       booking.registrationType === 2 &&
       (selectedEmployee.length === 0 ||
         selectedEmployee.includes(booking.employee)) &&
-      (selectedCustomer || selectedCustomer) &&
-      (selectedProject || booking.projectId?.toString() === selectedProject)
+      (!selectedCustomer || project?.customerId === selectedCustomer?.id) &&
+      (!selectedProject || booking.projectId === Number(selectedProject))
     );
   });
 
+  const filteredProjects = selectedCustomer
+    ? projects.filter((p) => p.customerId === selectedCustomer.id)
+    : projects;
+
+  // If an employee is clicked, render the WeeklyView
   if (selectedBooking) {
     const selectedWeekNumber = getWeekNumber(new Date(selectedBooking.date));
     const weekBookings = registrations.filter(
@@ -239,155 +255,158 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
         employeeId={selectedBooking.employee}
         weekBookings={weekBookings}
         employeeName={selectedBooking.employee}
-        onBack={() => setSelectedBooking(undefined)}
+        onBack={() => setSelectedBooking(undefined)} // Reset to go back to FiveWeekView
         onPreviousWeek={handlePreviousWeeks}
         onNextWeek={handleNextWeeks}
+        projects={projects}
+        customers={customers}
       />
     );
   }
-  //Opret booking panel controller
-  const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] =
-    useBoolean(false);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className={styles.container}>
-        <div className={styles.controlsContainer}>
-          <div className={styles.filterContainer}>
-            <PeoplePickerComboBox
-              context={context}
-              onChange={(selectedEmails) => {
-                setSelectedEmployee(selectedEmails); // Directly set the array of emails
-              }}
-              clearSelection={clearSelection}
-            />
+    <div className={styles.teamsContext}>
+      <DndProvider backend={HTML5Backend}>
+        <div className={styles.container}>
+          <div className={styles.controlsContainer}>
+            <div className={styles.filterContainer}>
+              <PeoplePickerComboBox
+                context={context}
+                onChange={(selectedEmails) =>
+                  setSelectedEmployee(selectedEmails)
+                }
+                clearSelection={clearSelection}
+              />
 
-            <ComboBox
-              placeholder="Vælg en kunde"
-              options={customers
-                .filter((c) => c.active)
-                .map((customer) => ({
-                  key: customer.id,
-                  text: customer.name,
+              <ComboBox
+                placeholder="Vælg en kunde"
+                options={customers
+                  .filter((c) => c.active)
+                  .map((customer) => ({
+                    key: customer.id.toString(),
+                    text: customer.name,
+                  }))}
+                selectedKey={selectedCustomer?.id?.toString() || ""}
+                onChange={(e, option) =>
+                  setSelectedCustomer(
+                    customers.find((c) => c.id.toString() === option?.key) ||
+                      undefined
+                  )
+                }
+                calloutProps={{
+                  doNotLayer: true,
+                  className: styles.limitCalloutSize,
+                }}
+                allowFreeInput
+                autoComplete="on"
+              />
+
+              <ComboBox
+                placeholder="Vælg et projekt"
+                options={filteredProjects.map((project: IProject) => ({
+                  key: project.id.toString(),
+                  text: project.name,
                 }))}
-              selectedKey={selectedCustomer?.id}
-              onChange={(e, option) =>
-                option
-                  ? setSelectedCustomer(
-                      customers.find((c) => c.id === Number(option?.key))
-                    )
-                  : undefined
-              }
-              calloutProps={{
-                doNotLayer: true,
-                className: styles.limitCalloutSize,
-              }}
-              allowFreeInput
-              autoComplete="on"
-            />
-            {/*WIP - ufunktionel as of now - fejlen ligger muligvis i filtringen længere oppe.*/}
-            <ComboBox
-              placeholder="Vælg et projekt"
-              options={filteredProjects.map((project) => ({
-                key: "",
-                text: "",
-              }))}
-              selectedKey={selectedProject}
-              onChange={(e, option) =>
-                setSelectedProject(option?.key as string)
-              }
-              calloutProps={{
-                doNotLayer: true,
-                className: styles.limitCalloutSize,
-              }}
-              allowFreeInput
-              autoComplete="on"
-            />
+                selectedKey={selectedProject || ""}
+                onChange={(e, option) =>
+                  setSelectedProject(option?.key as string)
+                }
+                calloutProps={{
+                  doNotLayer: true,
+                  className: styles.limitCalloutSize,
+                }}
+                allowFreeInput
+                autoComplete="on"
+              />
 
-            {(selectedEmployee.length > 0 ||
-              selectedCustomer ||
-              selectedProject) && (
-              <DefaultButton text="Ryd filter" onClick={clearFilters} />
-            )}
-          </div>
+              {(selectedEmployee.length > 0 ||
+                selectedCustomer ||
+                selectedProject) && (
+                <DefaultButton text="Ryd filter" onClick={clearFilters} />
+              )}
+            </div>
 
-          <div className={styles.navigationContainer}>
-            <Panel
-              isOpen={isOpen}
-              closeButtonAriaLabel="Close"
-              isHiddenOnDismiss={true}
-              onDismiss={dismissPanel}
-            >
-              <div>
+            <div className={styles.navigationContainer}>
+              <Panel
+                isOpen={isOpen}
+                closeButtonAriaLabel="Close"
+                isHiddenOnDismiss={true}
+                onDismiss={dismissPanel}
+              >
                 <BookingComponent
                   context={context}
                   customers={customers}
                   coworkers={[]}
                   projects={projects}
-                  dismissPanel //få passed object rigtigt
+                  dismissPanel={dismissPanel}
                   onFinish={(registrations) => {
                     console.log("Finished bookings", registrations);
+                    dismissPanel();
                   }}
                 />
-              </div>
-            </Panel>
+              </Panel>
 
-            <Button
-              appearance="subtle"
-              size="large"
-              icon={<ArrowLeftRegular />}
-              onClick={handlePreviousWeeks}
-            />
-            <Button
-              appearance="subtle"
-              size="large"
-              icon={<ArrowRightRegular />}
-              onClick={handleNextWeeks}
-            />
-            <Button
-              appearance="subtle"
-              size="large"
-              icon={<AddSquareMultipleRegular />}
-              onClick={openPanel}
-            />
-            <Tooltip content="Opret en booking" relationship="label"></Tooltip>
+              <Button
+                appearance="subtle"
+                size="large"
+                icon={<ArrowLeftRegular />}
+                onClick={handlePreviousWeeks}
+              />
+              <Button
+                appearance="subtle"
+                size="large"
+                icon={<ArrowRightRegular />}
+                onClick={handleNextWeeks}
+              />
+              <Button
+                appearance="subtle"
+                size="large"
+                icon={<AddSquareMultipleRegular />}
+                onClick={openPanel}
+              />
+            </div>
+          </div>
+
+          <div className={styles.gridHeader}>
+            {weeksToDisplay.map((week, index) => (
+              <div key={index} className={styles.weekHeader}>
+                <Text variant="large">
+                  <strong>Uge {week.weekNumber}</strong>
+                </Text>
+                <Text variant="small">
+                  {week.start.toLocaleDateString()} -{" "}
+                  {week.end.toLocaleDateString()}
+                </Text>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.weekGrid}>
+            {weeksToDisplay.map((week, index) => {
+              const weekNumber = week.weekNumber;
+              const weekBookings = filteredBookings.filter(
+                (booking) =>
+                  getWeekNumber(new Date(booking.date)) === weekNumber
+              );
+
+              return (
+                <WeekColumn
+                  key={index}
+                  weekNumber={weekNumber}
+                  startDate={week.start.toLocaleDateString()}
+                  endDate={week.end.toLocaleDateString()}
+                  bookings={weekBookings}
+                  onDrop={handleDrop}
+                  onEmployeeClick={handleEmployeeClick}
+                  projects={projects}
+                  customers={customers}
+                />
+              );
+            })}
           </div>
         </div>
-
-        <div className={styles.gridHeader}>
-          {weeksToDisplay.map((week, index) => (
-            <div key={index} className={styles.weekHeader}>
-              <Text variant="large">Uge {week.weekNumber}</Text>
-              <Text variant="small">
-                {week.start.toLocaleDateString()} -{" "}
-                {week.end.toLocaleDateString()}
-              </Text>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.weekGrid}>
-          {weeksToDisplay.map((week, index) => {
-            const weekNumber = week.weekNumber;
-            const weekBookings = filteredBookings.filter(
-              (booking) => getWeekNumber(new Date(booking.date)) === weekNumber
-            );
-
-            return (
-              <WeekColumn
-                key={index}
-                weekNumber={weekNumber}
-                startDate={week.start.toLocaleDateString()}
-                endDate={week.end.toLocaleDateString()}
-                bookings={weekBookings}
-                onDrop={handleDrop}
-                onEmployeeClick={handleEmployeeClick}
-              />
-            );
-          })}
-        </div>
-      </div>
-    </DndProvider>
+      </DndProvider>
+    </div>
   );
 };
 

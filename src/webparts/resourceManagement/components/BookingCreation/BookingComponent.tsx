@@ -40,7 +40,7 @@ export interface IBookingComponentProps {
   coworkers: { key: string; text: string }[];
   projects: IProject[];
   onFinish: (bookings: unknown[]) => void;
-  dismissPanel: boolean;
+  dismissPanel: () => void;
 }
 
 const BookingComponent: React.FC<IBookingComponentProps> = ({
@@ -90,6 +90,8 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       return setError("Kunne ikke oprette booking - Titel er påkrævet");
     if (!selectedCustomer)
       return setError("Kunne ikke oprette booking - Manglende kunde");
+    if (!selectedProject)
+      return setError("Kunne ikke oprette booking - Manglende projekt");
     if (!startDateTime || !endDateTime)
       return setError("Kunne ikke oprette booking - Manglende datoer");
     if (!selectedCoworkers || selectedCoworkers.length === 0)
@@ -124,7 +126,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       return setError(estimatedHours.message);
     }
 
-    // Create a registration for each coworker for each date
     const registrations = selectedCoworkers.flatMap((coworker) =>
       dates.map((date) => {
         const registrationData: RegistrationData = {
@@ -136,8 +137,11 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           time: estimatedHours,
           employee: coworker,
           registrationType: 2, // Booking
+          projectId: Number(selectedProject), // Ensure this is a number
         };
 
+        console.log("Selected Project ID:", selectedProject);
+        console.log("Registration Data:", registrationData);
         return registrationData;
       })
     );
@@ -242,7 +246,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
           <Stack horizontal tokens={{ childrenGap: 10 }}>
             <PrimaryButton text="Gem" onClick={onSave} />
-            <DefaultButton text="Annuller" onClick={undefined} />
+            <DefaultButton text="Annuller" onClick={dismissPanel} />
           </Stack>
         </Stack>
       </Stack>

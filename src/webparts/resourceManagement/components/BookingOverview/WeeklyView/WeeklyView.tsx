@@ -16,35 +16,44 @@ const parseTime = (timeString: string): { hour: number; minute: number } => {
   return { hour, minute };
 };
 
-// Helper function to calculate top offset based on start time
+// Function to get the date object from the booking date string
+const getBookingDate = (bookingDate: string): Date => {
+  return new Date(bookingDate);
+};
+
+// Helper function to calculate the top offset based on start time
 const calculateTopOffset = (start: string): number => {
   const startParts = start.split(":").map(Number);
   return (startParts[1] / 60) * 100; // Convert minutes to a percentage for offset
 };
 
-// Helper function to calculate the start date of a week number
-const getWeekStartDate = (weekNumber: number): Date => {
-  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0;
-  const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
-  startOfYear.setDate(startOfYear.getDate() + daysToAdd);
-  return startOfYear;
+// Helper function to calculate the duration of a booking in timeslots
+const calculateSpan = (start: string, end: string): number => {
+  const startParts = start.split(":").map(Number);
+  const endParts = end.split(":").map(Number);
+  const startMinutes = startParts[0] * 60 + startParts[1];
+  const endMinutes = endParts[0] * 60 + endParts[1];
+  const durationInMinutes = endMinutes - startMinutes;
+  return Math.ceil(durationInMinutes / 15); // Each timeslot represents 15 minutes
 };
 
-interface TimeSlotProps {
+// Adjust `TimeSlot` for date checks and alignment
+const TimeSlot: React.FC<{
   timeSlotId: string;
   booking: Registration | undefined;
   onDrop: (booking: Registration, newStart: string) => void;
   span: number;
   topOffset: number;
-}
-
-const TimeSlot: React.FC<TimeSlotProps> = ({
+  projects: any[];
+  customers: any[];
+}> = ({
   timeSlotId,
   booking,
   onDrop,
   span,
   topOffset,
+  projects,
+  customers,
 }) => {
   const [, drop] = useDrop({
     accept: ItemType,
@@ -58,35 +67,33 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
     item: booking,
   });
 
-  const bookingHeight = booking
-    ? Math.ceil(
-        (parseTime(booking.end).hour * 60 +
-          parseTime(booking.end).minute -
-          (parseTime(booking.start).hour * 60 +
-            parseTime(booking.start).minute)) /
-          15
-      ) * 15
-    : 15; // Default to 15 minutes
+  const bookingDate = booking ? getBookingDate(booking.date) : null;
+
+  const project = projects.find((p) => p.id === booking?.projectId);
+  const projectName = project?.name || "Unknown Project";
+
+  const customer = customers.find(
+    (customer) => customer.id === project?.customerId
+  );
+  const customerName = customer?.name || "Unknown Customer";
+
+  const bookingTime = booking ? `${booking.start} - ${booking.end}` : "";
 
   const shouldAdjustOffset = booking
     ? parseTime(booking.start).minute !== 0
     : false;
 
   return (
-    <div
-      ref={drop}
-      className={styles.timeSlot}
-      style={{ position: "relative" }}
-    >
-      {booking && (
+    <div ref={drop} className={styles.timeSlot}>
+      {booking && bookingDate && (
         <div
           ref={drag}
           className={styles.booking}
           style={{
             top: shouldAdjustOffset
-              ? `calc(${topOffset}px - 0px)` //Ingen behov for offset efter merge? a hva'
+              ? `calc(${topOffset}px - 0px)`
               : `${topOffset}px`,
-            height: `${bookingHeight}px`,
+            height: `${span * 15}px`, // Adjusting the span to match duration
           }}
         >
           <div className={styles.bookingContent}>
@@ -94,16 +101,13 @@ const TimeSlot: React.FC<TimeSlotProps> = ({
               {booking.shortDescription}
             </Text>
             <Text className={styles.bookingEmployee}>{booking.employee}</Text>
-            <Text className={styles.bookingProject}>
-              Project ID: {booking.projectId}
-            </Text>
-            <Text className={styles.bookingDescription}>
-              {booking.description}
-            </Text>
-            <Text className={styles.bookingDate}>{booking.date}</Text>
-            <Text className={styles.bookingTime}>
-              {booking.start} - {booking.end}
-            </Text>
+            <Text
+              className={styles.bookingProject}
+            >{`Customer: ${customerName}`}</Text>
+            <Text
+              className={styles.bookingProject}
+            >{`Project: ${projectName}`}</Text>
+            <Text className={styles.bookingTime}>{bookingTime}</Text>
           </div>
         </div>
       )}
@@ -119,6 +123,8 @@ interface WeeklyViewProps {
   onBack: () => void;
   onPreviousWeek: () => void;
   onNextWeek: () => void;
+  projects: any[];
+  customers: any[];
 }
 
 const WeeklyView: React.FC<WeeklyViewProps> = ({
@@ -129,6 +135,8 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   onBack,
   onPreviousWeek,
   onNextWeek,
+  projects,
+  customers,
 }): JSX.Element => {
   const [currentBookings, setCurrentBookings] = React.useState<Registration[]>(
     []
@@ -136,11 +144,8 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   const [currentWeekNumber, setCurrentWeekNumber] = React.useState<number>(
     parseInt(weekNumber, 10)
   );
-  const [startOfWeek, setStartOfWeek] = React.useState<Date>(
-    getWeekStartDate(currentWeekNumber)
-  );
+  const [startOfWeek, setStartOfWeek] = React.useState<Date>(new Date());
 
-  // Move fetchWeekBookings here to fix the `no-use-before-define` issue
   const fetchWeekBookings = async (weekNum: number): Promise<void> => {
     try {
       const fetchedBookings =
@@ -151,7 +156,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           getWeekNumber(new Date(b.date)) === weekNum
       );
       setCurrentBookings(filteredBookings);
-      setStartOfWeek(getWeekStartDate(weekNum)); // Update startOfWeek
+      setStartOfWeek(new Date()); // Adjust start of week based on the week number
     } catch (error) {
       console.error("Error fetching bookings:", error);
     }
@@ -202,15 +207,6 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const days = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"];
-
-  const calculateSpan = (start: string, end: string): number => {
-    const startParts = start.split(":").map(Number);
-    const endParts = end.split(":").map(Number);
-    const startMinutes = startParts[0] * 60 + startParts[1];
-    const endMinutes = endParts[0] * 60 + endParts[1];
-    const durationInMinutes = endMinutes - startMinutes;
-    return Math.ceil(durationInMinutes / 15);
-  };
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -285,6 +281,8 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
                             onDrop={onBookingDrop}
                             span={span}
                             topOffset={topOffset}
+                            projects={projects}
+                            customers={customers}
                           />
                         );
                       })}

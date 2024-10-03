@@ -32,6 +32,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   height: 600px;
+  scrollbar-width: none;
 }
 
 .gridContainer {
@@ -44,14 +45,16 @@
 .gridHeader {
   display: grid;
   grid-template-columns: 100px repeat(5, 1fr);
-  background-color: #f4f4f4;
+  background-color: var(--colorBrandBackground2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .timeHeader {
-  background-color: #f4f4f4;
+  background-color: var(--colorBrandBackground2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -61,7 +64,7 @@
   text-align: center;
   padding: 10px;
   font-weight: bold;
-  background-color: #f4f4f4;
+  background-color: var(--colorBrandBackground2);
   position: sticky;
   top: 0;
   z-index: 1;

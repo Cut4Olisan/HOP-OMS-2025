@@ -52,7 +52,7 @@ const BookingCard: React.FC<{
   const employeeFullName = booking.employee.split("@")[0];
   const employeeNameParts = employeeFullName.split(".");
   const formattedEmployeeName = `${capitalize(employeeNameParts[0])} ${capitalize(employeeNameParts[1])}`;
-  const [, setRegistrations] = useState<Registration[]>([]); // This should already be there
+  const [, setRegistrations] = useState<Registration[]>([]);
 
   return (
     <div ref={drag} className={styles.bookingCard}>
@@ -61,7 +61,7 @@ const BookingCard: React.FC<{
           {booking.shortDescription}
         </Text>
         <BookingCardMenu
-          bookingId={booking.id} // Pass the correct bookingId
+          bookingId={booking.id}
           onBookingDeleted={(deletedBookingId) => {
             setRegistrations((prevRegistrations) =>
               prevRegistrations.filter((reg) => reg.id !== deletedBookingId)
@@ -330,7 +330,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               <Panel
                 isOpen={isOpen}
                 closeButtonAriaLabel="Close"
-                isHiddenOnDismiss={true}
+                isHiddenOnDismiss={false} // **Hvis sat til true vil panel ikke åbne igen efter at have åbnet site acces eller lign.**
                 onDismiss={dismissPanel}
               >
                 <BookingComponent

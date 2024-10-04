@@ -14,7 +14,7 @@ import {
   CopyAddRegular,
   DeleteRegular,
 } from "@fluentui/react-icons";
-import BackEndService from "../../../services/BackEnd"; // Import BackendService for delete operation
+import BackEndService from "../../../services/BackEnd";
 
 interface IBookingCardMenuProps {
   bookingId: number;
@@ -36,7 +36,7 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
         onBookingDeleted(bookingId); // Pass the bookingId back to the parent
       } catch (error) {
         console.error("Failed to delete booking:", error);
-        alert("Kunne ikke slette booking. Prøv igen."); // Show error message
+        alert("Kunne ikke slette booking. Prøv igen.");
       }
     }
   };

@@ -162,8 +162,8 @@
 .selectedPeopleInline {
   display: flex;
   align-items: center;
-  gap: 4px; // Spacing between selected people avatars
-  overflow: hidden; // Ensure items don't overflow the container
+  gap: 4px;
+  overflow: hidden;
 }
 
 .peoplePickerComboBox {

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { Text, DefaultButton } from "@fluentui/react";
+import { Text, PrimaryButton } from "@fluentui/react";
 import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./WeeklyView.module.scss";
 import { Registration } from "../../interfaces/IRegistrationProps";
@@ -100,7 +100,7 @@ const TimeSlot: React.FC<{
             <Text className={styles.bookingTitle}>
               {booking.shortDescription}
             </Text>
-            <Text className={styles.bookingEmployee}>{booking.employee}</Text>
+            <Text className={styles.bookingEmployee}>{}</Text>
             <Text
               className={styles.bookingProject}
             >{`Customer: ${customerName}`}</Text>
@@ -113,6 +113,13 @@ const TimeSlot: React.FC<{
       )}
     </div>
   );
+};
+
+const capitalize = (word: string) =>
+  word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+const formatEmployeeName = (email: string) => {
+  const nameParts = email.split("@")[0].split(".");
+  return nameParts.map(capitalize).join(" ");
 };
 
 interface WeeklyViewProps {
@@ -138,6 +145,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   projects,
   customers,
 }): JSX.Element => {
+  const formattedEmployeeName = formatEmployeeName(employeeName);
   const [currentBookings, setCurrentBookings] = React.useState<Registration[]>(
     []
   );
@@ -212,10 +220,10 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     <DndProvider backend={HTML5Backend}>
       <div className={styles.weeklyViewContainer}>
         <div className={styles.controlsContainer}>
-          <DefaultButton onClick={onBack}>Tilbage</DefaultButton>
+          <PrimaryButton onClick={onBack}>Tilbage</PrimaryButton>
           <div className={styles.weekInfo}>
             <Text variant="large">
-              Uge {currentWeekNumber} - Bookinger for {employeeName}
+              Uge {currentWeekNumber} - Bookinger for {formattedEmployeeName}
             </Text>
           </div>
           <div className={styles.navigationArrows}>

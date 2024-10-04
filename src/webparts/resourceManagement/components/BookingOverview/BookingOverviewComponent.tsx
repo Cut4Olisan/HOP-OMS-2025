@@ -5,7 +5,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 
 interface OverviewComponentsProps {
-  context: WebPartContext; // Add context prop
+  context: WebPartContext;
 }
 
 const BookingOverviewComponent: React.FC<OverviewComponentsProps> = ({

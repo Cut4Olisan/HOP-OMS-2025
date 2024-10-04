@@ -119,7 +119,6 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
         })
         .filter((email) => email); // Remove empty strings
 
-      // Pass only the array of email strings
       onChange(selectedEmails);
     }
   };

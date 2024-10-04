@@ -137,7 +137,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           time: estimatedHours,
           employee: coworker,
           registrationType: 2, // Booking
-          projectId: Number(selectedProject), // Ensure this is a number
+          projectId: Number(selectedProject),
         };
 
         console.log("Selected Project ID:", selectedProject);

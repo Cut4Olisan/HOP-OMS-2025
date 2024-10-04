@@ -89,12 +89,13 @@
   flex-direction: column;
   border-left: 1px solid #ccc;
   position: relative; /* Set to relative to contain absolutely positioned bookings */
+  background-color: #f9f9f9;
 }
 
 .hourRow {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #ccc;
   height: 60px; /* 4 time slots (15px each) = 1 hour */
 }
 
@@ -102,7 +103,7 @@
   height: 15px; /* Each time slot is 15 minutes */
   position: relative; /* Ensure the booking element is positioned relative to this */
   background-color: #f9f9f9;
-  border-right: 1px solid #eee;
+  border-right: 1px solid #ccc;
   overflow: visible; /* Ensure the overflow is visible so bookings can extend */
 }
 
@@ -110,13 +111,14 @@
   position: absolute;
   left: 0;
   right: 0;
-  background-color: lightgrey;
+  background-color: var(--colorBrandBackground2);
   border-radius: 4px;
-  cursor: move;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   padding: 10px;
+  margin: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   z-index: 1;
@@ -145,7 +147,7 @@
 }
 
 .bookingEmployee {
-  color: #0078d4; /* Highlight the employee name */
+  color: var(--themePrimary);
 }
 
 .bookingTime {

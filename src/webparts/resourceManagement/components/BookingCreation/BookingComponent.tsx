@@ -27,8 +27,8 @@ import RecursionPanel from "./RecursionDate";
 import DateTimePickerComponent from "./DateTimePicker";
 import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
 import {
-  Registration,
-  RegistrationData,
+  IRegistration,
+  IRegistrationData,
 } from "../interfaces/IRegistrationProps";
 import BackEndService from "../../services/BackEnd";
 import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
@@ -128,7 +128,8 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
     const registrations = selectedCoworkers.flatMap((coworker) =>
       dates.map((date) => {
-        const registrationData: RegistrationData = {
+        const registrationData: IRegistrationData = {
+          projectId: selectedProject?.id,
           shortDescription: title,
           description: info,
           date: formatDateForApi(date),
@@ -147,7 +148,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     );
 
     const finishedRegistrations = await Promise.all(
-      registrations.map(async (r: Registration) => {
+      registrations.map(async (r: IRegistration) => {
         return await BackEndService.Instance.createRegistration(r);
       })
     );
@@ -186,11 +187,14 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
           <CustomerProjects
             customers={customers}
+            customerLabel="Vælg kunde"
             projects={projects}
+            projectLabel="Vælg projekt"
             selectedCustomer={selectedCustomer}
             setSelectedCustomer={setSelectedCustomer}
             selectedProject={selectedProject}
             setSelectedProject={setSelectedProject}
+            required={true}
           />
 
           <DateTimePickerComponent

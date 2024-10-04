@@ -22,6 +22,14 @@ export const extractTime = (date: Date | undefined): string => {
   return `${hours}:${minutes}`;
 };
 
+export const dateOnly = (date: string): string => {
+  return date.split("T")[0];
+};
+
+export const formatTime = (time: string): string => {
+  return `T${time}:00`;
+};
+
 export const calculateEstimatedHours = (
   start: Date | undefined,
   end: Date | undefined

@@ -16,12 +16,14 @@ export interface IDateTimeProps {
   label: string;
   value: Date | undefined;
   onChange: (date: Date | undefined) => void;
+  disabled?: boolean;
 }
 
 const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
   label,
   value,
   onChange,
+  disabled = false,
 }) => {
   const defaultDate =
     label === "Sluttid"
@@ -42,7 +44,8 @@ const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
       formatDate={(date) =>
         date ? formatDateForDisplay(date.toISOString()) : ""
       }
-      onChange={onChange}
+      onChange={disabled ? () => {} : onChange}
+      disabled={disabled}
     />
   );
 };

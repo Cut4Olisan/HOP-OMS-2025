@@ -42,7 +42,7 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
   }
 
   protected onInit(): Promise<void> {
-    BackEndService.Init();
+    BackEndService.Init("https://ngage-financial.azurewebsites.net/");
     return this._getEnvironmentMessage().then((message) => {
       this._environmentMessage = message;
     });

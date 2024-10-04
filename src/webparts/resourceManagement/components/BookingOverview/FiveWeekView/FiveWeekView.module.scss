@@ -1,15 +1,5 @@
 @import "~@fluentui/react/dist/sass/References.scss";
 
-.FiveWeekView {
-  overflow: hidden;
-  padding: 1em;
-  color: var(--bodyText);
-
-  &.teams {
-    font-family: $ms-font-family-fallbacks;
-  }
-}
-
 .weekHeader {
   display: flex;
   text-align: center;
@@ -32,8 +22,9 @@
 .container {
   position: relative;
   display: flex;
-  flex-direction: column;
   padding: 20px;
+  flex-direction: column;
+  border-bottom: 1px solid #f9f9f9;
 }
 
 .controlsContainer {
@@ -47,6 +38,10 @@
   display: flex;
   justify-content: flex-start;
   gap: 10px;
+}
+
+.comboboxScaling {
+  transform: scale(1.25);
 }
 
 .navigationContainer {
@@ -95,7 +90,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
   background-color: #ffffff;
-  border-bottom: lightgray;
+  border-bottom: 1px solid #ccc;
   cursor: move;
   gap: 10px;
 }
@@ -174,4 +169,13 @@
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.upIconScale {
+  transform: scale(1.25);
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
 }

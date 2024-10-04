@@ -57,7 +57,7 @@ const BookingCard: React.FC<{
   return (
     <div ref={drag} className={styles.bookingCard}>
       <div className={styles.TitelAndEditIcon}>
-        <Text className={styles.projectName} variant="medium">
+        <Text className={styles.projectName} variant="large">
           {booking.shortDescription}
         </Text>
         <BookingCardMenu
@@ -72,16 +72,16 @@ const BookingCard: React.FC<{
       <Divider></Divider>
       <Text
         className={styles.employeeName}
-        variant="small"
+        variant="medium"
         onClick={() => onEmployeeClick(booking)}
       >
         {formattedEmployeeName}
       </Text>
       <div className={styles.customerAndProjectName}>
-        <Text variant="small">
+        <Text variant="medium">
           <strong>Kunde </strong> {customerName}
         </Text>
-        <Text variant="small">
+        <Text variant="medium">
           <strong>Projekt </strong> {projectName}
         </Text>
       </div>
@@ -130,7 +130,9 @@ const WeekColumn: React.FC<{
           />
         ))
       ) : (
-        <Text>Ingen bookinger</Text>
+        <Text className={styles.centered}>
+          <strong>Ingen bookinger</strong>
+        </Text>
       )}
     </div>
   );
@@ -347,18 +349,21 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               </Panel>
 
               <Button
+                className={styles.upIconScale}
                 appearance="subtle"
                 size="large"
                 icon={<ArrowLeftRegular />}
                 onClick={handlePreviousWeeks}
               />
               <Button
+                className={styles.upIconScale}
                 appearance="subtle"
                 size="large"
                 icon={<ArrowRightRegular />}
                 onClick={handleNextWeeks}
               />
               <Button
+                className={styles.upIconScale}
                 appearance="subtle"
                 size="large"
                 icon={<AddSquareMultipleRegular />}

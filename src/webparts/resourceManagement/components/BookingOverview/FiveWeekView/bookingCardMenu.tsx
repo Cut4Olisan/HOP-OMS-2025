@@ -47,7 +47,7 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
         <MenuTrigger disableButtonEnhancement>
           <Button
             icon={<ClipboardEditRegular />}
-            size="small"
+            size="large"
             appearance="subtle"
           />
         </MenuTrigger>

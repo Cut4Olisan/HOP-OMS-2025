@@ -20,12 +20,6 @@
   margin-top: 5px;
 }
 
-.navigationArrows {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
 .syncScrollContainer {
   display: flex;
   flex-grow: 1;
@@ -155,12 +149,12 @@
   color: #555;
 }
 
-.arrowButton {
-  cursor: pointer;
-  font-size: 24px;
-  color: var(--themePrimary);
+.navigationContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
-.arrowButton:hover {
-  color: var(--themeDark);
+.upIconScale {
+  transform: scale(1.25);
 }

@@ -7,6 +7,7 @@ import styles from "./WeeklyView.module.scss";
 import { Registration } from "../../interfaces/IRegistrationProps";
 import BackEndService from "../../../services/BackEnd";
 import { getWeekNumber } from "../../dateUtils";
+import { Button } from "@fluentui/react-components";
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -226,13 +227,19 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
               Uge {currentWeekNumber} - Bookinger for {formattedEmployeeName}
             </Text>
           </div>
-          <div className={styles.navigationArrows}>
-            <ArrowLeftRegular
-              className={styles.arrowButton}
+          <div className={styles.navigationContainer}>
+            <Button
+              className={styles.upIconScale}
+              appearance="subtle"
+              size="large"
+              icon={<ArrowLeftRegular />}
               onClick={handlePreviousWeek}
             />
-            <ArrowRightRegular
-              className={styles.arrowButton}
+            <Button
+              className={styles.upIconScale}
+              appearance="subtle"
+              size="large"
+              icon={<ArrowRightRegular />}
               onClick={handleNextWeek}
             />
           </div>

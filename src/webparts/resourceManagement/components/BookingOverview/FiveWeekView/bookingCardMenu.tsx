@@ -6,7 +6,7 @@ import {
   MenuList,
   MenuPopover,
   MenuTrigger,
-} from "@fluentui/react-components";
+} from "@fluentui/react-components"; //Fra v9
 import * as React from "react";
 import {
   ClipboardEditRegular,

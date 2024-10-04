@@ -371,12 +371,13 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               />
             </div>
           </div>
-
           <div className={styles.gridHeader}>
             {weeksToDisplay.map((week, index) => (
               <div key={index} className={styles.weekHeader}>
                 <Text variant="large">
                   <strong>Uge {week.weekNumber}</strong>
+                  <Text>(timer)</Text>
+                  {/*regn sum af timer for ugen ud, ved filter regn sum for den/de valgte medarbejdere*/}
                 </Text>
                 <Text variant="small">
                   {week.start.toLocaleDateString()} -{" "}

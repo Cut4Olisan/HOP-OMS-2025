@@ -58,7 +58,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   /*   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [projects, setProjects] = React.useState<Project[]>([]);
  */
-  const [selectedProject, setSelectedProject] = React.useState<string>("");
+  const [selectedProject, setSelectedProject] = React.useState<IProject | undefined>();
   const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
     undefined
   );
@@ -129,6 +129,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     const registrations = selectedCoworkers.flatMap((coworker) =>
       dates.map((date) => {
         const registrationData: IRegistrationData = {
+          projectId: selectedProject?.id,
           shortDescription: title,
           description: info,
           date: formatDateForApi(date),
@@ -183,11 +184,14 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
           <CustomerProjects
             customers={customers}
+            customerLabel="Vælg kunde"
             projects={projects}
+            projectLabel="Vælg projekt"
             selectedCustomer={selectedCustomer}
             setSelectedCustomer={setSelectedCustomer}
             selectedProject={selectedProject}
             setSelectedProject={setSelectedProject}
+            required={true}
           />
 
           <DateTimePickerComponent

@@ -21,5 +21,5 @@ export interface RegistrationType {
 
 export type IRegistrationData = Omit<
   IRegistration,
-  "id" | "projectId" | "invoiceable" | "hourlyRate" | "forecastEstimate"
+  "id" | "invoiceable" | "hourlyRate" | "forecastEstimate"
 >;

@@ -22,6 +22,14 @@ export const extractTime = (date: Date | undefined): string => {
   return `${hours}:${minutes}`;
 };
 
+export const dateOnly = (date: string): string => {
+  return date.split("T")[0];
+};
+
+export const formatTime = (time: string): string => {
+  return `T${time}:00`;
+};
+
 export const calculateEstimatedHours = (
   start: Date | undefined,
   end: Date | undefined
@@ -91,16 +99,16 @@ export const calculateRecurrenceDates = (
   return recurrenceDates;
 };
 
-export const getFormattedDateTimeOfToday = ():Date => {
-    const today = new Date();
-    today.setMinutes(0,0,0);
-    return today;
-}
+export const getFormattedDateTimeOfToday = (): Date => {
+  const today = new Date();
+  today.setMinutes(0, 0, 0);
+  return today;
+};
 
-export const getFormattedDateTimeOfTomorrow = ():Date => {
+export const getFormattedDateTimeOfTomorrow = (): Date => {
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setMinutes(0,0,0);
+  tomorrow.setMinutes(0, 0, 0);
   return tomorrow;
 };

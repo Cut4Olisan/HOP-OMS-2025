@@ -7,6 +7,7 @@ import { ICustomer, IProject } from "./interfaces/ICustomerProjectsProps";
 import BackEndService from "../services/BackEnd";
 import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent";
 import { DefaultButton } from "@fluentui/react";
+import RequestList from "./RequestCreation/RequestList";
 
 export interface IResourceManagementProps {
   isDarkTheme: boolean;
@@ -20,6 +21,7 @@ export enum DEV_WP_VIEW {
   BookingOverview,
   CreateRequestComponent,
   ConfirmRequestComponent,
+  RequestList,
 }
 
 const ResourceManagement: React.FC<IResourceManagementProps> = ({
@@ -61,6 +63,10 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
           text="Bekræft request"
           onClick={() => setWp(DEV_WP_VIEW.ConfirmRequestComponent)}
         />
+        <DefaultButton
+          text="Request liste"
+          onClick={() => setWp(DEV_WP_VIEW.RequestList)}
+        />
       </div>
       <div>
         {wp === DEV_WP_VIEW.BookingComponent && (
@@ -87,6 +93,7 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
             onFinish={(requests) => console.log(requests)}
           />
         )}
+        {wp === DEV_WP_VIEW.RequestList && <RequestList context={context} />}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ export interface IRequestProps {
   context: WebPartContext;
   mode: FormMode;
   onFinish: (requests: IRequestCreateDTO) => void;
+  request?: IRequest;
 }
 
 export interface IRequest {

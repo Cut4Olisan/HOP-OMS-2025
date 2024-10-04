@@ -1,20 +1,26 @@
 import * as React from "react";
-import { ComboBox} from "@fluentui/react";
+import { ComboBox } from "@fluentui/react";
 import { ICustomerProjectsProps } from "../../interfaces/ICustomerProjectsProps";
 import styles from "./CustomerProjects.module.scss";
 
 const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
   customers,
+  customerLabel,
   projects,
+  projectLabel,
   selectedCustomer,
   setSelectedCustomer,
   selectedProject,
   setSelectedProject,
+  required
 }) => {
+  React.useEffect(() => {
+    console.log(selectedProject);
+  }, [selectedProject]);
   return (
     <>
       <ComboBox
-        label="Vælg kunde"
+        label={customerLabel}
         placeholder="Vælg en kunde"
         options={customers
           .filter((c) => c.active)
@@ -33,12 +39,12 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
         calloutProps={{ doNotLayer: true, className: styles.limitCalloutSize }}
         allowFreeInput
         autoComplete="on"
-        required
+        required={required}
       />
 
       {selectedCustomer && (
         <ComboBox
-          label="Vælg projekt"
+          label={projectLabel}
           placeholder="Vælg projekt for kunde"
           options={projects
             .filter((p) => p.customerId === selectedCustomer.id)
@@ -46,12 +52,18 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
               key: project.id,
               text: project.name,
             }))}
-          selectedKey={selectedProject}
-          onChange={(e, option) => setSelectedProject(option?.key as string)}
-          calloutProps={{ doNotLayer: true, className: styles.limitCalloutSize }}
+          selectedKey={selectedProject?.id}
+          onChange={(e, option) =>
+            setSelectedProject(projects.find((p) => p.id === option?.key))
+            
+          }
+          calloutProps={{
+            doNotLayer: true,
+            className: styles.limitCalloutSize,
+          }}
           allowFreeInput
           autoComplete="on"
-          required
+          required={required}
         />
       )}
     </>

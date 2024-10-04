@@ -1,12 +1,15 @@
 export interface ICustomerProjectsProps {
   customers: ICustomer[];
+  customerLabel: string;
   projects: IProject[];
+  projectLabel: string;
   selectedCustomer: ICustomer | undefined;
   setSelectedCustomer: React.Dispatch<
     React.SetStateAction<ICustomer | undefined>
   >;
-  selectedProject: string;
-  setSelectedProject: React.Dispatch<React.SetStateAction<string>>;
+  selectedProject: IProject | undefined;
+  setSelectedProject: React.Dispatch<React.SetStateAction<IProject | undefined>>;
+  required: boolean;
 }
 
 export interface ICustomer {
@@ -16,7 +19,7 @@ export interface ICustomer {
 }
 
 export interface IProject {
-  id: string;
+  id: number;
   name: string;
   customerId: number;
 }

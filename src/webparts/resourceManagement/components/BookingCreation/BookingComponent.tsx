@@ -57,7 +57,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   const [selectedCustomer, setSelectedCustomer] = React.useState<
     ICustomer | undefined
   >(undefined);
-  const [selectedProject, setSelectedProject] = React.useState<string>("");
+  const [selectedProject, setSelectedProject] = React.useState<IProject | undefined>();
   const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
     undefined
   );
@@ -138,7 +138,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           time: estimatedHours,
           employee: coworker,
           registrationType: 2, // Booking
-          projectId: Number(selectedProject),
         };
 
         console.log("Selected Project ID:", selectedProject);

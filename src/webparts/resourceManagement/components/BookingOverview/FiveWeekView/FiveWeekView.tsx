@@ -11,7 +11,7 @@ import {
 import styles from "./FiveWeekView.module.scss";
 import WeeklyView from "../WeeklyView/WeeklyView";
 import BackEndService from "../../../services/BackEnd";
-import { Registration } from "../../interfaces/IRegistrationProps";
+import { IRegistration } from "../../interfaces/IRegistrationProps";
 import { ICustomer, IProject } from "../../interfaces/ICustomerProjectsProps";
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
@@ -25,9 +25,9 @@ const ItemType = "BOOKING";
 
 // Booking Card component
 const BookingCard: React.FC<{
-  booking: Registration;
-  onDrop: (booking: Registration, newWeekNumber: number) => void;
-  onEmployeeClick: (booking: Registration) => void;
+  booking: IRegistration;
+  onDrop: (booking: IRegistration, newWeekNumber: number) => void;
+  onEmployeeClick: (booking: IRegistration) => void;
   projects: IProject[];
   customers: ICustomer[];
 }> = ({ booking, onDrop, onEmployeeClick, projects, customers }) => {
@@ -52,7 +52,7 @@ const BookingCard: React.FC<{
   const employeeFullName = booking.employee.split("@")[0];
   const employeeNameParts = employeeFullName.split(".");
   const formattedEmployeeName = `${capitalize(employeeNameParts[0])} ${capitalize(employeeNameParts[1])}`;
-  const [, setRegistrations] = useState<Registration[]>([]);
+  const [, setRegistrations] = useState<IRegistration[]>([]);
 
   return (
     <div ref={drag} className={styles.bookingCard}>
@@ -94,9 +94,9 @@ const WeekColumn: React.FC<{
   weekNumber: number;
   startDate: string;
   endDate: string;
-  bookings: Registration[];
-  onDrop: (booking: Registration, newWeekNumber: number) => void;
-  onEmployeeClick: (booking: Registration) => void;
+  bookings: IRegistration[];
+  onDrop: (booking: IRegistration, newWeekNumber: number) => void;
+  onEmployeeClick: (booking: IRegistration) => void;
   projects: IProject[];
   customers: ICustomer[];
 }> = ({
@@ -111,7 +111,7 @@ const WeekColumn: React.FC<{
 }) => {
   const [, drop] = useDrop({
     accept: ItemType,
-    drop: (item: Registration) => {
+    drop: (item: IRegistration) => {
       onDrop(item, weekNumber);
     },
   });
@@ -145,7 +145,7 @@ interface IFiveWeekViewProps {
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [projects, setProjects] = useState<IProject[]>([]);
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [registrations, setRegistrations] = useState<IRegistration[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
   const [clearSelection, setClearSelection] = useState<boolean>(false);
   const [selectedCustomer, setSelectedCustomer] = useState<
@@ -155,7 +155,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     undefined
   );
   const [selectedBooking, setSelectedBooking] = useState<
-    Registration | undefined
+    IRegistration | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] =
@@ -208,7 +208,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   };
 
   const handleDrop = (
-    movedBooking: Registration,
+    movedBooking: IRegistration,
     newWeekNumber: number
   ): void => {
     const updatedBookings = registrations.map((booking) => {
@@ -220,7 +220,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     setRegistrations(updatedBookings);
   };
 
-  const handleEmployeeClick = (booking: Registration): void => {
+  const handleEmployeeClick = (booking: IRegistration): void => {
     setSelectedBooking(booking); // Update selected booking
     dismissPanel(); // Close panel if open
   };

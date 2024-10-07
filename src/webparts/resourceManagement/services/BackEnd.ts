@@ -9,7 +9,6 @@ import {
 } from "../components/interfaces/IRegistrationProps";
 import {
   IRequest,
-  IRequestAcceptDTO,
   IRequestCreateDTO,
 } from "../components/RequestCreation/interfaces/IRequestComponentProps";
 

@@ -4,7 +4,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { Text, PrimaryButton } from "@fluentui/react";
 import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./WeeklyView.module.scss";
-import { Registration } from "../../interfaces/IRegistrationProps";
+import { IRegistration } from "../../interfaces/IRegistrationProps";
 import BackEndService from "../../../services/BackEnd";
 import { getWeekNumber } from "../../dateUtils";
 import { Button } from "@fluentui/react-components";
@@ -38,11 +38,18 @@ const calculateSpan = (start: string, end: string): number => {
   return Math.ceil(durationInMinutes / 15); // Each timeslot represents 15 minutes
 };
 
+const getWeekStartDate = (weekNumber: number): Date => {
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0;
+  const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
+  startOfYear.setDate(startOfYear.getDate() + daysToAdd);
+  return startOfYear;
+};
 // Adjust `TimeSlot` for date checks and alignment
 const TimeSlot: React.FC<{
   timeSlotId: string;
-  booking: Registration | undefined;
-  onDrop: (booking: Registration, newStart: string) => void;
+  booking: IRegistration | undefined;
+  onDrop: (booking: IRegistration, newStart: string) => void;
   span: number;
   topOffset: number;
   projects: any[];
@@ -58,7 +65,7 @@ const TimeSlot: React.FC<{
 }) => {
   const [, drop] = useDrop({
     accept: ItemType,
-    drop: (item: Registration) => {
+    drop: (item: IRegistration) => {
       onDrop(item, timeSlotId);
     },
   });
@@ -126,7 +133,7 @@ const formatEmployeeName = (email: string) => {
 interface WeeklyViewProps {
   weekNumber: string;
   employeeId: string;
-  weekBookings: Registration[];
+  weekBookings: IRegistration[];
   employeeName: string;
   onBack: () => void;
   onPreviousWeek: () => void;
@@ -138,7 +145,6 @@ interface WeeklyViewProps {
 const WeeklyView: React.FC<WeeklyViewProps> = ({
   weekNumber,
   employeeId,
-  weekBookings,
   employeeName,
   onBack,
   onPreviousWeek,
@@ -147,13 +153,16 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   customers,
 }): JSX.Element => {
   const formattedEmployeeName = formatEmployeeName(employeeName);
-  const [currentBookings, setCurrentBookings] = React.useState<Registration[]>(
+  const [currentBookings, setCurrentBookings] = React.useState<IRegistration[]>(
     []
   );
   const [currentWeekNumber, setCurrentWeekNumber] = React.useState<number>(
     parseInt(weekNumber, 10)
   );
-  const [startOfWeek, setStartOfWeek] = React.useState<Date>(new Date());
+  //const [currentWeekDays, setCurrentWeekDays] = React.useState<Date>( new Date())
+  const [startOfWeek, setStartOfWeek] = React.useState<Date>(
+    getWeekStartDate(currentWeekNumber)
+  );
 
   const fetchWeekBookings = async (weekNum: number): Promise<void> => {
     try {
@@ -165,7 +174,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           getWeekNumber(new Date(b.date)) === weekNum
       );
       setCurrentBookings(filteredBookings);
-      setStartOfWeek(new Date()); // Adjust start of week based on the week number
+      setStartOfWeek(getWeekStartDate(weekNum)); // Adjust start of week based on the week number
     } catch (error) {
       console.error("Error fetching bookings:", error);
     }
@@ -176,7 +185,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   }, [currentWeekNumber, employeeId]);
 
   const onBookingDrop = (
-    movedBooking: Registration,
+    movedBooking: IRegistration,
     newStart: string
   ): void => {
     const updatedBookings = currentBookings.map((b) => {
@@ -249,7 +258,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           <div className={styles.timeHeader} />
           {days.map((day, i) => (
             <div key={day} className={styles.dayHeader}>
-              <Text>{`${day} - ${weekDays[i].toLocaleDateString()}`}</Text>
+              <Text>{`${day} - ${weekDays[i].toLocaleDateString()} ${console.log(endOfWeek)} ${console.log(currentWeekNumber)}`}</Text>
             </div>
           ))}
         </div>

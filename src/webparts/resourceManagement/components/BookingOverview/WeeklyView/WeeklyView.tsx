@@ -8,6 +8,7 @@ import { IRegistration } from "../../interfaces/IRegistrationProps";
 import BackEndService from "../../../services/BackEnd";
 import { getWeekNumber } from "../../dateUtils";
 import { Button } from "@fluentui/react-components";
+import BookingCardMenu from "../FiveWeekView/bookingCardMenu";
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -75,6 +76,8 @@ const TimeSlot: React.FC<{
     item: booking,
   });
 
+  const [, setRegistrations] = React.useState<IRegistration[]>([]);
+
   const bookingDate = booking ? getBookingDate(booking.date) : null;
 
   const project = projects.find((p) => p.id === booking?.projectId);
@@ -105,10 +108,22 @@ const TimeSlot: React.FC<{
           }}
         >
           <div className={styles.bookingContent}>
-            <Text className={styles.bookingTitle}>
-              {booking.shortDescription}
-            </Text>
-            <Text className={styles.bookingEmployee}>{}</Text>
+            <div className={styles.TitelAndEditIcon}>
+              <Text className={styles.bookingTitle}>
+                {booking.shortDescription}
+              </Text>
+              <BookingCardMenu
+                bookingId={booking.id}
+                onBookingDeleted={(deletedBookingId) => {
+                  setRegistrations((prevRegistrations) =>
+                    prevRegistrations.filter(
+                      (reg) => reg.id !== deletedBookingId
+                    )
+                  ); // Update the registrations state by removing the deleted booking
+                }}
+              />
+            </div>
+            <Text className={styles.bookingEmployee}>{formatEmployeeName}</Text>
             <Text
               className={styles.bookingProject}
             >{`Customer: ${customerName}`}</Text>
@@ -233,7 +248,9 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           <PrimaryButton onClick={onBack}>Tilbage</PrimaryButton>
           <div className={styles.weekInfo}>
             <Text variant="large">
-              Uge {currentWeekNumber} - Bookinger for {formattedEmployeeName}
+              <strong>
+                Uge {currentWeekNumber} - Bookinger for {formattedEmployeeName}
+              </strong>
             </Text>
           </div>
           <div className={styles.navigationContainer}>
@@ -258,7 +275,10 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           <div className={styles.timeHeader} />
           {days.map((day, i) => (
             <div key={day} className={styles.dayHeader}>
-              <Text>{`${day} - ${weekDays[i].toLocaleDateString()} ${console.log(endOfWeek)} ${console.log(currentWeekNumber)}`}</Text>
+              <Text variant="large">
+                <strong>{day}</strong>
+              </Text>
+              <Text>{weekDays[i].toLocaleDateString()}</Text>
             </div>
           ))}
         </div>

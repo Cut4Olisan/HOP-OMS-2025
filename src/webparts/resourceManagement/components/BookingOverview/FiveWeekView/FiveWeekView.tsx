@@ -339,6 +339,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
             <div className={styles.navigationContainer}>
               <Panel
+                type={5}
                 isOpen={isOpen}
                 closeButtonAriaLabel="Close"
                 isHiddenOnDismiss={false} // **Hvis sat til true vil panel ikke åbne igen efter at have åbnet site acces eller lign.**
@@ -395,7 +396,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                   <Text>(timer)</Text>
                   {/*regn sum af timer for ugen ud, ved filter regn sum for den/de valgte medarbejdere*/}
                 </Text>
-                <Text variant="small">
+                <Text>
                   {week.start.toLocaleDateString()} -{" "}
                   {week.end.toLocaleDateString()}
                 </Text>

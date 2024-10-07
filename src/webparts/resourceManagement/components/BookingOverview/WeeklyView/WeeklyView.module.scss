@@ -48,22 +48,22 @@
 
 .timeHeader {
   background-color: var(--colorBrandBackground2);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
 .dayHeader {
+  display: flex;
   text-align: center;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 5px;
   padding: 10px;
   font-weight: bold;
-  background-color: var(--colorBrandBackground2);
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  border-right: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
-  height: 40px; /* Adjust header height */
+  z-index: 2;
 }
 
 .gridRow {
@@ -94,6 +94,7 @@
 }
 
 .timeSlot {
+  display: flex;
   height: 15px; /* Each time slot is 15 minutes */
   position: relative; /* Ensure the booking element is positioned relative to this */
   background-color: #f9f9f9;
@@ -110,7 +111,7 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  //justify-content: start;
   padding: 10px;
   margin: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -121,7 +122,10 @@
 
 .bookingContent {
   display: flex;
+  justify-content: start;
+  align-items: flex-start;
   flex-direction: column;
+  margin: 5px;
   gap: 5px; /* Add space between each content block */
 }
 
@@ -157,4 +161,10 @@
 
 .upIconScale {
   transform: scale(1.25);
+}
+
+.TitelAndEditIcon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

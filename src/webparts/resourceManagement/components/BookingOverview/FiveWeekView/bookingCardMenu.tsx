@@ -44,6 +44,8 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
 
   const editBooking = async () => {};
 
+  const copyBooking = async () => {};
+
   return (
     <div>
       <Menu>
@@ -61,7 +63,7 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
             <MenuItem icon={<EditRegular />} onClick={editBooking}>
               Rediger
             </MenuItem>
-            <MenuItem icon={<CopyAddRegular />} onClick={undefined}>
+            <MenuItem icon={<CopyAddRegular />} onClick={copyBooking}>
               Kopier
             </MenuItem>
             <MenuItem icon={<DeleteRegular />} onClick={handleDelete}>

@@ -1,12 +1,12 @@
 import { AcceptRequestRequestDTO, Api } from "../components/interfaces";
 import {
-  ICustomer,
-  IProject,
-} from "../components/interfaces/ICustomerProjectsProps";
-import {
   IRegistration,
   IRegistrationData,
 } from "../components/interfaces/IRegistrationProps";
+import {
+  ICustomer,
+  IProject,
+} from "../components/RequestCreation/interfaces/IComponentFormData";
 import {
   IRequest,
   IRequestCreateDTO,

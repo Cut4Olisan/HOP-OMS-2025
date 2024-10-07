@@ -4,7 +4,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { Text, PrimaryButton } from "@fluentui/react";
 import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./WeeklyView.module.scss";
-import { Registration } from "../../interfaces/IRegistrationProps";
+import { IRegistration } from "../../interfaces/IRegistrationProps";
 import BackEndService from "../../../services/BackEnd";
 import { getWeekNumber } from "../../dateUtils";
 import { Button } from "@fluentui/react-components";
@@ -41,8 +41,8 @@ const calculateSpan = (start: string, end: string): number => {
 // Adjust `TimeSlot` for date checks and alignment
 const TimeSlot: React.FC<{
   timeSlotId: string;
-  booking: Registration | undefined;
-  onDrop: (booking: Registration, newStart: string) => void;
+  booking: IRegistration | undefined;
+  onDrop: (booking: IRegistration, newStart: string) => void;
   span: number;
   topOffset: number;
   projects: any[];
@@ -58,7 +58,7 @@ const TimeSlot: React.FC<{
 }) => {
   const [, drop] = useDrop({
     accept: ItemType,
-    drop: (item: Registration) => {
+    drop: (item: IRegistration) => {
       onDrop(item, timeSlotId);
     },
   });
@@ -126,7 +126,7 @@ const formatEmployeeName = (email: string) => {
 interface WeeklyViewProps {
   weekNumber: string;
   employeeId: string;
-  weekBookings: Registration[];
+  weekBookings: IRegistration[];
   employeeName: string;
   onBack: () => void;
   onPreviousWeek: () => void;
@@ -147,7 +147,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   customers,
 }): JSX.Element => {
   const formattedEmployeeName = formatEmployeeName(employeeName);
-  const [currentBookings, setCurrentBookings] = React.useState<Registration[]>(
+  const [currentBookings, setCurrentBookings] = React.useState<IRegistration[]>(
     []
   );
   const [currentWeekNumber, setCurrentWeekNumber] = React.useState<number>(
@@ -176,7 +176,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   }, [currentWeekNumber, employeeId]);
 
   const onBookingDrop = (
-    movedBooking: Registration,
+    movedBooking: IRegistration,
     newStart: string
   ): void => {
     const updatedBookings = currentBookings.map((b) => {

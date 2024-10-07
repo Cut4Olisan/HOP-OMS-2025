@@ -6,7 +6,6 @@ import {
   DefaultButton,
   PrimaryButton,
   Stack,
-  DayOfWeek,
   Toggle,
   IPersonaProps,
   MessageBar,
@@ -25,7 +24,6 @@ import {
 } from "../dateUtils";
 import RecursionPanel from "./RecursionDate";
 import DateTimePickerComponent from "./DateTimePicker";
-import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
 import {
   IRegistration,
   IRegistrationData,
@@ -33,6 +31,23 @@ import {
 import BackEndService from "../../services/BackEnd";
 import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
+import {
+  ICustomer,
+  IProject,
+  IRecursionData,
+} from "../RequestCreation/interfaces/IComponentFormData";
+
+export interface IComponentFormData {
+  title: string;
+  info: string;
+  selectedCustomer?: ICustomer;
+  selectedProject?: IProject;
+  startDateTime?: Date;
+  endDateTime?: Date;
+  selectedCoworkers: string[];
+  isRecurring: boolean;
+  recursionData?: IRecursionData;
+}
 
 export interface IBookingComponentProps {
   context: WebPartContext;
@@ -41,6 +56,7 @@ export interface IBookingComponentProps {
   projects: IProject[];
   onFinish: (bookings: unknown[]) => void;
   dismissPanel: () => void;
+  registration?: IRegistration;
 }
 
 const BookingComponent: React.FC<IBookingComponentProps> = ({
@@ -49,29 +65,37 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   customers,
   projects,
   dismissPanel,
+  registration,
 }) => {
-  const [title, setTitle] = React.useState<string>("");
+  const [formData, setFormData] = React.useState<IComponentFormData>({
+    title: "",
+    info: "",
+    isRecurring: false,
+    selectedCoworkers: [],
+  });
+
   const [error, setError] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
-  const [info, setInfo] = React.useState<string>("");
-  const [selectedCustomer, setSelectedCustomer] = React.useState<
-    ICustomer | undefined
-  >(undefined);
-  const [selectedProject, setSelectedProject] = React.useState<IProject | undefined>();
-  const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
-    undefined
-  );
-  const [endDateTime, setEndDateTime] = React.useState<Date | undefined>(
-    undefined
-  );
-  const [selectedCoworkers, setSelectedCoworkers] = React.useState<string[]>(
-    []
-  );
-  const [isRecurring, setIsRecurring] = React.useState<boolean>(false);
-  const [recursionData, setRecursionData] = React.useState<{
-    days: DayOfWeek[];
-    weeks: number;
-  } | null>(null);
+
+  React.useEffect(() => {
+    if (!registration) return;
+
+    const project = projects.find(
+      (p) => p.customerId === registration.projectId
+    );
+    const customer = customers.find((c) => c.id === project?.customerId);
+
+    if (!project || !customer) return;
+
+    return setFormData({
+      title: registration.shortDescription,
+      info: registration.description || "",
+      isRecurring: false,
+      selectedCoworkers: [registration.employee],
+      selectedCustomer: customer,
+      selectedProject: project,
+    });
+  }, []);
 
   React.useEffect(() => {
     setTimeout(() => setSuccess(undefined), 5000);
@@ -82,41 +106,54 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
   const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
     const emails = items.map((item) => item.secondaryText);
-    setSelectedCoworkers(emails.filter((e) => !!e) as string[]);
+    setFormData({
+      ...formData,
+      selectedCoworkers: emails.filter((e) => !!e) as string[],
+    });
   };
 
   const onSave = async (): Promise<void> => {
-    if (!title)
+    if (!formData.title)
       return setError("Kunne ikke oprette booking - Titel er påkrævet");
-    if (!selectedCustomer)
+    if (!formData.selectedCustomer)
       return setError("Kunne ikke oprette booking - Manglende kunde");
-    if (!selectedProject)
+    if (!formData.selectedProject)
       return setError("Kunne ikke oprette booking - Manglende projekt");
-    if (!startDateTime || !endDateTime)
+    if (!formData.startDateTime || !formData.endDateTime)
       return setError("Kunne ikke oprette booking - Manglende datoer");
-    if (!selectedCoworkers || selectedCoworkers.length === 0)
+    if (!formData.selectedCoworkers || formData.selectedCoworkers.length === 0)
       return setError("Kunne ikke oprette booking - Manglende medarbejdere");
 
     let dates: Date[] = [];
-    const dateResult = getDatesBetween(startDateTime, endDateTime);
+    const dateResult = getDatesBetween(
+      formData.startDateTime,
+      formData.endDateTime
+    );
     if (dateResult instanceof Error) {
       console.log(dateResult.message);
     } else {
       dates = dateResult;
     }
 
-    if (isRecurring && recursionData && recursionData.weeks > 0) {
+    if (
+      formData.isRecurring &&
+      formData.recursionData &&
+      formData.recursionData.weeks > 0
+    ) {
       const recurrenceDates = calculateRecurrenceDates(
-        startDateTime,
-        recursionData.days,
-        recursionData.weeks
+        formData.startDateTime,
+        formData.recursionData.days,
+        formData.recursionData.weeks
       );
       dates = [...dates, ...recurrenceDates];
     }
 
-    const startTime = extractTime(startDateTime);
-    const endTime = extractTime(endDateTime);
-    const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
+    const startTime = extractTime(formData.startDateTime);
+    const endTime = extractTime(formData.endDateTime);
+    const estimatedHours = calculateEstimatedHours(
+      formData.startDateTime,
+      formData.endDateTime
+    );
 
     if (dates === undefined || estimatedHours === undefined) {
       return setError("Kunne ikke oprette booking - Ugyldig datoer");
@@ -126,12 +163,12 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       return setError(estimatedHours.message);
     }
 
-    const registrations = selectedCoworkers.flatMap((coworker) =>
+    const registrations = formData.selectedCoworkers.flatMap((coworker) =>
       dates.map((date) => {
         const registrationData: IRegistrationData = {
-          projectId: selectedProject?.id,
-          shortDescription: title,
-          description: info,
+          projectId: formData.selectedProject?.id,
+          shortDescription: formData.title,
+          description: formData.info,
           date: formatDateForApi(date),
           start: startTime,
           end: endTime,
@@ -140,7 +177,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           registrationType: 2, // Booking
         };
 
-        console.log("Selected Project ID:", selectedProject);
+        console.log("Selected Project ID:", formData.selectedProject);
         console.log("Registration Data:", registrationData);
         return registrationData;
       })
@@ -175,8 +212,10 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           <TextField
             label="Titel"
             placeholder="Titel"
-            value={title}
-            onChange={(e, newValue) => setTitle(newValue || "")}
+            value={formData.title}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.currentTarget.value })
+            }
             onGetErrorMessage={(value) => {
               return !!value.length ? "" : "Titel er påkrævet";
             }}
@@ -189,34 +228,43 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             customerLabel="Vælg kunde"
             projects={projects}
             projectLabel="Vælg projekt"
-            selectedCustomer={selectedCustomer}
-            setSelectedCustomer={setSelectedCustomer}
-            selectedProject={selectedProject}
-            setSelectedProject={setSelectedProject}
+            selectedCustomer={formData.selectedCustomer}
+            onUpdateSelectedCustomer={(customer) =>
+              setFormData({ ...formData, selectedCustomer: customer })
+            }
+            selectedProject={formData.selectedProject}
+            onUpdateSelectedProject={(project) =>
+              setFormData({ ...formData, selectedProject: project })
+            }
             required={true}
           />
 
           <DateTimePickerComponent
             label="Starttid"
-            value={startDateTime}
-            onChange={setStartDateTime}
+            value={formData.startDateTime}
+            onChange={(d) => setFormData({ ...formData, startDateTime: d })}
           />
 
           <DateTimePickerComponent
             label="Sluttid"
-            value={endDateTime}
-            onChange={setEndDateTime}
+            value={formData.endDateTime}
+            onChange={(d) => setFormData({ ...formData, endDateTime: d })}
           />
 
           <Toggle
             label="Skal denne booking gentages ugentligt?"
-            checked={isRecurring}
-            onChange={(e, checked) => setIsRecurring(!!checked)}
+            checked={formData.isRecurring}
+            onChange={(e, checked) =>
+              setFormData({ ...formData, isRecurring: !!checked })
+            }
           />
-          {isRecurring && (
+          {formData.isRecurring && (
             <RecursionPanel
               onRecursionChange={(d, w) =>
-                setRecursionData({ days: d, weeks: w })
+                setFormData({
+                  ...formData,
+                  recursionData: { days: d, weeks: w },
+                })
               }
             />
           )}
@@ -241,8 +289,10 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           <TextField
             label="Booking information"
             placeholder="Skriv information om booking"
-            value={info}
-            onChange={(e, newValue) => setInfo(newValue || "")}
+            value={formData.info}
+            onChange={(e) =>
+              setFormData({ ...formData, info: e.currentTarget.value })
+            }
             multiline
             rows={5}
           />

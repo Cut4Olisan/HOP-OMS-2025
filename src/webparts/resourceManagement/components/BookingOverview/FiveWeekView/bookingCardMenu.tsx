@@ -9,12 +9,13 @@ import {
 } from "@fluentui/react-components"; //Fra v9
 import * as React from "react";
 import {
-  ClipboardEditRegular,
+  SettingsCogMultipleRegular,
   EditRegular,
   CopyAddRegular,
   DeleteRegular,
 } from "@fluentui/react-icons";
 import BackEndService from "../../../services/BackEnd";
+import { TooltipHost } from "@fluentui/react";
 
 interface IBookingCardMenuProps {
   bookingId: number;
@@ -41,19 +42,23 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
     }
   };
 
+  const editBooking = async () => {};
+
   return (
     <div>
       <Menu>
-        <MenuTrigger disableButtonEnhancement>
-          <Button
-            icon={<ClipboardEditRegular />}
-            size="large"
-            appearance="subtle"
-          />
-        </MenuTrigger>
+        <TooltipHost content="Mere..">
+          <MenuTrigger disableButtonEnhancement>
+            <Button
+              icon={<SettingsCogMultipleRegular />}
+              size="large"
+              appearance="subtle"
+            />
+          </MenuTrigger>
+        </TooltipHost>
         <MenuPopover className={styles.menuPopover}>
           <MenuList className={styles.menuListItems}>
-            <MenuItem icon={<EditRegular />} onClick={undefined}>
+            <MenuItem icon={<EditRegular />} onClick={editBooking}>
               Rediger
             </MenuItem>
             <MenuItem icon={<CopyAddRegular />} onClick={undefined}>

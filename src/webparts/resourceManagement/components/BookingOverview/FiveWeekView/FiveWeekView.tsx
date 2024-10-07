@@ -2,7 +2,13 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { Text, DefaultButton, ComboBox, Panel } from "@fluentui/react";
+import {
+  Text,
+  DefaultButton,
+  ComboBox,
+  Panel,
+  TooltipHost,
+} from "@fluentui/react";
 import {
   ArrowLeftRegular,
   ArrowRightRegular,
@@ -347,28 +353,35 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                   }}
                 />
               </Panel>
+              <TooltipHost content="Forrige uge..">
+                <Button
+                  className={styles.upIconScale}
+                  appearance="subtle"
+                  size="large"
+                  icon={<ArrowLeftRegular />}
+                  onClick={handlePreviousWeeks}
+                />
+              </TooltipHost>
 
-              <Button
-                className={styles.upIconScale}
-                appearance="subtle"
-                size="large"
-                icon={<ArrowLeftRegular />}
-                onClick={handlePreviousWeeks}
-              />
-              <Button
-                className={styles.upIconScale}
-                appearance="subtle"
-                size="large"
-                icon={<ArrowRightRegular />}
-                onClick={handleNextWeeks}
-              />
-              <Button
-                className={styles.upIconScale}
-                appearance="subtle"
-                size="large"
-                icon={<AddSquareMultipleRegular />}
-                onClick={openPanel}
-              />
+              <TooltipHost content="Næste uge..">
+                <Button
+                  className={styles.upIconScale}
+                  appearance="subtle"
+                  size="large"
+                  icon={<ArrowRightRegular />}
+                  onClick={handleNextWeeks}
+                />
+              </TooltipHost>
+
+              <TooltipHost content="Opret booking..">
+                <Button
+                  className={styles.upIconScale}
+                  appearance="subtle"
+                  size="large"
+                  icon={<AddSquareMultipleRegular />}
+                  onClick={openPanel}
+                />
+              </TooltipHost>
             </div>
           </div>
           <div className={styles.gridHeader}>

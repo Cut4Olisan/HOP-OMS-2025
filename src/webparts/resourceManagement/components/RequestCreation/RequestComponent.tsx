@@ -33,56 +33,75 @@ import { RegistrationDTO } from "../interfaces";
 import { ICustomer, IProject } from "./interfaces/IComponentFormData";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 
+export interface IRequestComponentFormData {
+  title: string;
+  info: string;
+  estimatedHours?: number;
+  selectedCoworkers: string[];
+  startDateTime?: Date;
+  endDateTime?: Date;
+  selectedCustomer?: ICustomer;
+  customers: ICustomer[];
+  selectedProject?: IProject;
+  projects: IProject[];
+}
+
 const RequestComponent: React.FC<IRequestProps> = ({
   context,
   mode,
   onFinish,
   request,
 }) => {
+  const [formData, setFormData] = React.useState<IRequestComponentFormData>({
+    title: "",
+    info: "",
+    selectedCoworkers: [],
+    customers: [],
+    projects: [],
+  });
+
   const [error, setError] = React.useState<string | undefined>();
   const [warning, setWarning] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
-  const [title, setTitle] = React.useState<string>("");
-  const [info, setInfo] = React.useState<string>("");
-  const [estimatedHours, setEstimatedHours] = React.useState<string>("");
-  const [selectedCoworkers, setSelectedCoworkers] = React.useState<string[]>(
-    []
-  );
-  const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
-    undefined
-  );
-  const [endDateTime, setEndDateTime] = React.useState<Date | undefined>(
-    undefined
-  );
-  const [selectedCustomer, setSelectedCustomer] = React.useState<
-    ICustomer | undefined
-  >(undefined);
-  const [customers, setCustomers] = React.useState<ICustomer[]>([]);
-  const [projects, setProjects] = React.useState<IProject[]>([]);
-  const [selectedProject, setSelectedProject] = React.useState<
-    IProject | undefined
-  >();
   const [hasChanges, setHasChanges] = React.useState<boolean>(false);
-
+  const [initialState, setInitialState] = React.useState<string>(
+    JSON.stringify(formData)
+  );
   const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
     const emails = items.map((item) => item.secondaryText);
-    setSelectedCoworkers(emails.filter((e) => !!e) as string[]);
+    setFormData({
+      ...formData,
+      selectedCoworkers: emails.filter((e) => !!e) as string[],
+    });
   };
 
   const isConfirmMode = mode === FormMode.ConfirmRequest;
   const isCreationMode = mode === FormMode.CreateRequest;
-  const startTime = extractTime(startDateTime);
-  const endTime = extractTime(endDateTime);
-  const requiredInformation = title && selectedCustomer;
+  const startTime = extractTime(formData.startDateTime);
+  const endTime = extractTime(formData.endDateTime);
+  const requiredInformation = formData.title && formData.selectedCustomer;
   const hasSufficientInformation =
     requiredInformation &&
-    selectedCoworkers.length > 0 &&
-    startDateTime &&
-    endDateTime;
+    formData.selectedCoworkers.length > 0 &&
+    formData.startDateTime &&
+    formData.endDateTime;
+
+  /*   const updateChangedRequest = (key: keyof IRequestCreateDTO, value: any) => {
+    setChangedRequest((prev) => ({ ...prev, [key]: value }));
+    setHasChanges(true);
+  }; */
+
+  React.useEffect(() => {
+    if (JSON.stringify(formData) !== initialState) {
+      return setHasChanges(true);
+    }
+
+    return setHasChanges(false);
+  }, [formData, initialState]);
 
   const onCreate = async (): Promise<void> => {
-    if (!title) return setError("Titel er påkrævet");
-    if (!selectedCustomer) return setError("Kunde er påkrævet");
+    if (!formData.title) return setError("Titel er påkrævet");
+    if (!formData.selectedCustomer) return setError("Kunde er påkrævet");
 
     // const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
     // if (estimatedHours instanceof Error) {
@@ -90,20 +109,22 @@ const RequestComponent: React.FC<IRequestProps> = ({
     // }
 
     const completeBooking: IRegistrationData = {
-      projectId: selectedProject?.id,
-      shortDescription: title,
-      date: startDateTime ? formatDateForApi(startDateTime) : "",
-      description: info || undefined,
+      projectId: formData.selectedProject?.id,
+      shortDescription: formData.title,
+      date: formData.startDateTime
+        ? formatDateForApi(formData.startDateTime)
+        : "",
+      description: formData.info || undefined,
       start: startTime,
       end: endTime,
-      time: parseInt(estimatedHours) || undefined,
-      employee: selectedCoworkers[0],
+      time: formData.estimatedHours ? formData.estimatedHours : undefined,
+      employee: formData.selectedCoworkers[0],
       registrationType: 5, // Template
     };
     const requestDTO: IRequestCreateDTO = {
-      title: title,
-      shortDescription: info,
-      estimatedHours: parseInt(estimatedHours) || undefined,
+      title: formData.title,
+      shortDescription: formData.info,
+      estimatedHours: formData.estimatedHours || undefined,
       registration: completeBooking,
     };
 
@@ -138,54 +159,44 @@ const RequestComponent: React.FC<IRequestProps> = ({
 
   React.useEffect(() => {
     (async (): Promise<void> => {
-      if (request) {
-        setTitle(request.title);
-        setInfo(request.shortDescription || "");
-        setEstimatedHours(request.estimatedHours?.toString() || "");
+      if (!request) {
+        return setFormData({ ...formData, selectedCoworkers: [] });
+      }
 
-        if (request.registrationId) {
-          const registration = await BackEndService.client.api
+      const registration = request.registrationId
+        ? await BackEndService.client.api
             .registrationsTypeDetail(5)
             .then((r) => r.json() as Promise<RegistrationDTO[]>)
-            .then((d) => d.find((data) => data.id === request.registrationId));
-          if (!registration) return;
+            .then((d) => d.find((data) => data.id === request.registrationId))
+        : undefined;
 
-          if (registration.employee) {
-            setSelectedCoworkers([registration.employee]);
-          }
-          if (registration.projectId) {
-            const project = projects.find(
-              (p) => p.id === registration.projectId
-            );
-            const customer = project
-              ? customers.find((c) => c.id === project.customerId)
-              : undefined;
-
-            setSelectedCustomer(customer);
-            setSelectedProject(project);
-          }
-
-          if (registration.date && registration.start) {
-            setStartDateTime(
-              new Date(
-                `${dateOnly(registration.date)}${formatTime(
-                  registration.start
+      const project = formData.projects.find(
+        (p) => p.id === registration?.projectId
+      );
+      const customer = formData.customers.find(
+        (c) => c.id === project?.customerId
+      );
+      const data: IRequestComponentFormData = {
+        
+          ...formData,
+          title: request.title,
+          info: request.shortDescription || "",
+          estimatedHours: request.estimatedHours,
+          selectedCoworkers: registration?.employee ? [registration.employee] : [],
+          startDateTime: registration
+            ? new Date(
+                `${dateOnly(registration.date as string)}${formatTime(
+                  registration.start as string
                 )}`
               )
-            );
-          }
-        } else {
-          // Fjerner valgte informationer hvis der ikke er nogen
-          // Ellers viser de samme value fra tidligere valgte request
-          setSelectedCoworkers([]);
-        }
-        setHasChanges(false);
-        console.log(hasChanges);
+            : undefined,
+          selectedProject: project ? project : undefined,
+          selectedCustomer: customer ? customer : undefined
       }
+      setFormData(data);
+      setInitialState(JSON.stringify(data))
     })();
-    console.log("customer:", selectedCustomer);
-    console.log("project:", selectedProject);
-  }, [request, customers, projects]);
+  }, [request, formData.customers, formData.projects]);
 
   const onConfirm = async (): Promise<void> => {
     if (!hasSufficientInformation) {
@@ -196,14 +207,16 @@ const RequestComponent: React.FC<IRequestProps> = ({
     }
 
     const completeBooking: IRegistrationData = {
-      projectId: selectedProject?.id,
-      shortDescription: title,
-      description: info || undefined,
-      date: startDateTime ? formatDateForApi(startDateTime) : "",
+      projectId: formData.selectedProject?.id,
+      shortDescription: formData.title,
+      description: formData.info || undefined,
+      date: formData.startDateTime
+        ? formatDateForApi(formData.startDateTime)
+        : "",
       start: startTime,
       end: endTime,
-      time: parseInt(estimatedHours) || undefined,
-      employee: selectedCoworkers[0],
+      time: formData.estimatedHours || undefined,
+      employee: formData.selectedCoworkers[0],
       registrationType: 5, // Template
     };
 
@@ -229,39 +242,21 @@ const RequestComponent: React.FC<IRequestProps> = ({
         ? undefined
         : "Kan ikke oprette en færdig booking med den angivne information - en kladde gemmes i stedet"
     );
-  }, [title, selectedCoworkers, startDateTime, endDateTime]);
+  }, [
+    formData.title,
+    formData.selectedCoworkers,
+    formData.startDateTime,
+    formData.endDateTime,
+  ]);
 
   React.useEffect(() => {
-    const fetchCustomers = async (): Promise<void> => {
-      try {
-        const data = await BackEndService.Instance.getCustomers();
-        setCustomers(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    const fetchProjects = async (): Promise<void> => {
-      try {
-        const data = await BackEndService.Instance.getProjects();
-        setProjects(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    const fetchRequests = async (): Promise<void> => {
-      try {
-        const data = await BackEndService.Instance.getRequests();
-        console.log(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchCustomers().catch((e) => console.error(e));
-    fetchProjects().catch((e) => console.error(e));
-    fetchRequests().catch((e) => console.error(e));
+    (async () => {
+      setFormData({
+        ...formData,
+        customers: await BackEndService.Instance.getCustomers(),
+        projects: await BackEndService.Instance.getProjects(),
+      });
+    })();
   }, []);
 
   return (
@@ -286,60 +281,70 @@ const RequestComponent: React.FC<IRequestProps> = ({
       <TextField
         label="Titel"
         placeholder="Titel"
-        value={title}
+        value={formData.title}
         onChange={(e) => {
-          setEstimatedHours(e.currentTarget.value || "");
-          setHasChanges(true);
+          setFormData({ ...formData, title: e.currentTarget.value });
         }}
         required={isCreationMode}
         disabled={false}
       />
       <CustomerProjects
-        customers={customers}
+        customers={formData.customers}
         customerLabel={isCreationMode ? "Vælg kunde" : "Valgt kunde"}
-        projects={projects}
+        projects={formData.projects}
         projectLabel={
           isCreationMode ? "Vælg kundeprojekt" : "Valgt kundeprojekt"
         }
-        selectedCustomer={selectedCustomer}
-        onUpdateSelectedCustomer={(customer) => setSelectedCustomer(customer)}
-        selectedProject={selectedProject}
-        onUpdateSelectedProject={(project) => setSelectedProject(project)}
+        selectedCustomer={formData.selectedCustomer}
+        onUpdateSelectedCustomer={(customer) =>
+          setFormData({ ...formData, selectedCustomer: customer })
+        }
+        selectedProject={formData.selectedProject}
+        onUpdateSelectedProject={(project) =>
+          setFormData({ ...formData, selectedProject: project })
+        }
         required={isCreationMode}
       />
       <TextField
         label="Antal timer"
         placeholder="Antal timer"
-        value={estimatedHours}
+        value={formData.estimatedHours ? String(formData.estimatedHours) : ""}
         onChange={(e) => {
-          setEstimatedHours(e.currentTarget.value || "");
-          setHasChanges(true);
+          if (!new RegExp(/^[0-9]/g).test(e.currentTarget.value)) {
+            return;
+          }
+
+          return setFormData({
+            ...formData,
+            estimatedHours: Number(e.currentTarget.value),
+          });
         }}
         disabled={false}
       />
       {/* Viser dato/tid-vælgeren i creationMode, eller hvis det
       er read-only og datoer er angivet */}
-      {(isCreationMode || (isConfirmMode && startDateTime && endDateTime)) && (
+      {(isCreationMode ||
+        (isConfirmMode && formData.startDateTime && formData.endDateTime)) && (
         <>
           <DateTimePickerComponent
             label="Starttid"
-            value={startDateTime}
-            onChange={setStartDateTime}
+            value={formData.startDateTime}
+            onChange={(d) => setFormData({ ...formData, startDateTime: d })}
             disabled={false}
           />
           <DateTimePickerComponent
             label="Sluttid"
-            value={endDateTime}
-            onChange={setEndDateTime}
+            value={formData.endDateTime}
+            onChange={(d) => setFormData({ ...formData, endDateTime: d })}
             disabled={false}
           />
         </>
       )}
-      {isConfirmMode && startDateTime && (
+      {isConfirmMode && formData.startDateTime && (
         <DateTimePickerComponent
           label="Starttid"
-          value={startDateTime}
-          onChange={setStartDateTime}
+          value={formData.startDateTime}
+          onChange={(d) => setFormData({ ...formData, startDateTime: d })}
           disabled={false}
         />
       )}
@@ -361,11 +366,11 @@ const RequestComponent: React.FC<IRequestProps> = ({
         />
       )}
       {/* Viser valgte medarbejdere i et disabled textfield i readOnly */}
-      {isConfirmMode && selectedCoworkers.length > 0 && (
+      {isConfirmMode && formData.selectedCoworkers.length > 0 && (
         <TextField
           label="Valgt medarbejdere"
           placeholder="Medarbejder"
-          value={selectedCoworkers
+          value={formData.selectedCoworkers
             .map((email) => {
               const [name] = email.split("@");
               const formattedName = name
@@ -379,15 +384,14 @@ const RequestComponent: React.FC<IRequestProps> = ({
           disabled={false}
         />
       )}
-      {(isCreationMode || (isConfirmMode && info)) && (
+      {(isCreationMode || (isConfirmMode && formData.info)) && (
         <TextField
           label="Booking information"
           placeholder="Skriv information om booking"
-          value={info}
-          onChange={(e) => {
-            setEstimatedHours(e.currentTarget.value || "");
-            setHasChanges(true);
-          }}
+          value={formData.info}
+          onChange={(e) =>
+            setFormData({ ...formData, info: e.currentTarget.value })
+          }
           multiline
           rows={5}
           disabled={false}
@@ -404,16 +408,14 @@ const RequestComponent: React.FC<IRequestProps> = ({
             <PrimaryButton text="Opdater" onClick={onUpdate} />
             <DefaultButton text="Annuller" />
           </>
-        ) : isConfirmMode ? (
-          <>
-            <PrimaryButton text="Godkend" onClick={onConfirm} />
-            <DefaultButton text="Afvis" />
-          </>
         ) : (
-          <>
-            <PrimaryButton text="Opdater" onClick={onUpdate} />
-            <DefaultButton text="Annuller" />
-          </>
+          isConfirmMode &&
+          !hasChanges && (
+            <>
+              <PrimaryButton text="Godkend" onClick={onConfirm} />
+              <DefaultButton text="Afvis" />
+            </>
+          )
         )}
       </Stack>
     </Stack>

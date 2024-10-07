@@ -3,10 +3,17 @@ import BookingComponent from "./BookingCreation/BookingComponent";
 import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IRegistration } from "./interfaces/IRegistrationProps";
+import RequestComponent from "./RequestCreation/RequestComponent";
+import { FormMode } from "./RequestCreation/interfaces/IRequestComponentProps";
+import RequestList from "./RequestCreation/RequestList";
+import { DefaultButton } from "@fluentui/react";
 
 export enum DEV_WP_VIEW {
   BookingComponent,
   BookingOverview,
+  CreateRequestComponent,
+  ConfirmRequestComponent,
+  RequestList,
 }
 
 export interface IResourceManagementProps {
@@ -19,7 +26,7 @@ export interface IResourceManagementProps {
 const ResourceManagement: React.FC<IResourceManagementProps> = ({
   context,
 }) => {
-  const [view] = React.useState<DEV_WP_VIEW>(DEV_WP_VIEW.BookingOverview);
+  const [view, setView] = React.useState<DEV_WP_VIEW>(DEV_WP_VIEW.BookingOverview);
   const [selectedRegistration, setSelectedRegistration] = React.useState<
     IRegistration | undefined
   >();
@@ -33,6 +40,18 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
 
   return (
     <div>
+      <DefaultButton
+        text="Opret request"
+        onClick={() => setView(DEV_WP_VIEW.CreateRequestComponent)}
+      />
+      <DefaultButton
+        text="Bekræft request"
+        onClick={() => setView(DEV_WP_VIEW.ConfirmRequestComponent)}
+      />
+      <DefaultButton
+        text="Request liste"
+        onClick={() =>  setView(DEV_WP_VIEW.RequestList)}
+      />
       {view === DEV_WP_VIEW.BookingOverview && (
         <BookingOverviewComponent context={context} />
       )}
@@ -50,6 +69,21 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
           }}
         />
       )}
+      {view === DEV_WP_VIEW.CreateRequestComponent && (
+        <RequestComponent
+          context={context}
+          mode={FormMode.CreateRequest}
+          onFinish={(requests) => console.log(requests)}
+        />
+      )}
+      {view === DEV_WP_VIEW.ConfirmRequestComponent && (
+        <RequestComponent
+          context={context}
+          mode={FormMode.ConfirmRequest}
+          onFinish={(requests) => console.log(requests)}
+        />
+      )}
+      {view === DEV_WP_VIEW.RequestList && <RequestList context={context} />}
     </div>
   );
 };

@@ -20,9 +20,7 @@ import {
 } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import DateTimePickerComponent from "../BookingCreation/DateTimePicker";
 import { FormMode } from "./interfaces/IRequestComponentProps";
-import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 import BackEndService from "../../services/BackEnd";
-import { ICustomer, IProject } from "../interfaces/ICustomerProjectsProps";
 import {
   dateOnly,
   extractTime,
@@ -32,6 +30,8 @@ import {
 } from "../dateUtils";
 import { IRegistrationData } from "../interfaces/IRegistrationProps";
 import { RegistrationDTO } from "../interfaces";
+import { ICustomer, IProject } from "./interfaces/IComponentFormData";
+import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 
 const RequestComponent: React.FC<IRequestProps> = ({
   context,
@@ -208,9 +208,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
     };
 
     try {
-      const result = await BackEndService.Instance.api.registrationsCreate(
-        completeBooking
-      );
+      const result =
+        await BackEndService.Instance.api.registrationsCreate(completeBooking);
       console.log(result);
       setSuccess("Anmodning bekræftet og booking oprettet!");
       console.warn("Anmodning bekræftet", result);
@@ -303,9 +302,9 @@ const RequestComponent: React.FC<IRequestProps> = ({
           isCreationMode ? "Vælg kundeprojekt" : "Valgt kundeprojekt"
         }
         selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
+        onUpdateSelectedCustomer={(customer) => setSelectedCustomer(customer)}
         selectedProject={selectedProject}
-        setSelectedProject={setSelectedProject}
+        onUpdateSelectedProject={(project) => setSelectedProject(project)}
         required={isCreationMode}
       />
       <TextField

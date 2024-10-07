@@ -1,7 +1,22 @@
 import * as React from "react";
 import { ComboBox } from "@fluentui/react";
-import { ICustomerProjectsProps } from "../../interfaces/ICustomerProjectsProps";
 import styles from "./CustomerProjects.module.scss";
+import {
+  ICustomer,
+  IProject,
+} from "../../RequestCreation/interfaces/IComponentFormData";
+
+export interface ICustomerProjectsProps {
+  customers: ICustomer[];
+  customerLabel: string;
+  projects: IProject[];
+  projectLabel: string;
+  selectedCustomer: ICustomer | undefined;
+  onUpdateSelectedCustomer: (customer: ICustomer) => void;
+  selectedProject: IProject | undefined;
+  onUpdateSelectedProject: (project: IProject) => void;
+  required: boolean;
+}
 
 const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
   customers,
@@ -9,9 +24,9 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
   projects,
   projectLabel,
   selectedCustomer,
-  setSelectedCustomer,
+  onUpdateSelectedCustomer,
   selectedProject,
-  setSelectedProject,
+  onUpdateSelectedProject,
   required,
 }) => {
   React.useEffect(() => {
@@ -29,13 +44,12 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
             text: customer.name,
           }))}
         selectedKey={selectedCustomer?.id}
-        onChange={(e, option) =>
-          option
-            ? setSelectedCustomer(
-                customers.find((c) => c.id === Number(option?.key))
-              )
-            : undefined
-        }
+        onChange={(e, option) => {
+          const customer = customers.find((c) => c.id === option?.key);
+          if (!customer) return;
+
+          return onUpdateSelectedCustomer(customer);
+        }}
         calloutProps={{ doNotLayer: true, className: styles.limitCalloutSize }}
         allowFreeInput
         autoComplete="on"
@@ -53,9 +67,12 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
               text: project.name,
             }))}
           selectedKey={selectedProject?.id}
-          onChange={(e, option) =>
-            setSelectedProject(projects.find((p) => p.id === option?.key))
-          }
+          onChange={(e, option) => {
+            const project = projects.find((p) => p.id === option?.key);
+            if (!project) return;
+
+            return onUpdateSelectedProject(project);
+          }}
           calloutProps={{
             doNotLayer: true,
             className: styles.limitCalloutSize,

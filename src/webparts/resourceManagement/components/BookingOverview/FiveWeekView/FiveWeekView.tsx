@@ -18,7 +18,6 @@ import styles from "./FiveWeekView.module.scss";
 import WeeklyView from "../WeeklyView/WeeklyView";
 import BackEndService from "../../../services/BackEnd";
 import { IRegistration } from "../../interfaces/IRegistrationProps";
-import { ICustomer, IProject } from "../../interfaces/ICustomerProjectsProps";
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { useBoolean } from "@fluentui/react-hooks";
@@ -26,6 +25,10 @@ import PeoplePickerComboBox from "./peoplePickerComponent";
 import BookingComponent from "../../BookingCreation/BookingComponent";
 import { Button, Divider } from "@fluentui/react-components";
 import BookingCardMenu from "./bookingCardMenu";
+import {
+  ICustomer,
+  IProject,
+} from "../../RequestCreation/interfaces/IComponentFormData";
 
 const ItemType = "BOOKING";
 

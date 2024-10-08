@@ -3,9 +3,9 @@ import styles from "./MenuBurnDownRate.module.scss";
 import * as React from "react";
 import { GaugeChart } from "@fluentui/react-charting";
 
-interface IMenuBurnDownRateProps {}
+interface IBurnDownRateProps {}
 
-const MenuBurnDownRate: React.FC<IMenuBurnDownRateProps> = ({}) => {
+const BurnDownRate: React.FC<IBurnDownRateProps> = ({}) => {
   return (
     <div className={styles.container}>
       <div className={styles.navbar}>
@@ -22,4 +22,4 @@ const MenuBurnDownRate: React.FC<IMenuBurnDownRateProps> = ({}) => {
   );
 };
 
-export default MenuBurnDownRate;
+export default BurnDownRate;

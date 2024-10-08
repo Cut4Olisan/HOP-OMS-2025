@@ -34,8 +34,7 @@ import {
 import RequestComponent from "../../RequestCreation/RequestComponent";
 import { FormMode } from "../../RequestCreation/interfaces/IRequestComponentProps";
 import RequestList from "../../RequestCreation/RequestList";
-import MenuBurnDownRate from "../ProjectBurnDownRate/MenuBurnDownRate/MenuBurnDownRate";
-//import MenuBurnDownRate from "../ProjectBurnDownRate/MenuBurnDownRate/MenuBurnDownRate";
+import BurnDownRate from "../ProjectBurnDownRate/BurnDownRate/BurnDownRate";
 
 const ItemType = "BOOKING"; //Til drag n' drop WIP
 
@@ -478,7 +477,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                 isHiddenOnDismiss={false}
                 onDismiss={dismissBurnDownPanel}
               >
-                <MenuBurnDownRate></MenuBurnDownRate>
+                <BurnDownRate></BurnDownRate>
               </Panel>
 
               <TooltipHost content="Forrige uge..">

@@ -1,0 +1,41 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+.container {
+  display: block;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  width: 100%;
+  gap: 5px;
+}
+
+.burnDownContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #ccc;
+  gap: 10px;
+}
+
+.customer {
+  display: flex;
+}
+
+.burnDownInfo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.Chart {
+  display: flex;
+  align-items: flex-end;
+}

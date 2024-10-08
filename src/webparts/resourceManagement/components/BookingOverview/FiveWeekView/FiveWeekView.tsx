@@ -8,6 +8,8 @@ import {
   ComboBox,
   Panel,
   TooltipHost,
+  CommandBar,
+  ICommandBarItemProps,
 } from "@fluentui/react";
 import {
   ArrowLeftRegular,
@@ -29,10 +31,15 @@ import {
   ICustomer,
   IProject,
 } from "../../RequestCreation/interfaces/IComponentFormData";
+import RequestComponent from "../../RequestCreation/RequestComponent";
+import { FormMode } from "../../RequestCreation/interfaces/IRequestComponentProps";
+import RequestList from "../../RequestCreation/RequestList";
+import MenuBurnDownRate from "../ProjectBurnDownRate/MenuBurnDownRate/MenuBurnDownRate";
+//import MenuBurnDownRate from "../ProjectBurnDownRate/MenuBurnDownRate/MenuBurnDownRate";
 
-const ItemType = "BOOKING";
+const ItemType = "BOOKING"; //Til drag n' drop WIP
 
-// Booking Card component
+//***                 Booking Card component                 ***//
 const BookingCard: React.FC<{
   booking: IRegistration;
   onDrop: (booking: IRegistration, newWeekNumber: number) => void;
@@ -84,7 +91,7 @@ const BookingCard: React.FC<{
         variant="medium"
         onClick={() => onEmployeeClick(booking)}
       >
-        {formattedEmployeeName}
+        <strong>{formattedEmployeeName}</strong>
       </Text>
       <div className={styles.customerAndProjectName}>
         <Text variant="medium">
@@ -98,7 +105,9 @@ const BookingCard: React.FC<{
   );
 };
 
-// Weekly Column component
+//***                 Booking Card component                 ***//
+
+//***                Weekly coloumn component                ***//
 const WeekColumn: React.FC<{
   weekNumber: number;
   startDate: string;
@@ -147,6 +156,8 @@ const WeekColumn: React.FC<{
   );
 };
 
+//***                Weekly coloumn component                ***//
+
 interface IFiveWeekViewProps {
   context: WebPartContext;
 }
@@ -167,8 +178,34 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     IRegistration | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] =
-    useBoolean(false); // Panel control
+
+  //***                  Panel controllers                  ***//
+  const [
+    isBookingOpen,
+    { setTrue: openBookingPanel, setFalse: dismissBookingPanel },
+  ] = useBoolean(false); //Create Bookings
+
+  const [
+    isRequestOpen,
+    { setTrue: openRequestPanel, setFalse: dismissRequestPanel },
+  ] = useBoolean(false); //Create Request
+
+  const [
+    isRequestListOpen,
+    { setTrue: openRequestListPanel, setFalse: dismissRequestListPanel },
+  ] = useBoolean(false); //Requests list
+
+  const [
+    isBurnDownOpen,
+    { setTrue: openBurnDownPanel, setFalse: dismissBurnDownPanel },
+  ] = useBoolean(false);
+
+  /*const [
+    isSentRequestOpen,
+    { setTrue: openSentRequestPanel, setFalse: dismissSentRequestPanel },
+  ] = useBoolean(false); //Create Request*/
+
+  //***                  Panel controllers                  ***//
 
   useEffect(() => {
     const fetchData = async (): Promise<void> => {
@@ -231,7 +268,6 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
   const handleEmployeeClick = (booking: IRegistration): void => {
     setSelectedBooking(booking); // Update selected booking
-    dismissPanel(); // Close panel if open
   };
 
   // Filter bookings based on selected filters (employee, customer, project)
@@ -275,10 +311,56 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     );
   }
 
+  const _items: ICommandBarItemProps[] = [
+    {
+      key: "Overview",
+      text: "Oversigt",
+      iconProps: { iconName: "report" },
+      onClick: () => undefined,
+    },
+    {
+      key: "Capacity",
+      text: "Kapacitet",
+      iconProps: { iconName: "report" },
+      onClick: () => undefined,
+    },
+    {
+      key: "Burndown",
+      text: "Burndown-rate",
+      iconProps: { iconName: "" },
+      onClick: openBurnDownPanel,
+    },
+    {
+      key: "Requests",
+      text: "Anmodninger",
+      iconProps: { iconName: "List" },
+      subMenuProps: {
+        items: [
+          {
+            key: "receivedRequests",
+            text: "Modtagede anmodninger",
+            onClick: openRequestListPanel,
+          },
+          {
+            key: "sentRequests",
+            text: "Sendte anmodninger",
+            onClick: () => undefined,
+          },
+          {
+            key: "createRequests",
+            text: "Opret anmodning",
+            onClick: openRequestPanel,
+          },
+        ],
+      },
+    },
+  ];
+
   return (
     <div className={styles.teamsContext}>
       <DndProvider backend={HTML5Backend}>
         <div className={styles.container}>
+          <CommandBar items={_items}></CommandBar>
           <div className={styles.controlsContainer}>
             <div className={styles.filterContainer}>
               <PeoplePickerComboBox
@@ -337,26 +419,68 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               )}
             </div>
 
+            {/*Opret booking panel*/}
             <div className={styles.navigationContainer}>
               <Panel
                 type={5}
-                isOpen={isOpen}
+                isOpen={isBookingOpen}
                 closeButtonAriaLabel="Close"
                 isHiddenOnDismiss={false} // **Hvis sat til true vil panel ikke åbne igen efter at have åbnet site acces eller lign.**
-                onDismiss={dismissPanel}
+                onDismiss={dismissBookingPanel}
               >
                 <BookingComponent
                   context={context}
                   customers={customers}
                   coworkers={[]}
                   projects={projects}
-                  dismissPanel={dismissPanel}
+                  dismissPanel={dismissBookingPanel}
                   onFinish={(registrations) => {
                     console.log("Finished bookings", registrations);
-                    dismissPanel();
+                    dismissBookingPanel();
                   }}
                 />
               </Panel>
+
+              {/*Opret request panel*/}
+              <Panel
+                type={5}
+                isOpen={isRequestOpen}
+                closeButtonAriaLabel="Close"
+                isHiddenOnDismiss={false}
+                onDismiss={dismissRequestPanel}
+              >
+                <RequestComponent
+                  context={context}
+                  mode={FormMode.CreateRequest}
+                  onFinish={(request) => {
+                    console.log("Finished request", request);
+                    dismissRequestPanel();
+                  }}
+                ></RequestComponent>
+              </Panel>
+
+              {/*Request liste panel*/}
+              <Panel
+                type={5}
+                isOpen={isRequestListOpen}
+                closeButtonAriaLabel="Close"
+                isHiddenOnDismiss={false}
+                onDismiss={dismissRequestListPanel}
+              >
+                <RequestList context={context}></RequestList>
+              </Panel>
+
+              {/*Burndown panel*/}
+              <Panel
+                type={5}
+                isOpen={isBurnDownOpen}
+                closeButtonAriaLabel="Close"
+                isHiddenOnDismiss={false}
+                onDismiss={dismissBurnDownPanel}
+              >
+                <MenuBurnDownRate></MenuBurnDownRate>
+              </Panel>
+
               <TooltipHost content="Forrige uge..">
                 <Button
                   className={styles.upIconScale}
@@ -383,7 +507,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                   appearance="subtle"
                   size="large"
                   icon={<AddSquareMultipleRegular />}
-                  onClick={openPanel}
+                  onClick={openBookingPanel}
                 />
               </TooltipHost>
             </div>

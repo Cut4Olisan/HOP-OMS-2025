@@ -13,6 +13,11 @@ const BurnDownRate: React.FC<IBurnDownRateProps> = ({}) => {
         <ComboBox multiSelect options={[]}></ComboBox>
         <PrimaryButton>Nustil filter</PrimaryButton>
       </div>
+      <div className={styles.header}>
+        <Text>
+          <strong>Burndown rate på projekter</strong>
+        </Text>
+      </div>
       <div className={styles.burnDownContent}>
         <div className={styles.burnDownInfo}>
           <Text>

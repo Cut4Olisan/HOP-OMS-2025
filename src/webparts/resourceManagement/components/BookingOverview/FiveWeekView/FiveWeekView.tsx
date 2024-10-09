@@ -25,6 +25,7 @@ import useGlobal from "../../../hooks/useGlobal";
 import { CustomerDTO, ProjectDTO } from "../../interfaces";
 import BackEndService from "../../../services/BackEnd";
 import WeekColumn from "./WeekColumn/WeekColumn";
+import { calculateWeeklyHours } from "../HelperFunctions/helperFunctions";
 
 interface IFiveWeekViewProps {
   context: WebPartContext;
@@ -257,8 +258,19 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               <div key={index} className={styles.weekHeader}>
                 <Text variant="large">
                   <strong>Uge {week.weekNumber}</strong>
-                  <Text>(timer)</Text>
-                  {/*regn sum af timer for ugen ud, ved filter regn sum for den/de valgte medarbejdere*/}
+                  <Text>
+                    (
+                    {calculateWeeklyHours(
+                      week.start,
+                      week.end,
+                      registrations,
+                      projects,
+                      selectedEmployee,
+                      selectedCustomer?.id,
+                      selectedProject ? Number(selectedProject) : undefined
+                    )}{" "}
+                    timer)
+                  </Text>
                 </Text>
                 <Text>
                   {week.start.toLocaleDateString()} -{" "}

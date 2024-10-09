@@ -45,7 +45,6 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   const [currentWeekNumber, setCurrentWeekNumber] = React.useState<number>(
     parseInt(weekNumber, 10)
   );
-  //const [currentWeekDays, setCurrentWeekDays] = React.useState<Date>( new Date())
   const [startOfWeek, setStartOfWeek] = React.useState<Date>(
     getWeekStartDate(currentWeekNumber)
   );
@@ -71,6 +70,37 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
       console.error("Error fetching bookings:", error);
     });
   }, [currentWeekNumber, employeeId]);
+
+  // Helper function to calculate the difference in hours between two times - needs to be reworked later
+  const calculateHoursFromStartAndEnd = (
+    start: string,
+    end: string
+  ): number => {
+    const [startHours, startMinutes] = start.split(":").map(Number);
+    const [endHours, endMinutes] = end.split(":").map(Number);
+
+    const startTimeInMinutes = startHours * 60 + startMinutes;
+    const endTimeInMinutes = endHours * 60 + endMinutes;
+
+    return (endTimeInMinutes - startTimeInMinutes) / 60;
+  };
+
+  const calculateDailyHours = (dayDate: Date): number => {
+    const filteredBookings = currentBookings.filter((booking) => {
+      const bookingDate = new Date(booking.date);
+      const isSameDay = bookingDate.toDateString() === dayDate.toDateString();
+      return isSameDay;
+    });
+
+    const totalHours = filteredBookings.reduce((total, booking) => {
+      const bookingHours =
+        booking.time ??
+        calculateHoursFromStartAndEnd(booking.start, booking.end);
+      return total + bookingHours;
+    }, 0);
+
+    return totalHours;
+  };
 
   const onBookingDrop = (
     movedBooking: IRegistration,
@@ -101,9 +131,6 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     onNextWeek();
     setCurrentWeekNumber(updatedWeek);
   };
-
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 4);
 
   const weekDays = Array.from({ length: 5 }, (_, i) => {
     const date = new Date(startOfWeek);
@@ -150,6 +177,10 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
             <div key={day} className={styles.dayHeader}>
               <Text variant="large">
                 <strong>{day}</strong>
+                <Text>
+                  ({calculateDailyHours(weekDays[i])}
+                  {""}Timer)
+                </Text>
               </Text>
               <Text>{weekDays[i].toLocaleDateString()}</Text>
             </div>

@@ -1,3 +1,6 @@
+import { ProjectDTO } from "../../interfaces";
+import { IRegistration } from "../../interfaces/IRegistrationProps";
+
 // Function to get the date object from the booking date string
 export const getBookingDate = (bookingDate: string): Date => {
   return new Date(bookingDate);
@@ -34,4 +37,45 @@ export const capitalize = (word: string): string => {
 export const formatEmployeeName = (email: string): string => {
   const nameParts = email.split("@")[0].split(".");
   return nameParts.map(capitalize).join(" ");
+};
+
+export const calculateWeeklyHours = (
+  startDate: Date,
+  endDate: Date,
+  bookings: IRegistration[],
+  projects: ProjectDTO[],
+  selectedEmployees: string[] = [],
+  selectedCustomerId?: number,
+  selectedProjectId?: number
+): number => {
+  const filteredBookings = bookings.filter((booking) => {
+    const project = projects.find((p) => Number(p.id) === booking.projectId);
+    const bookingDate = new Date(booking.date);
+
+    const matchesDateRange = bookingDate >= startDate && bookingDate <= endDate;
+    const matchesEmployee =
+      selectedEmployees.length === 0 ||
+      selectedEmployees.includes(booking.employee);
+    const matchesCustomer =
+      !selectedCustomerId || project?.customerId === selectedCustomerId;
+    const matchesProject =
+      !selectedProjectId || booking.projectId === selectedProjectId;
+    const matchesRegistrationType = booking.registrationType === 2;
+
+    const isMatch =
+      matchesDateRange &&
+      matchesEmployee &&
+      matchesCustomer &&
+      matchesProject &&
+      matchesRegistrationType;
+
+    return isMatch;
+  });
+
+  const totalHours = filteredBookings.reduce((total, booking) => {
+    const bookingTime = booking.time || 0;
+    return total + bookingTime;
+  }, 0);
+
+  return totalHours;
 };

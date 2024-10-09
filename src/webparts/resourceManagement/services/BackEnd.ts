@@ -4,10 +4,6 @@ import {
   IRegistrationData,
 } from "../components/interfaces/IRegistrationProps";
 import {
-  ICustomer,
-  IProject,
-} from "../components/RequestCreation/interfaces/IComponentFormData";
-import {
   IRequest,
   IRequestCreateDTO,
 } from "../components/RequestCreation/interfaces/IRequestComponentProps";
@@ -31,8 +27,6 @@ class BackEndService extends Api<unknown> {
   private static baseurl: string = "https://ngage-financial.azurewebsites.net/";
   private static API_URL_RegistrationType: string =
     BackEndService.baseurl + "api/registrationType";
-  private static API_URL_Customers: string =
-    BackEndService.baseurl + "api/customers";
   private static API_URL_Registration: string =
     BackEndService.baseurl + "api/registrations";
 
@@ -65,22 +59,6 @@ class BackEndService extends Api<unknown> {
       headers: BackEndService.getHeaders(),
     });
     return await BackEndService.handleResponse(response);
-  }
-
-  public async getCustomers(): Promise<ICustomer[]> {
-    const response = await fetch(BackEndService.API_URL_Customers, {
-      method: "GET",
-      headers: BackEndService.getHeaders(),
-    });
-
-    return await BackEndService.handleResponse<ICustomer[]>(response);
-  }
-
-  public async getProjects(): Promise<IProject[]> {
-    const response: IProject[] = await this.api
-      .projectsList({ headers: BackEndService.getHeaders() })
-      .then((r) => r.json());
-    return response;
   }
 
   public async createRegistration(

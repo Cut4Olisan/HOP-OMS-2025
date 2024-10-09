@@ -1,20 +1,17 @@
 import * as React from "react";
-import { ComboBox } from "@fluentui/react";
+import { ComboBox, IComboBoxOption } from "@fluentui/react";
 import styles from "./CustomerProjects.module.scss";
-import {
-  ICustomer,
-  IProject,
-} from "../../RequestCreation/interfaces/IComponentFormData";
+import { CustomerDTO, ProjectDTO } from "../../interfaces";
 
 export interface ICustomerProjectsProps {
-  customers: ICustomer[];
+  customers: CustomerDTO[];
   customerLabel: string;
-  projects: IProject[];
+  projects: ProjectDTO[];
   projectLabel: string;
-  selectedCustomer: ICustomer | undefined;
-  onUpdateSelectedCustomer: (customer: ICustomer) => void;
-  selectedProject: IProject | undefined;
-  onUpdateSelectedProject: (project: IProject) => void;
+  selectedCustomer: CustomerDTO | undefined;
+  onUpdateSelectedCustomer: (customer: CustomerDTO) => void;
+  selectedProject: ProjectDTO | undefined;
+  onUpdateSelectedProject: (project: ProjectDTO) => void;
   required: boolean;
 }
 
@@ -37,12 +34,14 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
       <ComboBox
         label={customerLabel}
         placeholder="Vælg en kunde"
-        options={customers
-          .filter((c) => c.active)
-          .map((customer) => ({
-            key: customer.id,
-            text: customer.name,
-          }))}
+        options={
+          customers
+            .filter((c) => c.active)
+            .map((customer) => ({
+              key: customer.id,
+              text: customer.name,
+            })) as IComboBoxOption[]
+        }
         selectedKey={selectedCustomer?.id}
         onChange={(e, option) => {
           const customer = customers.find((c) => c.id === option?.key);
@@ -60,12 +59,14 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
         <ComboBox
           label={projectLabel}
           placeholder="Vælg projekt for kunde"
-          options={projects
-            .filter((p) => p.customerId === selectedCustomer.id)
-            .map((project) => ({
-              key: project.id,
-              text: project.name,
-            }))}
+          options={
+            projects
+              .filter((p) => p.customerId === selectedCustomer.id)
+              .map((project) => ({
+                key: project.id,
+                text: project.name,
+              })) as IComboBoxOption[]
+          }
           selectedKey={selectedProject?.id}
           onChange={(e, option) => {
             const project = projects.find((p) => p.id === option?.key);

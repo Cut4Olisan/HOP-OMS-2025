@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@fluentui/react": "^8.121.1",
+    "@fluentui/react-charting": "^5.23.5",
     "@microsoft/microsoft-graph-client": "^3.0.2",
     "@microsoft/sp-component-base": "1.19.0",
     "@microsoft/sp-core-library": "1.19.0",

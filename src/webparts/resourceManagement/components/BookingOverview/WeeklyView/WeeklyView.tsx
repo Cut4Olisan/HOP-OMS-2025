@@ -8,6 +8,7 @@ import { IRegistration } from "../../interfaces/IRegistrationProps";
 import BackEndService from "../../../services/BackEnd";
 import { getWeekNumber } from "../../dateUtils";
 import { Button } from "@fluentui/react-components";
+import BookingCardMenu from "../FiveWeekView/bookingCardMenu";
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -38,6 +39,13 @@ const calculateSpan = (start: string, end: string): number => {
   return Math.ceil(durationInMinutes / 15); // Each timeslot represents 15 minutes
 };
 
+const getWeekStartDate = (weekNumber: number): Date => {
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0;
+  const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
+  startOfYear.setDate(startOfYear.getDate() + daysToAdd);
+  return startOfYear;
+};
 // Adjust `TimeSlot` for date checks and alignment
 const TimeSlot: React.FC<{
   timeSlotId: string;
@@ -67,6 +75,8 @@ const TimeSlot: React.FC<{
     type: ItemType,
     item: booking,
   });
+
+  const [, setRegistrations] = React.useState<IRegistration[]>([]);
 
   const bookingDate = booking ? getBookingDate(booking.date) : null;
 
@@ -98,10 +108,22 @@ const TimeSlot: React.FC<{
           }}
         >
           <div className={styles.bookingContent}>
-            <Text className={styles.bookingTitle}>
-              {booking.shortDescription}
-            </Text>
-            <Text className={styles.bookingEmployee}>{}</Text>
+            <div className={styles.TitelAndEditIcon}>
+              <Text className={styles.bookingTitle}>
+                {booking.shortDescription}
+              </Text>
+              <BookingCardMenu
+                registration={booking}
+                onBookingDeleted={(deletedBookingId) => {
+                  setRegistrations((prevRegistrations) =>
+                    prevRegistrations.filter(
+                      (reg) => reg.id !== deletedBookingId
+                    )
+                  ); // Update the registrations state by removing the deleted booking
+                }}
+              />
+            </div>
+            <Text className={styles.bookingEmployee}>{formatEmployeeName}</Text>
             <Text
               className={styles.bookingProject}
             >{`Customer: ${customerName}`}</Text>
@@ -138,7 +160,6 @@ interface WeeklyViewProps {
 const WeeklyView: React.FC<WeeklyViewProps> = ({
   weekNumber,
   employeeId,
-  weekBookings,
   employeeName,
   onBack,
   onPreviousWeek,
@@ -153,7 +174,10 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   const [currentWeekNumber, setCurrentWeekNumber] = React.useState<number>(
     parseInt(weekNumber, 10)
   );
-  const [startOfWeek, setStartOfWeek] = React.useState<Date>(new Date());
+  //const [currentWeekDays, setCurrentWeekDays] = React.useState<Date>( new Date())
+  const [startOfWeek, setStartOfWeek] = React.useState<Date>(
+    getWeekStartDate(currentWeekNumber)
+  );
 
   const fetchWeekBookings = async (weekNum: number): Promise<void> => {
     try {
@@ -165,7 +189,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           getWeekNumber(new Date(b.date)) === weekNum
       );
       setCurrentBookings(filteredBookings);
-      setStartOfWeek(new Date()); // Adjust start of week based on the week number
+      setStartOfWeek(getWeekStartDate(weekNum)); // Adjust start of week based on the week number
     } catch (error) {
       console.error("Error fetching bookings:", error);
     }
@@ -224,7 +248,9 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           <PrimaryButton onClick={onBack}>Tilbage</PrimaryButton>
           <div className={styles.weekInfo}>
             <Text variant="large">
-              Uge {currentWeekNumber} - Bookinger for {formattedEmployeeName}
+              <strong>
+                Uge {currentWeekNumber} - Bookinger for {formattedEmployeeName}
+              </strong>
             </Text>
           </div>
           <div className={styles.navigationContainer}>
@@ -249,7 +275,10 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           <div className={styles.timeHeader} />
           {days.map((day, i) => (
             <div key={day} className={styles.dayHeader}>
-              <Text>{`${day} - ${weekDays[i].toLocaleDateString()}`}</Text>
+              <Text variant="large">
+                <strong>{day}</strong>
+              </Text>
+              <Text>{weekDays[i].toLocaleDateString()}</Text>
             </div>
           ))}
         </div>

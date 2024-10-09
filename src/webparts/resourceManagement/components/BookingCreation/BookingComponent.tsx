@@ -31,17 +31,15 @@ import {
 import BackEndService from "../../services/BackEnd";
 import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import {
-  ICustomer,
-  IProject,
-  IRecursionData,
-} from "../RequestCreation/interfaces/IComponentFormData";
+import { IRecursionData } from "../RequestCreation/interfaces/IComponentFormData";
+import { CustomerDTO, ProjectDTO } from "../interfaces";
+import useGlobal from "../../hooks/useGlobal";
 
 export interface IComponentFormData {
   title: string;
   info: string;
-  selectedCustomer?: ICustomer;
-  selectedProject?: IProject;
+  selectedCustomer?: CustomerDTO;
+  selectedProject?: ProjectDTO;
   startDateTime?: Date;
   endDateTime?: Date;
   selectedCoworkers: string[];
@@ -51,9 +49,6 @@ export interface IComponentFormData {
 
 export interface IBookingComponentProps {
   context: WebPartContext;
-  customers: ICustomer[];
-  coworkers: { key: string; text: string }[];
-  projects: IProject[];
   onFinish: (bookings: unknown[]) => void;
   dismissPanel: () => void;
   registration?: IRegistration;
@@ -62,11 +57,10 @@ export interface IBookingComponentProps {
 const BookingComponent: React.FC<IBookingComponentProps> = ({
   context,
   onFinish,
-  customers,
-  projects,
   dismissPanel,
   registration,
 }) => {
+  const { customers, projects } = useGlobal();
   const [formData, setFormData] = React.useState<IComponentFormData>({
     title: "",
     info: "",
@@ -80,9 +74,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   React.useEffect(() => {
     if (!registration) return;
 
-    const project = projects.find(
-      (p) => p.customerId === registration.projectId
-    );
+    const project = projects.find((p) => p.id === registration.projectId);
     const customer = customers.find((c) => c.id === project?.customerId);
 
     if (!project || !customer) return;
@@ -95,7 +87,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       selectedCustomer: customer,
       selectedProject: project,
     });
-  }, []);
+  }, [registration]);
 
   React.useEffect(() => {
     setTimeout(() => setSuccess(undefined), 5000);

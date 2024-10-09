@@ -1,27 +1,16 @@
 import { DayOfWeek } from "@fluentui/react";
+import { CustomerDTO, ProjectDTO } from "../../interfaces";
 
 export interface IRecursionData {
   days: DayOfWeek[];
   weeks: number;
 }
 
-export interface ICustomer {
-  id: number;
-  name: string;
-  active: boolean;
-}
-
-export interface IProject {
-  id: number;
-  name: string;
-  customerId: number;
-}
-
 export default interface IComponentFormData {
   title: string;
   info: string;
-  selectedCustomer?: ICustomer;
-  selectedProject?: IProject;
+  selectedCustomer?: CustomerDTO;
+  selectedProject?: ProjectDTO;
   startDateTime?: Date;
   endDateTime?: Date;
   selectedCoworkers: string[];

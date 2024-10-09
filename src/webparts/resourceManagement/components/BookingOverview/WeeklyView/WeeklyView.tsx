@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useDrag, useDrop, DndProvider } from "react-dnd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Text, PrimaryButton } from "@fluentui/react";
 import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
@@ -8,152 +8,13 @@ import { IRegistration } from "../../interfaces/IRegistrationProps";
 import BackEndService from "../../../services/BackEnd";
 import { getWeekNumber } from "../../dateUtils";
 import { Button } from "@fluentui/react-components";
-import BookingCardMenu from "../FiveWeekView/BookingCard/bookingCardMenu";
-
-const ItemType = "BOOKING"; // Draggable item type
-
-// Helper function to parse time string (e.g., "08:30")
-const parseTime = (timeString: string): { hour: number; minute: number } => {
-  const [hour, minute] = timeString.split(":").map(Number);
-  return { hour, minute };
-};
-
-// Function to get the date object from the booking date string
-const getBookingDate = (bookingDate: string): Date => {
-  return new Date(bookingDate);
-};
-
-// Helper function to calculate the top offset based on start time
-const calculateTopOffset = (start: string): number => {
-  const startParts = start.split(":").map(Number);
-  return (startParts[1] / 60) * 100; // Convert minutes to a percentage for offset
-};
-
-// Helper function to calculate the duration of a booking in timeslots
-const calculateSpan = (start: string, end: string): number => {
-  const startParts = start.split(":").map(Number);
-  const endParts = end.split(":").map(Number);
-  const startMinutes = startParts[0] * 60 + startParts[1];
-  const endMinutes = endParts[0] * 60 + endParts[1];
-  const durationInMinutes = endMinutes - startMinutes;
-  return Math.ceil(durationInMinutes / 15); // Each timeslot represents 15 minutes
-};
-
-const getWeekStartDate = (weekNumber: number): Date => {
-  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0;
-  const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
-  startOfYear.setDate(startOfYear.getDate() + daysToAdd);
-  return startOfYear;
-};
-// Adjust `TimeSlot` for date checks and alignment
-const TimeSlot: React.FC<{
-  timeSlotId: string;
-  booking: IRegistration | undefined;
-  onDrop: (booking: IRegistration, newStart: string) => void;
-  span: number;
-  topOffset: number;
-  projects: any[];
-  customers: any[];
-}> = ({
-  timeSlotId,
-  booking,
-  onDrop,
-  span,
-  topOffset,
-  projects,
-  customers,
-}) => {
-  const [, drop] = useDrop({
-    accept: ItemType,
-    drop: (item: IRegistration) => {
-      onDrop(item, timeSlotId);
-    },
-  });
-
-  const [, drag] = useDrag({
-    type: ItemType,
-    item: booking,
-  });
-
-  const capitalize = (word: string): string => {
-    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-  };
-
-  const formatEmployeeName = (email: string): string => {
-    const nameParts = email.split("@")[0].split(".");
-    return nameParts.map(capitalize).join(" ");
-  };
-
-  const [, setRegistrations] = React.useState<IRegistration[]>([]);
-
-  const bookingDate = booking ? getBookingDate(booking.date) : null;
-
-  const project = projects.find((p) => p.id === booking?.projectId);
-  const projectName = project?.name || "Unknown Project";
-
-  const customer = customers.find(
-    (customer) => customer.id === project?.customerId
-  );
-  const customerName = customer?.name || "Unknown Customer";
-
-  const bookingTime = booking ? `${booking.start} - ${booking.end}` : "";
-
-  const shouldAdjustOffset = booking
-    ? parseTime(booking.start).minute !== 0
-    : false;
-
-  return (
-    <div ref={drop} className={styles.timeSlot}>
-      {booking && bookingDate && (
-        <div
-          ref={drag}
-          className={styles.booking}
-          style={{
-            top: shouldAdjustOffset
-              ? `calc(${topOffset}px - 0px)`
-              : `${topOffset}px`,
-            height: `${span * 15}px`, // Adjusting the span to match duration
-          }}
-        >
-          <div className={styles.bookingContent}>
-            <div className={styles.TitelAndEditIcon}>
-              <Text className={styles.bookingTitle}>
-                {booking.shortDescription}
-              </Text>
-              <BookingCardMenu
-                registration={booking}
-                onBookingDeleted={(deletedBookingId) => {
-                  setRegistrations((prevRegistrations) =>
-                    prevRegistrations.filter(
-                      (reg) => reg.id !== deletedBookingId
-                    )
-                  ); // Update the registrations state by removing the deleted booking
-                }}
-              />
-            </div>
-            <Text className={styles.bookingEmployee}>{formatEmployeeName}</Text>
-            <Text
-              className={styles.bookingProject}
-            >{`Customer: ${customerName}`}</Text>
-            <Text
-              className={styles.bookingProject}
-            >{`Project: ${projectName}`}</Text>
-            <Text className={styles.bookingTime}>{bookingTime}</Text>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-const capitalize = (word: string): string => {
-  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-};
-
-const formatEmployeeName = (email: string): string => {
-  const nameParts = email.split("@")[0].split(".");
-  return nameParts.map(capitalize).join(" ");
-};
+import {
+  calculateTopOffset,
+  calculateSpan,
+  getWeekStartDate,
+  formatEmployeeName,
+} from "../HelperFunctions/helperFunctions";
+import TimeSlot from "./TimeSlot";
 
 interface WeeklyViewProps {
   weekNumber: string;

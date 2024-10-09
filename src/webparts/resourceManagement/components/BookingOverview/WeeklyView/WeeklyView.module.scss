@@ -1,3 +1,5 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
 .weeklyViewContainer {
   display: flex;
   flex-direction: column;
@@ -93,66 +95,6 @@
   height: 60px; /* 4 time slots (15px each) = 1 hour */
 }
 
-.timeSlot {
-  display: flex;
-  height: 15px; /* Each time slot is 15 minutes */
-  position: relative; /* Ensure the booking element is positioned relative to this */
-  background-color: #f9f9f9;
-  border-right: 1px solid #ccc;
-  overflow: visible; /* Ensure the overflow is visible so bookings can extend */
-}
-
-.booking {
-  position: absolute;
-  left: 0;
-  right: 0;
-  background-color: var(--colorBrandBackground2);
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  //justify-content: start;
-  padding: 10px;
-  margin: 2px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  z-index: 1;
-  color: #333; /* Darker text color for better readability */
-}
-
-.bookingContent {
-  display: flex;
-  justify-content: start;
-  align-items: flex-start;
-  flex-direction: column;
-  margin: 5px;
-  gap: 5px; /* Add space between each content block */
-}
-
-.bookingTitle {
-  font-weight: bold;
-  font-size: 1.4em;
-  margin-bottom: 4px;
-}
-
-.bookingEmployee,
-.bookingProject,
-.bookingDescription,
-.bookingDate,
-.bookingTime {
-  font-size: 0.9em;
-  margin-bottom: 2px;
-}
-
-.bookingEmployee {
-  color: var(--themePrimary);
-}
-
-.bookingTime {
-  font-style: italic;
-  color: #555;
-}
-
 .navigationContainer {
   display: flex;
   justify-content: flex-end;
@@ -161,10 +103,4 @@
 
 .upIconScale {
   transform: scale(1.25);
-}
-
-.TitelAndEditIcon {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }

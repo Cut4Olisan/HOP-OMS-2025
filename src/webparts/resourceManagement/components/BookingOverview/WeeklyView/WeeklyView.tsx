@@ -76,6 +76,15 @@ const TimeSlot: React.FC<{
     item: booking,
   });
 
+  const capitalize = (word: string): string => {
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  };
+
+  const formatEmployeeName = (email: string): string => {
+    const nameParts = email.split("@")[0].split(".");
+    return nameParts.map(capitalize).join(" ");
+  };
+
   const [, setRegistrations] = React.useState<IRegistration[]>([]);
 
   const bookingDate = booking ? getBookingDate(booking.date) : null;
@@ -137,10 +146,11 @@ const TimeSlot: React.FC<{
     </div>
   );
 };
+const capitalize = (word: string): string => {
+  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+};
 
-const capitalize = (word: string) =>
-  word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-const formatEmployeeName = (email: string) => {
+const formatEmployeeName = (email: string): string => {
   const nameParts = email.split("@")[0].split(".");
   return nameParts.map(capitalize).join(" ");
 };
@@ -196,7 +206,9 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   };
 
   React.useEffect((): void => {
-    fetchWeekBookings(currentWeekNumber);
+    fetchWeekBookings(currentWeekNumber).catch((error) => {
+      console.error("Error fetching bookings:", error);
+    });
   }, [currentWeekNumber, employeeId]);
 
   const onBookingDrop = (

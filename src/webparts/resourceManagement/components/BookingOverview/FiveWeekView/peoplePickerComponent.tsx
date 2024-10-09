@@ -17,6 +17,12 @@ interface IPeoplePickerComboBoxProps {
   clearSelection: boolean;
 }
 
+interface IUser {
+  id: string;
+  displayName: string;
+  mail: string;
+}
+
 const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
   context,
   onChange,
@@ -46,7 +52,7 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (): Promise<void> => {
     try {
       const client: MSGraphClientV3 =
         await context.msGraphClientFactory.getClient("3");
@@ -56,14 +62,14 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
         .get();
 
       const filteredUsers = response.value.filter(
-        (user: any) =>
+        (user: IUser) =>
           user.mail &&
           (user.mail.endsWith("@ngage.dk") ||
             user.mail.endsWith("@dev4ngage.onmicrosoft.com"))
       );
 
       const users = await Promise.all(
-        filteredUsers.map(async (user: any) => {
+        filteredUsers.map(async (user: IUser) => {
           const imageUrl = await fetchUserProfilePicture(user.id);
           return {
             key: user.id,
@@ -91,7 +97,14 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
   };
 
   React.useEffect(() => {
-    fetchUsers();
+    const fetchData = async (): Promise<void> => {
+      try {
+        await fetchUsers();
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+    fetchData();
   }, []);
 
   React.useEffect(() => {
@@ -103,7 +116,7 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
   const handleComboBoxChange = (
     event: React.FormEvent<IComboBox>,
     option?: IComboBoxOption
-  ) => {
+  ): void => {
     if (option) {
       const newSelectedKeys = option.selected
         ? [...selectedKeys, option.key as string]

@@ -59,7 +59,7 @@ const BookingCard: React.FC<{
   );
   const customerName = customer?.name || "Unknown Customer";
 
-  const capitalize = (word: string) =>
+  const capitalize = (word: string): string =>
     word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 
   const employeeFullName = booking.employee.split("@")[0];
@@ -82,7 +82,7 @@ const BookingCard: React.FC<{
           }}
         />
       </div>
-      <Divider></Divider>
+      <Divider />
       <Text
         className={styles.employeeName}
         variant="medium"
@@ -347,7 +347,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     <div className={styles.teamsContext}>
       <DndProvider backend={HTML5Backend}>
         <div className={styles.container}>
-          <CommandBar items={_items}></CommandBar>
+          <CommandBar items={_items} />
           <div className={styles.controlsContainer}>
             <div className={styles.filterContainer}>
               <PeoplePickerComboBox
@@ -425,7 +425,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                     console.log("Finished request", request);
                     dismissRequestPanel();
                   }}
-                ></RequestComponent>
+                />
               </Panel>
 
               {/*Request liste panel*/}
@@ -436,7 +436,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                 isHiddenOnDismiss={false}
                 onDismiss={dismissRequestListPanel}
               >
-                <RequestList context={context}></RequestList>
+                <RequestList context={context} />
               </Panel>
 
               {/*Burndown panel*/}
@@ -447,7 +447,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                 isHiddenOnDismiss={false}
                 onDismiss={dismissBurnDownPanel}
               >
-                <BurnDownRate></BurnDownRate>
+                <BurnDownRate />
               </Panel>
 
               <TooltipHost content="Forrige uge..">

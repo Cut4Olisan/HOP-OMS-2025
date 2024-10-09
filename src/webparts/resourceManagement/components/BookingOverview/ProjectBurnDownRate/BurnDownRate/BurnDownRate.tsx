@@ -6,11 +6,11 @@ import { GaugeChart } from "@fluentui/react-charting";
 interface IBurnDownRateProps {}
 
 //***       BurnDownRate Card       ***//
-const BurnDownRate: React.FC<IBurnDownRateProps> = ({}) => {
+const BurnDownRate: React.FC<IBurnDownRateProps> = () => {
   return (
     <div className={styles.container}>
       <div className={styles.navbar}>
-        <ComboBox multiSelect options={[]}></ComboBox>
+        <ComboBox multiSelect options={[]} />
         <PrimaryButton>Nustil filter</PrimaryButton>
       </div>
       <div className={styles.header}>
@@ -31,7 +31,7 @@ const BurnDownRate: React.FC<IBurnDownRateProps> = ({}) => {
             chartValue={25}
             chartTitle="Burndown rate"
             sublabel="opnået"
-          ></GaugeChart>
+          />
         </div>
       </div>
     </div>

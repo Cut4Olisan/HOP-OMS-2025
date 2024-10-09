@@ -30,12 +30,12 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
 }) => {
   const {
     setShowBookingComponentPanel,
-/*     showBookingComponentPanel,
+    /*     showBookingComponentPanel,
     selectedRegistration, */
     setSelectedRegistration,
   } = useGlobal();
   // Function to handle delete action
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     const confirmation = window.confirm(
       "Er du sikker på du vil slette denne booking?"
     );
@@ -50,12 +50,12 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
     }
   };
 
-  const editBooking = async () => {
+  const editBooking = async (): Promise<void> => {
     setSelectedRegistration(registration);
     setShowBookingComponentPanel(true);
   };
 
-  const copyBooking = async () => {};
+  const copyBooking = async (): Promise<void> => {};
 
   return (
     <div>

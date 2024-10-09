@@ -1,30 +1,120 @@
-import { WebPartContext } from "@microsoft/sp-webpart-base";
 import * as React from "react";
-import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent";
-import { Stack, Panel } from "@fluentui/react";
+import {
+  Panel,
+  Stack,
+  CommandBar,
+  ICommandBarItemProps,
+} from "@fluentui/react";
 import useGlobal from "../hooks/useGlobal";
 import BookingComponent from "./BookingCreation/BookingComponent";
+import RequestComponent from "./RequestCreation/RequestComponent";
+import RequestList from "./RequestCreation/RequestList";
+import BurnDownRate from "./BookingOverview/ProjectBurnDownRate/BurnDownRate/BurnDownRate";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
+import { FormMode } from "./RequestCreation/interfaces/IRequestComponentProps";
+import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent";
 
-export interface IOverview {
-  context: WebPartContext;
-}
-
-const Overview: React.FC<IOverview> = ({ context }) => {
+const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
   const {
     showBookingComponentPanel,
     setShowBookingComponentPanel,
+    showRequestPanel,
+    setShowRequestPanel,
+    showRequestListPanel,
+    setShowRequestListPanel,
+    showBurnDownPanel,
+    setShowBurnDownPanel,
     selectedRegistration,
   } = useGlobal();
+
+  const _items: ICommandBarItemProps[] = [
+    {
+      key: "Overview",
+      text: "Oversigt",
+      iconProps: { iconName: "report" },
+      onClick: () => undefined,
+    },
+    {
+      key: "Capacity",
+      text: "Kapacitet - WIP",
+      iconProps: { iconName: "report" },
+      onClick: () => undefined,
+    },
+    {
+      key: "Burndown",
+      text: "Burndown-rate - WIP",
+      iconProps: { iconName: "" },
+      onClick: () => setShowBurnDownPanel(true),
+    },
+    {
+      key: "Requests",
+      text: "Anmodninger",
+      iconProps: { iconName: "List" },
+      subMenuProps: {
+        items: [
+          {
+            key: "receivedRequests",
+            text: "Modtagede anmodninger",
+            onClick: () => setShowRequestListPanel(true),
+          },
+          {
+            key: "sentRequests",
+            text: "Sendte anmodninger - WIP",
+            onClick: () => undefined,
+          },
+          {
+            key: "createRequests",
+            text: "Opret anmodning",
+            onClick: () => setShowRequestPanel(true),
+          },
+        ],
+      },
+    },
+  ];
+
   return (
     <Stack>
+      <CommandBar items={_items} />
       <BookingOverviewComponent context={context} />
-      <Panel isOpen={showBookingComponentPanel}>
+      <Panel
+        type={5}
+        isOpen={showBookingComponentPanel}
+        onDismiss={() => setShowBookingComponentPanel(false)}
+      >
         <BookingComponent
           registration={selectedRegistration}
           context={context}
           dismissPanel={() => setShowBookingComponentPanel(false)}
           onFinish={() => undefined}
         />
+      </Panel>
+
+      <Panel
+        type={5}
+        isOpen={showRequestPanel}
+        onDismiss={() => setShowRequestPanel(false)}
+      >
+        <RequestComponent
+          context={context}
+          mode={FormMode.CreateRequest}
+          onFinish={(request) => setShowRequestPanel(false)}
+        />
+      </Panel>
+
+      <Panel
+        type={5}
+        isOpen={showRequestListPanel}
+        onDismiss={() => setShowRequestListPanel(false)}
+      >
+        <RequestList context={context} />
+      </Panel>
+
+      <Panel
+        type={5}
+        isOpen={showBurnDownPanel}
+        onDismiss={() => setShowBurnDownPanel(false)}
+      >
+        <BurnDownRate />
       </Panel>
     </Stack>
   );

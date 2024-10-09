@@ -8,7 +8,7 @@ import { IRegistration } from "../../interfaces/IRegistrationProps";
 import BackEndService from "../../../services/BackEnd";
 import { getWeekNumber } from "../../dateUtils";
 import { Button } from "@fluentui/react-components";
-import BookingCardMenu from "../FiveWeekView/bookingCardMenu";
+import BookingCardMenu from "../FiveWeekView/BookingCard/bookingCardMenu";
 
 const ItemType = "BOOKING"; // Draggable item type
 

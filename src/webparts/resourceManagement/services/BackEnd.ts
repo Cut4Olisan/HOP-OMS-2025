@@ -1,4 +1,8 @@
-import { AcceptRequestRequestDTO, Api } from "../components/interfaces";
+import {
+  AcceptRequestRequestDTO,
+  Api,
+  EditRegistrationRequestDTO,
+} from "../components/interfaces";
 import {
   IRegistration,
   IRegistrationData,
@@ -70,6 +74,15 @@ class BackEndService extends Api<unknown> {
       body: JSON.stringify(data),
     });
     return await BackEndService.handleResponse<IRegistration>(response);
+  }
+
+  public async updateRegistrations(
+    data: EditRegistrationRequestDTO
+  ): Promise<void> {
+    const response = await this.api.registrationsUpdate(data, {
+      headers: BackEndService.getHeaders(),
+    });
+    await BackEndService.handleResponse(response);
   }
 
   public async deleteBooking(bookingId: number): Promise<void> {

@@ -4,8 +4,22 @@ import BackEndService from "../services/BackEnd";
 import { CustomerDTO, ProjectDTO } from "../components/interfaces";
 
 export interface IGlobalContext {
+  ///***      Panel controls      ***///
   showBookingComponentPanel: boolean;
   setShowBookingComponentPanel: React.Dispatch<boolean>;
+  showRequestPanel: boolean;
+  setShowRequestPanel: React.Dispatch<boolean>;
+  showRequestListPanel: boolean;
+  setShowRequestListPanel: React.Dispatch<boolean>;
+  showBurnDownPanel: boolean;
+  setShowBurnDownPanel: React.Dispatch<boolean>;
+  ///***      Panel controls      ***///
+
+  ///*** State to track edit/create for bookingcomponent ***///
+  isEditMode: boolean;
+  setIsEditMode: React.Dispatch<boolean>;
+  ///*** State to track edit/create for bookingcomponent ***///
+
   selectedRegistration: IRegistration | undefined;
   setSelectedRegistration: React.Dispatch<IRegistration | undefined>;
   customers: CustomerDTO[];
@@ -23,11 +37,19 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
 }) => {
   const [showBookingComponentPanel, setShowBookingComponentPanel] =
     React.useState<boolean>(false);
+  const [showRequestPanel, setShowRequestPanel] =
+    React.useState<boolean>(false);
+  const [showRequestListPanel, setShowRequestListPanel] =
+    React.useState<boolean>(false);
+  const [showBurnDownPanel, setShowBurnDownPanel] =
+    React.useState<boolean>(false);
+
   const [selectedRegistration, setSelectedRegistration] = React.useState<
     IRegistration | undefined
   >();
   const [customers, setCustomers] = React.useState<CustomerDTO[]>([]);
   const [projects, setProjects] = React.useState<ProjectDTO[]>([]);
+  const [isEditMode, setIsEditMode] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(true);
 
   React.useEffect(() => {
@@ -57,12 +79,20 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
         value={{
           showBookingComponentPanel,
           setShowBookingComponentPanel,
+          showRequestPanel,
+          setShowRequestPanel,
+          showRequestListPanel,
+          setShowRequestListPanel,
+          showBurnDownPanel,
+          setShowBurnDownPanel,
           selectedRegistration,
           setSelectedRegistration,
           customers,
           setCustomers,
           projects,
           setProjects,
+          isEditMode,
+          setIsEditMode,
         }}
       >
         <>{children}</>

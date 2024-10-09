@@ -1,4 +1,4 @@
-import styles from "./bookingCardMenu.module.scss";
+import styles from "../bookingCardMenu.module.scss";
 import {
   Button,
   Menu,
@@ -14,10 +14,10 @@ import {
   CopyAddRegular,
   DeleteRegular,
 } from "@fluentui/react-icons";
-import BackEndService from "../../../services/BackEnd";
+import BackEndService from "../../../../services/BackEnd";
 import { TooltipHost } from "@fluentui/react";
-import { IRegistration } from "../../interfaces/IRegistrationProps";
-import useGlobal from "../../../hooks/useGlobal";
+import { IRegistration } from "../../../interfaces/IRegistrationProps";
+import useGlobal from "../../../../hooks/useGlobal";
 
 interface IBookingCardMenuProps {
   registration: IRegistration;
@@ -30,9 +30,8 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
 }) => {
   const {
     setShowBookingComponentPanel,
-    /*     showBookingComponentPanel,
-    selectedRegistration, */
     setSelectedRegistration,
+    setIsEditMode,
   } = useGlobal();
   // Function to handle delete action
   const handleDelete = async (): Promise<void> => {
@@ -50,9 +49,10 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
     }
   };
 
-  const editBooking = async (): Promise<void> => {
+  const handleEditBooking = async (): Promise<void> => {
     setSelectedRegistration(registration);
     setShowBookingComponentPanel(true);
+    setIsEditMode(true);
   };
 
   const copyBooking = async (): Promise<void> => {};
@@ -71,7 +71,7 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
         </TooltipHost>
         <MenuPopover className={styles.menuPopover}>
           <MenuList className={styles.menuListItems}>
-            <MenuItem icon={<EditRegular />} onClick={editBooking}>
+            <MenuItem icon={<EditRegular />} onClick={handleEditBooking}>
               Rediger
             </MenuItem>
             <MenuItem icon={<CopyAddRegular />} onClick={copyBooking}>

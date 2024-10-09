@@ -71,51 +71,6 @@
   overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
-.weekColumn {
-  display: flex;
-  flex-direction: column;
-  //border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  padding: 10px;
-  max-height: 600px; /* Set a max height for scrolling */
-  overflow-y: auto; /* Enable vertical scrolling within each column */
-  scrollbar-width: none;
-  overflow-x: hidden;
-}
-
-.bookingCard {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  padding: 10px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 10px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #ccc;
-  cursor: move;
-  gap: 10px;
-}
-
-.projectName {
-  font-weight: bold;
-  overflow-wrap: break-word;
-}
-
-.employeeName {
-  cursor: pointer;
-  overflow-wrap: break-word;
-}
-
-.customerAndProjectName {
-  display: flex;
-  gap: 5px;
-  flex-direction: column;
-  width: 100%;
-  color: #555;
-  overflow-wrap: break-word;
-}
-
 .limitCalloutSize {
   max-height: 300px !important;
   height: auto;

@@ -32,8 +32,13 @@ import BackEndService from "../../services/BackEnd";
 import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IRecursionData } from "../RequestCreation/interfaces/IComponentFormData";
-import { CustomerDTO, ProjectDTO } from "../interfaces";
+import {
+  CustomerDTO,
+  EditRegistrationRequestDTO,
+  ProjectDTO,
+} from "../interfaces";
 import useGlobal from "../../hooks/useGlobal";
+import { parseTime } from "../dateUtils";
 
 export interface IComponentFormData {
   title: string;
@@ -60,7 +65,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   dismissPanel,
   registration,
 }) => {
-  const { customers, projects } = useGlobal();
+  const { customers, projects, isEditMode } = useGlobal();
   const [formData, setFormData] = React.useState<IComponentFormData>({
     title: "",
     info: "",
@@ -79,15 +84,47 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
     if (!project || !customer) return;
 
-    return setFormData({
+    const datePart = registration.date.split("T")[0];
+    const { hour: startHour, minute: startMinute } = parseTime(
+      registration.start
+    );
+    const { hour: endHour, minute: endMinute } = parseTime(registration.end);
+
+    const startDateTime = new Date(datePart);
+    startDateTime.setHours(startHour, startMinute, 0, 0);
+
+    const endDateTime = new Date(datePart);
+    endDateTime.setHours(endHour, endMinute, 0, 0);
+
+    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+      console.error("Invalid date format in registration:", {
+        startDateTimeString: registration.start,
+        endDateTimeString: registration.end,
+      });
+      return; //Exit if we have invalid dates
+    }
+
+    setFormData({
       title: registration.shortDescription,
       info: registration.description || "",
       isRecurring: false,
       selectedCoworkers: [registration.employee],
       selectedCustomer: customer,
       selectedProject: project,
+      startDateTime: startDateTime,
+      endDateTime: endDateTime,
     });
-  }, [registration]);
+
+    console.log("Form data set with registration:", {
+      title: registration.shortDescription,
+      info: registration.description || "",
+      selectedCoworkers: [registration.employee],
+      selectedCustomer: customer,
+      selectedProject: project,
+      startDateTime: startDateTime,
+      endDateTime: endDateTime,
+    });
+  }, [registration, projects, customers]);
 
   React.useEffect(() => {
     setTimeout(() => setSuccess(undefined), 5000);
@@ -148,7 +185,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     );
 
     if (dates === undefined || estimatedHours === undefined) {
-      return setError("Kunne ikke oprette booking - Ugyldig datoer");
+      return setError("Kunne ikke oprette booking - Ugyldige datoer");
     }
 
     if (estimatedHours instanceof Error) {
@@ -169,20 +206,50 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           registrationType: 2, // Booking
         };
 
-        console.log("Selected Project ID:", formData.selectedProject);
-        console.log("Registration Data:", registrationData);
         return registrationData;
       })
     );
 
-    const finishedRegistrations = await Promise.all(
-      registrations.map(async (r: IRegistration) => {
-        return await BackEndService.Instance.createRegistration(r);
-      })
-    );
+    //Check if we are in edit mode or create mode
+    if (isEditMode && registration) {
+      //Update existing booking
+      try {
+        const updatePromises = registrations.map(async (r) => {
+          const updateData: EditRegistrationRequestDTO = {
+            id: registration.id,
+            shortDescription: r.shortDescription,
+            description: r.description,
+            projectId: r.projectId,
+            date: r.date,
+            start: r.start,
+            end: r.end,
+            time: r.time,
+            registrationType: r.registrationType,
+          };
 
-    setSuccess("Booking oprettet!");
-    return onFinish(finishedRegistrations);
+          return await BackEndService.Instance.updateRegistrations(updateData);
+        });
+
+        await Promise.all(updatePromises);
+        setSuccess("Booking opdateret!");
+        return onFinish([]);
+      } catch (error) {
+        setError("Kunne ikke opdatere booking.");
+      }
+    } else {
+      //Create new booking
+      try {
+        const createPromises = registrations.map(async (r) => {
+          return await BackEndService.Instance.createRegistration(r);
+        });
+
+        await Promise.all(createPromises);
+        setSuccess("Booking oprettet!");
+        return onFinish([]);
+      } catch (error) {
+        setError("Kunne ikke oprette booking.");
+      }
+    }
   };
 
   return (
@@ -198,7 +265,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
         )}
         <Stack tokens={{ childrenGap: 15 }}>
           <Text variant={"xxLargePlus"} className={styles.headingMargin}>
-            Opret booking
+            {isEditMode ? "Redigere booking" : "Opret booking"}
           </Text>
 
           <TextField
@@ -274,6 +341,11 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             showtooltip={false}
             required={false}
             onChange={_getPeoplePickerItems}
+            defaultSelectedUsers={
+              formData.selectedCoworkers.filter(
+                (email) => email !== undefined
+              ) as string[]
+            }
             principalTypes={[PrincipalType.User]}
             resolveDelay={1000}
           />

@@ -29,7 +29,7 @@ import {
   formatTime,
 } from "../dateUtils";
 import { IRegistrationData } from "../interfaces/IRegistrationProps";
-import { RegistrationDTO } from "../interfaces";
+import { AcceptRequestRequestDTO, RegistrationDTO } from "../interfaces";
 import { ICustomer, IProject } from "./interfaces/IComponentFormData";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 
@@ -99,34 +99,35 @@ const RequestComponent: React.FC<IRequestProps> = ({
     return setHasChanges(false);
   }, [formData, initialState]);
 
+  const completeBooking: IRegistrationData = {
+    projectId: formData.selectedProject?.id,
+    shortDescription: formData.title,
+    date: formData.startDateTime
+      ? formatDateForApi(formData.startDateTime)
+      : "",
+    description: formData.info || undefined,
+    start: startTime,
+    end: endTime,
+    time: formData.estimatedHours ? formData.estimatedHours : undefined,
+    employee: formData.selectedCoworkers[0],
+    registrationType: 5, // Template
+  };
+  const requestDTO: IRequestCreateDTO = {
+    title: formData.title,
+    shortDescription: formData.info,
+    estimatedHours: formData.estimatedHours || undefined,
+    registration: completeBooking,
+  };
+
+  const clearMessageBar = (): void => {
+    setError(undefined);
+    setSuccess(undefined);
+    setWarning(undefined);
+  };
+
   const onCreate = async (): Promise<void> => {
     if (!formData.title) return setError("Titel er påkrævet");
     if (!formData.selectedCustomer) return setError("Kunde er påkrævet");
-
-    // const estimatedHours = calculateEstimatedHours(startDateTime, endDateTime);
-    // if (estimatedHours instanceof Error) {
-    //   return setError(estimatedHours.message);
-    // }
-
-    const completeBooking: IRegistrationData = {
-      projectId: formData.selectedProject?.id,
-      shortDescription: formData.title,
-      date: formData.startDateTime
-        ? formatDateForApi(formData.startDateTime)
-        : "",
-      description: formData.info || undefined,
-      start: startTime,
-      end: endTime,
-      time: formData.estimatedHours ? formData.estimatedHours : undefined,
-      employee: formData.selectedCoworkers[0],
-      registrationType: 5, // Template
-    };
-    const requestDTO: IRequestCreateDTO = {
-      title: formData.title,
-      shortDescription: formData.info,
-      estimatedHours: formData.estimatedHours || undefined,
-      registration: completeBooking,
-    };
 
     console.log("registration", completeBooking);
     console.log("requestDTO:", requestDTO);
@@ -159,8 +160,12 @@ const RequestComponent: React.FC<IRequestProps> = ({
 
   React.useEffect(() => {
     (async (): Promise<void> => {
+      clearMessageBar();
       if (!request) {
         return setFormData({ ...formData, selectedCoworkers: [] });
+      }
+      if (!request.title || !request.estimatedHours) {
+        return setError("Anmodning mangler titel eller time-estimat");
       }
 
       const registration = request.registrationId
@@ -177,63 +182,108 @@ const RequestComponent: React.FC<IRequestProps> = ({
         (c) => c.id === project?.customerId
       );
       const data: IRequestComponentFormData = {
-        
-          ...formData,
-          title: request.title,
-          info: request.shortDescription || "",
-          estimatedHours: request.estimatedHours,
-          selectedCoworkers: registration?.employee ? [registration.employee] : [],
-          startDateTime: registration
-            ? new Date(
-                `${dateOnly(registration.date as string)}${formatTime(
-                  registration.start as string
-                )}`
-              )
-            : undefined,
-          selectedProject: project ? project : undefined,
-          selectedCustomer: customer ? customer : undefined
-      }
+        ...formData,
+        title: request.title,
+        info: request.shortDescription || "",
+        estimatedHours: request.estimatedHours,
+        selectedCoworkers: registration?.employee
+          ? [registration.employee]
+          : [],
+        startDateTime: registration
+          ? new Date(
+              `${dateOnly(registration.date as string)}${formatTime(
+                registration.start as string
+              )}`
+            )
+          : undefined,
+        selectedProject: project ? project : undefined,
+        selectedCustomer: customer ? customer : undefined,
+      };
       setFormData(data);
-      setInitialState(JSON.stringify(data))
+      setInitialState(JSON.stringify(data));
     })();
   }, [request, formData.customers, formData.projects]);
 
-  const onConfirm = async (): Promise<void> => {
-    if (!hasSufficientInformation) {
-      setError(
-        "Denne anmodning har ikke nok information til at omdanne til en booking. Fastlæg nogle konkrete informationer."
-      );
+  const onAccept = async (): Promise<void> => {
+    if (!request || !request.id) {
+      setError("Ingen anmodning valgt at bekræfte.");
+      return;
+    }
+    if (!formData.startDateTime) {
+      setError("Kan ikke bekræfte en anmodning uden datoer.");
       return;
     }
 
-    const completeBooking: IRegistrationData = {
-      projectId: formData.selectedProject?.id,
-      shortDescription: formData.title,
-      description: formData.info || undefined,
-      date: formData.startDateTime
-        ? formatDateForApi(formData.startDateTime)
-        : "",
-      start: startTime,
-      end: endTime,
-      time: formData.estimatedHours || undefined,
-      employee: formData.selectedCoworkers[0],
-      registrationType: 5, // Template
+    const acceptRequestData: AcceptRequestRequestDTO = {
+      start: `${formatDateForApi(formData.startDateTime)}${formatTime(startTime)}`,
+      end: String(formData.endDateTime),
     };
 
+    console.log(
+      `${formatDateForApi(formData.startDateTime)}${formatTime(startTime)}`,
+      formData.endDateTime
+    );
+
     try {
-      const result =
-        await BackEndService.Instance.api.registrationsCreate(completeBooking);
-      console.log(result);
-      setSuccess("Anmodning bekræftet og booking oprettet!");
-      console.warn("Anmodning bekræftet", result);
+      await BackEndService.Instance.api.requestsAcceptPartialUpdate(
+        request.id,
+        acceptRequestData,
+        { headers: BackEndService.getHeaders() }
+      );
+      setSuccess("Anmodning bekræftet!");
+      console.warn("Anmodning bekræftet:", acceptRequestData);
     } catch (error) {
       console.error("Fejl ved bekræftelse af anmodning:", error);
       setError("Der opstod en fejl, kunne ikke bekræfte anmodning.");
     }
   };
 
+  const onReject = async (): Promise<void> => {
+    if (!request || !request.id) {
+      setError("Ingen valt anmodning til afvisning.");
+      return;
+    }
+    if (confirm("Er du sikker på du vil afvise denne anmodning?")) {
+      try {
+        await BackEndService.Instance.api.requestsRejectPartialUpdate(
+          request.id,
+          { headers: BackEndService.getHeaders() }
+        );
+        setSuccess("Anmodning afvist!");
+        console.warn("Anmodning afvist", request);
+      } catch (error) {
+        console.error("Fejl ved afvisning af anmodning:", error);
+        setError("Der opstod en fejl, kunne ikke afvise anmodning.");
+      }
+    }
+  };
+
   const onUpdate = async (): Promise<void> => {
-    setWarning("Feature only available with premium subscription");
+    if (!request || !request.id) {
+      setError("Ingen anmodning er valgt.");
+      return;
+    }
+
+    try {
+      const result = await BackEndService.Instance.api.requestsUpdate(
+        {
+          id: request.id,
+          createRegistrationRequestDTO: { ...completeBooking },
+          title: requestDTO.title,
+          shortDescription: requestDTO.shortDescription,
+          estimatedHours: requestDTO.estimatedHours,
+        },
+        { headers: BackEndService.getHeaders() }
+      );
+
+      setWarning(undefined);
+      setSuccess("Anmodning opdateret!");
+      const updatedRequest = await result.json();
+      onFinish(updatedRequest as IRequestCreateDTO);
+    } catch (error) {
+      console.error("Kunne ikke opdatere anmodning:", error);
+      setError("Anmodning kunne ikke opdateres. Server fejl.");
+    }
   };
 
   React.useEffect(() => {
@@ -412,8 +462,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
           isConfirmMode &&
           !hasChanges && (
             <>
-              <PrimaryButton text="Godkend" onClick={onConfirm} />
-              <DefaultButton text="Afvis" />
+              <PrimaryButton text="Godkend" onClick={onAccept} />
+              <DefaultButton text="Afvis" onClick={onReject} />
             </>
           )
         )}

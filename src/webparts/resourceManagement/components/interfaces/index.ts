@@ -25,6 +25,11 @@ export interface CreateCustomerRequestDTO {
   /** @format int32 */
   hourlyRate?: number;
   active?: boolean;
+  /** @format int32 */
+  crmid?: number | null;
+  teamsId?: string | null;
+  /** @format int32 */
+  economicId?: number | null;
 }
 
 export interface CreateInvoiceDTO {
@@ -55,12 +60,16 @@ export interface CreateInvoiceLineRegistrationDTO {
   registrationId?: number;
 }
 
+export interface CreatePhaseDTO {
+  title?: string | null;
+  /** @format int32 */
+  projectId?: number;
+}
+
 export interface CreateProjectRequestDTO {
   name?: string | null;
   /** @format int32 */
   customerId?: number;
-  /** @format int32 */
-  parentProjectId?: number;
   /** @format int32 */
   hourlyRate?: number;
   invoiceable?: boolean;
@@ -73,6 +82,8 @@ export interface CreateRegistrationRequestDTO {
   description?: string | null;
   /** @format int32 */
   projectId?: number;
+  /** @format int32 */
+  phaseId?: number | null;
   /** @format date-time */
   date?: string;
   start?: string | null;
@@ -106,6 +117,11 @@ export interface CustomerDTO {
   /** @format int32 */
   hourlyRate?: number | null;
   active?: boolean;
+  /** @format int32 */
+  crmid?: number | null;
+  teamsId?: string | null;
+  /** @format int32 */
+  economicId?: number | null;
 }
 
 export interface EditCustomerRequestDTO {
@@ -117,6 +133,11 @@ export interface EditCustomerRequestDTO {
   /** @format int32 */
   hourlyRate?: number | null;
   active?: boolean;
+  /** @format int32 */
+  crmid?: number | null;
+  teamsId?: string | null;
+  /** @format int32 */
+  economicId?: number | null;
 }
 
 export interface EditInvoiceDTO {
@@ -144,14 +165,20 @@ export interface EditInvoiceLineDTO {
   unitPrice?: number | null;
 }
 
+export interface EditPhaseDTO {
+  /** @format int32 */
+  id?: number;
+  title?: string | null;
+  /** @format int32 */
+  projectId?: number;
+}
+
 export interface EditProjectRequestDTO {
   /** @format int32 */
   id?: number;
   name?: string | null;
   /** @format int32 */
   customerId?: number | null;
-  /** @format int32 */
-  parentProjectId?: number | null;
   /** @format int32 */
   hourlyRate?: number | null;
   invoiceable?: boolean;
@@ -166,6 +193,8 @@ export interface EditRegistrationRequestDTO {
   description?: string | null;
   /** @format int32 */
   projectId?: number | null;
+  /** @format int32 */
+  phaseId?: number | null;
   /** @format date-time */
   date?: string | null;
   start?: string | null;
@@ -225,6 +254,14 @@ export interface InvoiceLineRegistrationDTO {
   registrationId?: number;
 }
 
+export interface PhaseDTO {
+  /** @format int32 */
+  id?: number;
+  title?: string | null;
+  /** @format int32 */
+  projectId?: number;
+}
+
 export interface ProblemDetails {
   type?: string | null;
   title?: string | null;
@@ -241,8 +278,6 @@ export interface ProjectDTO {
   name?: string | null;
   /** @format int32 */
   customerId?: number | null;
-  /** @format int32 */
-  parentProjectId?: number | null;
   /** @format int32 */
   hourlyRate?: number | null;
   invoiceable?: boolean;
@@ -263,6 +298,8 @@ export interface RegistrationDTO {
   description?: string | null;
   /** @format int32 */
   projectId?: number | null;
+  /** @format int32 */
+  phaseId?: number | null;
   /** @format date-time */
   date?: string | null;
   start?: string | null;
@@ -319,22 +356,16 @@ export interface FullRequestParams extends Omit<RequestInit, "body"> {
   cancelToken?: CancelToken;
 }
 
-export type RequestParams = Omit<
-  FullRequestParams,
-  "body" | "method" | "query" | "path"
->;
+export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
 
 export interface ApiConfig<SecurityDataType = unknown> {
   baseUrl?: string;
   baseApiParams?: Omit<RequestParams, "baseUrl" | "cancelToken" | "signal">;
-  securityWorker?: (
-    securityData: SecurityDataType | null
-  ) => Promise<RequestParams | void> | RequestParams | void;
+  securityWorker?: (securityData: SecurityDataType | null) => Promise<RequestParams | void> | RequestParams | void;
   customFetch?: typeof fetch;
 }
 
-export interface HttpResponse<D extends unknown, E extends unknown = unknown>
-  extends Response {
+export interface HttpResponse<D extends unknown, E extends unknown = unknown> extends Response {
   data: D;
   error: E;
 }
@@ -353,8 +384,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private securityData: SecurityDataType | null = null;
   private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
   private abortControllers = new Map<CancelToken, AbortController>();
-  private customFetch = (...fetchParams: Parameters<typeof fetch>) =>
-    fetch(...fetchParams);
+  private customFetch = (...fetchParams: Parameters<typeof fetch>) => fetch(...fetchParams);
 
   private baseApiParams: RequestParams = {
     credentials: "same-origin",
@@ -387,15 +417,9 @@ export class HttpClient<SecurityDataType = unknown> {
 
   protected toQueryString(rawQuery?: QueryParamsType): string {
     const query = rawQuery || {};
-    const keys = Object.keys(query).filter(
-      (key) => "undefined" !== typeof query[key]
-    );
+    const keys = Object.keys(query).filter((key) => "undefined" !== typeof query[key]);
     return keys
-      .map((key) =>
-        Array.isArray(query[key])
-          ? this.addArrayQueryParam(query, key)
-          : this.addQueryParam(query, key)
-      )
+      .map((key) => (Array.isArray(query[key]) ? this.addArrayQueryParam(query, key) : this.addQueryParam(query, key)))
       .join("&");
   }
 
@@ -406,13 +430,8 @@ export class HttpClient<SecurityDataType = unknown> {
 
   private contentFormatters: Record<ContentType, (input: any) => any> = {
     [ContentType.Json]: (input: any) =>
-      input !== null && (typeof input === "object" || typeof input === "string")
-        ? JSON.stringify(input)
-        : input,
-    [ContentType.Text]: (input: any) =>
-      input !== null && typeof input !== "string"
-        ? JSON.stringify(input)
-        : input,
+      input !== null && (typeof input === "object" || typeof input === "string") ? JSON.stringify(input) : input,
+    [ContentType.Text]: (input: any) => (input !== null && typeof input !== "string" ? JSON.stringify(input) : input),
     [ContentType.FormData]: (input: any) =>
       Object.keys(input || {}).reduce((formData, key) => {
         const property = input[key];
@@ -422,17 +441,14 @@ export class HttpClient<SecurityDataType = unknown> {
             ? property
             : typeof property === "object" && property !== null
               ? JSON.stringify(property)
-              : `${property}`
+              : `${property}`,
         );
         return formData;
       }, new FormData()),
     [ContentType.UrlEncoded]: (input: any) => this.toQueryString(input),
   };
 
-  protected mergeRequestParams(
-    params1: RequestParams,
-    params2?: RequestParams
-  ): RequestParams {
+  protected mergeRequestParams(params1: RequestParams, params2?: RequestParams): RequestParams {
     return {
       ...this.baseApiParams,
       ...params1,
@@ -445,9 +461,7 @@ export class HttpClient<SecurityDataType = unknown> {
     };
   }
 
-  protected createAbortSignal = (
-    cancelToken: CancelToken
-  ): AbortSignal | undefined => {
+  protected createAbortSignal = (cancelToken: CancelToken): AbortSignal | undefined => {
     if (this.abortControllers.has(cancelToken)) {
       const abortController = this.abortControllers.get(cancelToken);
       if (abortController) {
@@ -491,26 +505,15 @@ export class HttpClient<SecurityDataType = unknown> {
     const payloadFormatter = this.contentFormatters[type || ContentType.Json];
     const responseFormat = format || requestParams.format;
 
-    return this.customFetch(
-      `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`,
-      {
-        ...requestParams,
-        headers: {
-          ...(requestParams.headers || {}),
-          ...(type && type !== ContentType.FormData
-            ? { "Content-Type": type }
-            : {}),
-        },
-        signal:
-          (cancelToken
-            ? this.createAbortSignal(cancelToken)
-            : requestParams.signal) || null,
-        body:
-          typeof body === "undefined" || body === null
-            ? null
-            : payloadFormatter(body),
-      }
-    ).then(async (response) => {
+    return this.customFetch(`${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`, {
+      ...requestParams,
+      headers: {
+        ...(requestParams.headers || {}),
+        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
+      },
+      signal: (cancelToken ? this.createAbortSignal(cancelToken) : requestParams.signal) || null,
+      body: typeof body === "undefined" || body === null ? null : payloadFormatter(body),
+    }).then(async (response) => {
       const r = response.clone() as HttpResponse<T, E>;
       r.data = null as unknown as T;
       r.error = null as unknown as E;
@@ -545,9 +548,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title NGAGEFinancialBackendAPI
  * @version 1.0
  */
-export class Api<
-  SecurityDataType extends unknown,
-> extends HttpClient<SecurityDataType> {
+export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
   api = {
     /**
      * No description
@@ -571,10 +572,7 @@ export class Api<
      * @name CustomersCreate
      * @request POST:/api/customers
      */
-    customersCreate: (
-      data: CreateCustomerRequestDTO,
-      params: RequestParams = {}
-    ) =>
+    customersCreate: (data: CreateCustomerRequestDTO, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/api/customers`,
         method: "POST",
@@ -590,10 +588,7 @@ export class Api<
      * @name CustomersUpdate
      * @request PUT:/api/customers
      */
-    customersUpdate: (
-      data: EditCustomerRequestDTO,
-      params: RequestParams = {}
-    ) =>
+    customersUpdate: (data: EditCustomerRequestDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/customers`,
         method: "PUT",
@@ -714,10 +709,7 @@ export class Api<
      * @name InvoicelinesRegistrationsCreate
      * @request POST:/api/invoicelines_registrations
      */
-    invoicelinesRegistrationsCreate: (
-      data: CreateInvoiceLineRegistrationDTO,
-      params: RequestParams = {}
-    ) =>
+    invoicelinesRegistrationsCreate: (data: CreateInvoiceLineRegistrationDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/invoicelines_registrations`,
         method: "POST",
@@ -762,10 +754,7 @@ export class Api<
      * @name InvoicelinesCreate
      * @request POST:/api/invoicelines
      */
-    invoicelinesCreate: (
-      data: CreateInvoiceLineDTO,
-      params: RequestParams = {}
-    ) =>
+    invoicelinesCreate: (data: CreateInvoiceLineDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/invoicelines`,
         method: "POST",
@@ -781,10 +770,7 @@ export class Api<
      * @name InvoicelinesUpdate
      * @request PUT:/api/invoicelines
      */
-    invoicelinesUpdate: (
-      data: EditInvoiceLineDTO,
-      params: RequestParams = {}
-    ) =>
+    invoicelinesUpdate: (data: EditInvoiceLineDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/invoicelines`,
         method: "PUT",
@@ -803,6 +789,67 @@ export class Api<
     invoicelinesDelete: (id: number, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/api/invoicelines/${id}`,
+        method: "DELETE",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Phase
+     * @name PhaseList
+     * @request GET:/api/phase
+     */
+    phaseList: (params: RequestParams = {}) =>
+      this.request<PhaseDTO[], any>({
+        path: `/api/phase`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Phase
+     * @name PhaseCreate
+     * @request POST:/api/phase
+     */
+    phaseCreate: (data: CreatePhaseDTO, params: RequestParams = {}) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/phase`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Phase
+     * @name PhaseUpdate
+     * @request PUT:/api/phase
+     */
+    phaseUpdate: (data: EditPhaseDTO, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/phase`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Phase
+     * @name PhaseDelete
+     * @request DELETE:/api/phase/{id}
+     */
+    phaseDelete: (id: number, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/phase/${id}`,
         method: "DELETE",
         ...params,
       }),
@@ -829,10 +876,7 @@ export class Api<
      * @name ProjectsCreate
      * @request POST:/api/projects
      */
-    projectsCreate: (
-      data: CreateProjectRequestDTO,
-      params: RequestParams = {}
-    ) =>
+    projectsCreate: (data: CreateProjectRequestDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/projects`,
         method: "POST",
@@ -923,10 +967,7 @@ export class Api<
      * @name RegistrationsCreate
      * @request POST:/api/registrations
      */
-    registrationsCreate: (
-      data: CreateRegistrationRequestDTO,
-      params: RequestParams = {}
-    ) =>
+    registrationsCreate: (data: CreateRegistrationRequestDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/registrations`,
         method: "POST",
@@ -942,10 +983,7 @@ export class Api<
      * @name RegistrationsUpdate
      * @request PUT:/api/registrations
      */
-    registrationsUpdate: (
-      data: EditRegistrationRequestDTO,
-      params: RequestParams = {}
-    ) =>
+    registrationsUpdate: (data: EditRegistrationRequestDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/registrations`,
         method: "PUT",
@@ -961,22 +999,7 @@ export class Api<
      * @name RegistrationsEmployeeDetail
      * @request GET:/api/registrations/employee/{mail}
      */
-    registrationsEmployeeDetail: (mail: string, params: RequestParams = {}) =>
-      this.request<RegistrationDTO[], any>({
-        path: `/api/registrations/employee/${mail}`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Registrations
-     * @name RegistrationsEmployeeDateDetail
-     * @request GET:/api/registrations/employee/{mail}/date
-     */
-    registrationsEmployeeDateDetail: (
+    registrationsEmployeeDetail: (
       mail: string,
       query?: {
         /** @format date-time */
@@ -984,13 +1007,12 @@ export class Api<
         /** @format date-time */
         endDate?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
-      this.request<RegistrationDTO[], any>({
-        path: `/api/registrations/employee/${mail}/date`,
+      this.request<any, ProblemDetails>({
+        path: `/api/registrations/employee/${mail}`,
         method: "GET",
         query: query,
-        format: "json",
         ...params,
       }),
 
@@ -1008,7 +1030,7 @@ export class Api<
         /** @format date-time */
         endDate?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<RegistrationDTO[], any>({
         path: `/api/registrations/date`,
@@ -1025,10 +1047,20 @@ export class Api<
      * @name RegistrationsTypeDetail
      * @request GET:/api/registrations/type/{type}
      */
-    registrationsTypeDetail: (type: number, params: RequestParams = {}) =>
+    registrationsTypeDetail: (
+      type: number,
+      query?: {
+        /** @format date-time */
+        startDate?: string;
+        /** @format date-time */
+        endDate?: string;
+      },
+      params: RequestParams = {},
+    ) =>
       this.request<RegistrationDTO[], any>({
         path: `/api/registrations/type/${type}`,
         method: "GET",
+        query: query,
         format: "json",
         ...params,
       }),
@@ -1084,10 +1116,7 @@ export class Api<
      * @name RequestsCreate
      * @request POST:/api/Requests
      */
-    requestsCreate: (
-      data: CreateRequestRequstDTO,
-      params: RequestParams = {}
-    ) =>
+    requestsCreate: (data: CreateRequestRequstDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/Requests`,
         method: "POST",
@@ -1103,10 +1132,7 @@ export class Api<
      * @name RequestsUpdate
      * @request PUT:/api/Requests
      */
-    requestsUpdate: (
-      data: EditRequestsRequestDTO,
-      params: RequestParams = {}
-    ) =>
+    requestsUpdate: (data: EditRequestsRequestDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/Requests`,
         method: "PUT",
@@ -1122,11 +1148,7 @@ export class Api<
      * @name RequestsAcceptPartialUpdate
      * @request PATCH:/api/Requests/{id}/accept
      */
-    requestsAcceptPartialUpdate: (
-      id: number,
-      data: AcceptRequestRequestDTO,
-      params: RequestParams = {}
-    ) =>
+    requestsAcceptPartialUpdate: (id: number, data: AcceptRequestRequestDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
         path: `/api/Requests/${id}/accept`,
         method: "PATCH",

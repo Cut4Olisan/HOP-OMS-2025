@@ -1,5 +1,6 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IRegistrationData } from "../../interfaces/IRegistrationProps";
+import { RequestsDTO } from "../../interfaces";
 
 export enum FormMode {
   CreateRequest = "CreateRequest",
@@ -10,7 +11,7 @@ export interface IRequestProps {
   context: WebPartContext;
   mode: FormMode;
   onFinish: (requests: IRequestCreateDTO) => void;
-  request?: IRequest;
+  request?: RequestsDTO;
 }
 
 export interface IRequest {

@@ -8,25 +8,30 @@ import {
 } from "@fluentui/react";
 import BackEndService from "../../services/BackEnd";
 import RequestComponent from "./RequestComponent";
-import { FormMode, IRequest } from "./interfaces/IRequestComponentProps";
+import { FormMode} from "./interfaces/IRequestComponentProps";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
+import {RequestsDTO} from "../interfaces/index"
 
 interface IRequestListProps {
   context: WebPartContext;
 }
 
 const RequestList: React.FC<IRequestListProps> = ({ context }) => {
-  const [requests, setRequests] = React.useState<IRequest[]>([]);
+  const [requests, setRequests] = React.useState<RequestsDTO[]>([]);
   const [selectedRequest, setSelectedRequest] = React.useState<
-    IRequest | undefined
+    RequestsDTO | undefined
   >(undefined);
 
   React.useEffect(() => {
     const fetchRequests = async (): Promise<void> => {
       try {
-        const data = await BackEndService.Instance.getRequests();
+        const data = (
+          await BackEndService.Instance.api.requestsList({
+            headers: BackEndService.getHeaders(),
+          })
+        ).data;
         setRequests(data);
-        console.log(data);
+        console.log("Requests:", data);
       } catch (error) {
         console.error("Kunne ikke hente anmodninger:", error);
       }
@@ -54,7 +59,7 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
     },
   ];
 
-  const onItemInvoked = (item: IRequest): void => {
+  const onItemInvoked = (item: RequestsDTO): void => {
     setSelectedRequest(item);
   };
 

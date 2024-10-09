@@ -113,7 +113,7 @@ const TimeSlot: React.FC<{
                 {booking.shortDescription}
               </Text>
               <BookingCardMenu
-                bookingId={booking.id}
+                registration={booking}
                 onBookingDeleted={(deletedBookingId) => {
                   setRegistrations((prevRegistrations) =>
                     prevRegistrations.filter(

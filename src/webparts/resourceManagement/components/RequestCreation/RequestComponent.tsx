@@ -29,9 +29,9 @@ import {
   formatTime,
 } from "../dateUtils";
 import { IRegistrationData } from "../interfaces/IRegistrationProps";
-import { RegistrationDTO } from "../interfaces";
-import { ICustomer, IProject } from "./interfaces/IComponentFormData";
+import { CustomerDTO, ProjectDTO, RegistrationDTO } from "../interfaces";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
+import useGlobal from "../../hooks/useGlobal";
 
 const RequestComponent: React.FC<IRequestProps> = ({
   context,
@@ -39,6 +39,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
   onFinish,
   request,
 }) => {
+  const { customers, projects } = useGlobal();
+
   const [error, setError] = React.useState<string | undefined>();
   const [warning, setWarning] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
@@ -55,12 +57,10 @@ const RequestComponent: React.FC<IRequestProps> = ({
     undefined
   );
   const [selectedCustomer, setSelectedCustomer] = React.useState<
-    ICustomer | undefined
+    CustomerDTO | undefined
   >(undefined);
-  const [customers, setCustomers] = React.useState<ICustomer[]>([]);
-  const [projects, setProjects] = React.useState<IProject[]>([]);
   const [selectedProject, setSelectedProject] = React.useState<
-    IProject | undefined
+    ProjectDTO | undefined
   >();
   const [hasChanges, setHasChanges] = React.useState<boolean>(false);
 
@@ -232,24 +232,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
   }, [title, selectedCoworkers, startDateTime, endDateTime]);
 
   React.useEffect(() => {
-    const fetchCustomers = async (): Promise<void> => {
-      try {
-        const data = await BackEndService.Instance.getCustomers();
-        setCustomers(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    const fetchProjects = async (): Promise<void> => {
-      try {
-        const data = await BackEndService.Instance.getProjects();
-        setProjects(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
     const fetchRequests = async (): Promise<void> => {
       try {
         const data = await BackEndService.Instance.getRequests();
@@ -258,9 +240,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
         console.error(err);
       }
     };
-
-    fetchCustomers().catch((e) => console.error(e));
-    fetchProjects().catch((e) => console.error(e));
     fetchRequests().catch((e) => console.error(e));
   }, []);
 

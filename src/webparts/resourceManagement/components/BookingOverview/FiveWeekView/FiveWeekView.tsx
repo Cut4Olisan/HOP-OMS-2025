@@ -10,6 +10,7 @@ import {
   TooltipHost,
   CommandBar,
   ICommandBarItemProps,
+  IComboBoxOption,
 } from "@fluentui/react";
 import {
   ArrowLeftRegular,
@@ -18,23 +19,21 @@ import {
 } from "@fluentui/react-icons";
 import styles from "./FiveWeekView.module.scss";
 import WeeklyView from "../WeeklyView/WeeklyView";
-import BackEndService from "../../../services/BackEnd";
 import { IRegistration } from "../../interfaces/IRegistrationProps";
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { useBoolean } from "@fluentui/react-hooks";
 import PeoplePickerComboBox from "./peoplePickerComponent";
-import BookingComponent from "../../BookingCreation/BookingComponent";
+/* import BookingComponent from "../../BookingCreation/BookingComponent"; */
 import { Button, Divider } from "@fluentui/react-components";
 import BookingCardMenu from "./bookingCardMenu";
-import {
-  ICustomer,
-  IProject,
-} from "../../RequestCreation/interfaces/IComponentFormData";
 import RequestComponent from "../../RequestCreation/RequestComponent";
 import { FormMode } from "../../RequestCreation/interfaces/IRequestComponentProps";
 import RequestList from "../../RequestCreation/RequestList";
 import BurnDownRate from "../ProjectBurnDownRate/BurnDownRate/BurnDownRate";
+import useGlobal from "../../../hooks/useGlobal";
+import { CustomerDTO, ProjectDTO } from "../../interfaces";
+import BackEndService from "../../../services/BackEnd";
 
 const ItemType = "BOOKING"; //Til drag n' drop WIP
 
@@ -43,9 +42,8 @@ const BookingCard: React.FC<{
   booking: IRegistration;
   onDrop: (booking: IRegistration, newWeekNumber: number) => void;
   onEmployeeClick: (booking: IRegistration) => void;
-  projects: IProject[];
-  customers: ICustomer[];
-}> = ({ booking, onDrop, onEmployeeClick, projects, customers }) => {
+}> = ({ booking, onDrop, onEmployeeClick }) => {
+  const { customers, projects } = useGlobal();
   const [, drag] = useDrag({
     type: ItemType,
     item: booking,
@@ -76,7 +74,7 @@ const BookingCard: React.FC<{
           {booking.shortDescription}
         </Text>
         <BookingCardMenu
-          bookingId={booking.id}
+          registration={booking}
           onBookingDeleted={(deletedBookingId) => {
             setRegistrations((prevRegistrations) =>
               prevRegistrations.filter((reg) => reg.id !== deletedBookingId)
@@ -114,8 +112,6 @@ const WeekColumn: React.FC<{
   bookings: IRegistration[];
   onDrop: (booking: IRegistration, newWeekNumber: number) => void;
   onEmployeeClick: (booking: IRegistration) => void;
-  projects: IProject[];
-  customers: ICustomer[];
 }> = ({
   weekNumber,
   startDate,
@@ -123,8 +119,6 @@ const WeekColumn: React.FC<{
   bookings,
   onDrop,
   onEmployeeClick,
-  projects,
-  customers,
 }) => {
   const [, drop] = useDrop({
     accept: ItemType,
@@ -142,8 +136,6 @@ const WeekColumn: React.FC<{
             booking={booking}
             onDrop={onDrop}
             onEmployeeClick={onEmployeeClick}
-            projects={projects}
-            customers={customers}
           />
         ))
       ) : (
@@ -162,13 +154,12 @@ interface IFiveWeekViewProps {
 }
 
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
-  const [customers, setCustomers] = useState<ICustomer[]>([]);
-  const [projects, setProjects] = useState<IProject[]>([]);
+  const { projects, customers } = useGlobal();
   const [registrations, setRegistrations] = useState<IRegistration[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
   const [clearSelection, setClearSelection] = useState<boolean>(false);
   const [selectedCustomer, setSelectedCustomer] = useState<
-    ICustomer | undefined
+    CustomerDTO | undefined
   >(undefined);
   const [selectedProject, setSelectedProject] = useState<string | undefined>(
     undefined
@@ -179,10 +170,10 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   //***                  Panel controllers                  ***//
-  const [
+  /*   const [
     isBookingOpen,
     { setTrue: openBookingPanel, setFalse: dismissBookingPanel },
-  ] = useBoolean(false); //Create Bookings
+  ] = useBoolean(false); //Create Bookings */
 
   const [
     isRequestOpen,
@@ -199,23 +190,13 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     { setTrue: openBurnDownPanel, setFalse: dismissBurnDownPanel },
   ] = useBoolean(false);
 
-  /*const [
-    isSentRequestOpen,
-    { setTrue: openSentRequestPanel, setFalse: dismissSentRequestPanel },
-  ] = useBoolean(false); //Create Request*/
-
-  //***                  Panel controllers                  ***//
+  const { setShowBookingComponentPanel, setSelectedRegistration } = useGlobal();
 
   useEffect(() => {
     const fetchData = async (): Promise<void> => {
       try {
-        const fetchedCustomers = await BackEndService.Instance.getCustomers();
-        const fetchedProjects = await BackEndService.Instance.getProjects();
         const fetchedRegistrations =
           await BackEndService.Instance.getRegistrationsByType();
-
-        setCustomers(fetchedCustomers);
-        setProjects(fetchedProjects);
         setRegistrations(fetchedRegistrations);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -224,6 +205,13 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
     void fetchData();
   }, []);
+
+  /*const [
+    isSentRequestOpen,
+    { setTrue: openSentRequestPanel, setFalse: dismissSentRequestPanel },
+  ] = useBoolean(false); //Create Request*/
+
+  //***                  Panel controllers                  ***//
 
   useEffect(() => {
     if (clearSelection) {
@@ -372,16 +360,18 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
               <ComboBox
                 placeholder="Vælg en kunde"
-                options={customers
-                  .filter((c) => c.active)
-                  .map((customer) => ({
-                    key: customer.id.toString(),
-                    text: customer.name,
-                  }))}
+                options={
+                  customers
+                    .filter((c) => c.active)
+                    .map((customer) => ({
+                      key: customer.id?.toString(),
+                      text: customer.name,
+                    })) as IComboBoxOption[]
+                }
                 selectedKey={selectedCustomer?.id?.toString() || ""}
                 onChange={(e, option) =>
                   setSelectedCustomer(
-                    customers.find((c) => c.id.toString() === option?.key) ||
+                    customers.find((c) => c.id?.toString() === option?.key) ||
                       undefined
                   )
                 }
@@ -395,10 +385,12 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
               <ComboBox
                 placeholder="Vælg et projekt"
-                options={filteredProjects.map((project: IProject) => ({
-                  key: project.id.toString(),
-                  text: project.name,
-                }))}
+                options={
+                  filteredProjects.map((project: ProjectDTO) => ({
+                    key: project.id?.toString(),
+                    text: project.name,
+                  })) as IComboBoxOption[]
+                }
                 selectedKey={selectedProject || ""}
                 onChange={(e, option) =>
                   setSelectedProject(option?.key as string)
@@ -418,29 +410,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               )}
             </div>
 
-            {/*Opret booking panel*/}
             <div className={styles.navigationContainer}>
-              <Panel
-                type={5}
-                isOpen={isBookingOpen}
-                closeButtonAriaLabel="Close"
-                isHiddenOnDismiss={false} // **Hvis sat til true vil panel ikke åbne igen efter at have åbnet site acces eller lign.**
-                onDismiss={dismissBookingPanel}
-              >
-                <BookingComponent
-                  context={context}
-                  customers={customers}
-                  coworkers={[]}
-                  projects={projects}
-                  dismissPanel={dismissBookingPanel}
-                  onFinish={(registrations) => {
-                    console.log("Finished bookings", registrations);
-                    dismissBookingPanel();
-                  }}
-                />
-              </Panel>
-
-              {/*Opret request panel*/}
               <Panel
                 type={5}
                 isOpen={isRequestOpen}
@@ -506,7 +476,10 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                   appearance="subtle"
                   size="large"
                   icon={<AddSquareMultipleRegular />}
-                  onClick={openBookingPanel}
+                  onClick={() => {
+                    setShowBookingComponentPanel(true);
+                    setSelectedRegistration(undefined);
+                  }}
                 />
               </TooltipHost>
             </div>
@@ -544,8 +517,6 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                   bookings={weekBookings}
                   onDrop={handleDrop}
                   onEmployeeClick={handleEmployeeClick}
-                  projects={projects}
-                  customers={customers}
                 />
               );
             })}

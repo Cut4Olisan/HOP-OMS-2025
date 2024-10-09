@@ -23,17 +23,11 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
   private _environmentMessage: string = "";
 
   public render(): void {
-    const coworkers = [
-      { key: 'coworker1', text: 'Coworker 1' },
-      { key: 'coworker2', text: 'Coworker 2' },
-    ];
-
     const element: React.ReactElement<IResourceManagementProps> = React.createElement(
       ResourceManagement,
       {
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
-        coworkers: coworkers,
         context: this.context
       }
     );

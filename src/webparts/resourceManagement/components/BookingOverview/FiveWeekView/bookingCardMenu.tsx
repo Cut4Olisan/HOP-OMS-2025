@@ -16,16 +16,24 @@ import {
 } from "@fluentui/react-icons";
 import BackEndService from "../../../services/BackEnd";
 import { TooltipHost } from "@fluentui/react";
+import { IRegistration } from "../../interfaces/IRegistrationProps";
+import useGlobal from "../../../hooks/useGlobal";
 
 interface IBookingCardMenuProps {
-  bookingId: number;
+  registration: IRegistration;
   onBookingDeleted: (bookingId: number) => void;
 }
 
 const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
-  bookingId,
+  registration,
   onBookingDeleted,
 }) => {
+  const {
+    setShowBookingComponentPanel,
+/*     showBookingComponentPanel,
+    selectedRegistration, */
+    setSelectedRegistration,
+  } = useGlobal();
   // Function to handle delete action
   const handleDelete = async () => {
     const confirmation = window.confirm(
@@ -33,8 +41,8 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
     );
     if (confirmation) {
       try {
-        await BackEndService.Instance.deleteBooking(bookingId); // Backend call to delete booking
-        onBookingDeleted(bookingId); // Pass the bookingId back to the parent
+        await BackEndService.Instance.deleteBooking(registration.id); // Backend call to delete booking
+        onBookingDeleted(registration.id); // Pass the bookingId back to the parent
       } catch (error) {
         console.error("Failed to delete booking:", error);
         alert("Kunne ikke slette booking. Prøv igen.");
@@ -42,7 +50,10 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
     }
   };
 
-  const editBooking = async () => {};
+  const editBooking = async () => {
+    setSelectedRegistration(registration);
+    setShowBookingComponentPanel(true);
+  };
 
   const copyBooking = async () => {};
 

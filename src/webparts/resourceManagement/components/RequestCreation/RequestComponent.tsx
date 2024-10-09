@@ -31,7 +31,7 @@ import {
 import { IRegistrationData } from "../interfaces/IRegistrationProps";
 import { AcceptRequestRequestDTO, CustomerDTO, ProjectDTO, RegistrationDTO } from "../interfaces";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
-import useGlobal from "../../hooks/useGlobal";
+// import useGlobal from "../../hooks/useGlobal";
 
 export interface IRequestComponentFormData {
   title: string;
@@ -59,29 +59,11 @@ const RequestComponent: React.FC<IRequestProps> = ({
     customers: [],
     projects: [],
   });
-  const { customers, projects } = useGlobal();
+  // const { customers, projects } = useGlobal();
 
   const [error, setError] = React.useState<string | undefined>();
   const [warning, setWarning] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
-  const [title, setTitle] = React.useState<string>("");
-  const [info, setInfo] = React.useState<string>("");
-  const [estimatedHours, setEstimatedHours] = React.useState<string>("");
-  const [selectedCoworkers, setSelectedCoworkers] = React.useState<string[]>(
-    []
-  );
-  const [startDateTime, setStartDateTime] = React.useState<Date | undefined>(
-    undefined
-  );
-  const [endDateTime, setEndDateTime] = React.useState<Date | undefined>(
-    undefined
-  );
-  const [selectedCustomer, setSelectedCustomer] = React.useState<
-    CustomerDTO | undefined
-  >(undefined);
-  const [selectedProject, setSelectedProject] = React.useState<
-    ProjectDTO | undefined
-  >();
   const [hasChanges, setHasChanges] = React.useState<boolean>(false);
   const [initialState, setInitialState] = React.useState<string>(
     JSON.stringify(formData)

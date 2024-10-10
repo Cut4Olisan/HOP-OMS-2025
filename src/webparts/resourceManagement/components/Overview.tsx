@@ -25,6 +25,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
     showBurnDownPanel,
     setShowBurnDownPanel,
     selectedRegistration,
+    loading,
   } = useGlobal();
 
   const _faritems: ICommandBarItemProps[] = [
@@ -74,6 +75,10 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       },
     },
   ];
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Stack>

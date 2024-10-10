@@ -26,6 +26,8 @@ export interface IGlobalContext {
   setCustomers: React.Dispatch<CustomerDTO[]>;
   projects: ProjectDTO[];
   setProjects: React.Dispatch<ProjectDTO[]>;
+  loading: boolean;
+  setLoading: React.Dispatch<boolean>;
 }
 
 export const GlobalContext = React.createContext<IGlobalContext | undefined>(
@@ -93,6 +95,8 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setProjects,
           isEditMode,
           setIsEditMode,
+          loading,
+          setLoading,
         }}
       >
         <>{children}</>

@@ -177,10 +177,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
             <div key={day} className={styles.dayHeader}>
               <Text variant="large">
                 <strong>{day}</strong>
-                <Text>
-                  ({calculateDailyHours(weekDays[i])}
-                  {""}Timer)
-                </Text>
+                <Text>({calculateDailyHours(weekDays[i])} timer)</Text>
               </Text>
               <Text>{weekDays[i].toLocaleDateString()}</Text>
             </div>

@@ -98,6 +98,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
           context={context}
           mode={FormMode.CreateRequest}
           onFinish={(request) => setShowRequestPanel(false)}
+          dismissPanel={() => setShowRequestPanel(false)}
         />
       </Panel>
 

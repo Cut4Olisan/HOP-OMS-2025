@@ -38,6 +38,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
   mode,
   onFinish,
   request,
+  dismissPanel,
 }) => {
   const { customers, projects } = useGlobal();
 
@@ -376,12 +377,12 @@ const RequestComponent: React.FC<IRequestProps> = ({
         {isCreationMode ? (
           <>
             <PrimaryButton text="Opret" onClick={onCreate} />
-            <DefaultButton text="Annuller" />
+            <DefaultButton text="Annuller" onClick={dismissPanel} />
           </>
         ) : isConfirmMode && hasChanges ? (
           <>
             <PrimaryButton text="Opdater" onClick={onUpdate} />
-            <DefaultButton text="Annuller" />
+            <DefaultButton text="Annuller" onClick={dismissPanel} />
           </>
         ) : isConfirmMode ? (
           <>
@@ -391,7 +392,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
         ) : (
           <>
             <PrimaryButton text="Opdater" onClick={onUpdate} />
-            <DefaultButton text="Annuller" />
+            <DefaultButton text="Annuller" onClick={dismissPanel} />
           </>
         )}
       </Stack>

@@ -73,6 +73,7 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
           mode={FormMode.ConfirmRequest}
           onFinish={() => setSelectedRequest(undefined)}
           request={selectedRequest}
+          dismissPanel={() => false} //needs reworking - not functional
         />
       )}
     </Stack>

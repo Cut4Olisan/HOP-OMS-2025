@@ -32,6 +32,7 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
     IComboBoxOption[]
   >([]);
   const [selectedKeys, setSelectedKeys] = React.useState<string[]>([]);
+  //const [selectedUserKey, setSelectedUserKey] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
 
   const fetchUserProfilePicture = async (userId: string): Promise<string> => {
@@ -56,6 +57,12 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
     try {
       const client: MSGraphClientV3 =
         await context.msGraphClientFactory.getClient("3");
+
+      const currentUser = await client
+        .api("/me")
+        .select("id,displayName,mail")
+        .get();
+
       const response = await client
         .api("/users")
         .select("displayName,mail,id")
@@ -89,6 +96,7 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
       );
 
       setEmployeeOptions(users);
+      setSelectedKeys(currentUser.id);
     } catch (error) {
       console.error("Error fetching users from Microsoft Graph:", error);
     } finally {
@@ -135,6 +143,8 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
       onChange(selectedEmails);
     }
   };
+
+  console.log(selectedKeys, "selectedkeys");
 
   const onRenderOption = (option: IComboBoxOption): JSX.Element => {
     const { text, data } = option;

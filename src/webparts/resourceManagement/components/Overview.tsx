@@ -27,44 +27,47 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
     selectedRegistration,
   } = useGlobal();
 
-  const _items: ICommandBarItemProps[] = [
+  const _faritems: ICommandBarItemProps[] = [
     {
       key: "Overview",
       text: "Oversigt",
-      iconProps: { iconName: "report" },
+      iconProps: { iconName: "TimelineMatrixView" },
       onClick: () => undefined,
     },
     {
       key: "Capacity",
       text: "Kapacitet - WIP",
-      iconProps: { iconName: "report" },
+      iconProps: { iconName: "FunctionalManagerDashboard" },
       onClick: () => undefined,
     },
     {
       key: "Burndown",
       text: "Burndown-rate - WIP",
-      iconProps: { iconName: "" },
+      iconProps: { iconName: "AreaChart" },
       onClick: () => setShowBurnDownPanel(true),
     },
     {
       key: "Requests",
       text: "Anmodninger",
-      iconProps: { iconName: "List" },
+      iconProps: { iconName: "CollapseMenu" },
       subMenuProps: {
         items: [
           {
             key: "receivedRequests",
             text: "Modtagede anmodninger",
+            iconProps: { iconName: "MailLowImportance" },
             onClick: () => setShowRequestListPanel(true),
           },
           {
             key: "sentRequests",
             text: "Sendte anmodninger - WIP",
+            iconProps: { iconName: "MailForward" },
             onClick: () => undefined,
           },
           {
             key: "createRequests",
             text: "Opret anmodning",
+            iconProps: { iconName: "EditMail" },
             onClick: () => setShowRequestPanel(true),
           },
         ],
@@ -74,7 +77,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
 
   return (
     <Stack>
-      <CommandBar items={_items} />
+      <CommandBar farItems={_faritems} items={[]} />
       <BookingOverviewComponent context={context} />
       <Panel
         type={5}

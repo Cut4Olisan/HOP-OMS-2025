@@ -22,7 +22,11 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import PeoplePickerComboBox from "./peoplePickerComponent";
 import { Button } from "@fluentui/react-components";
 import useGlobal from "../../../hooks/useGlobal";
-import { CustomerDTO, ProjectDTO } from "../../interfaces";
+import {
+  CustomerDTO,
+  EditRegistrationRequestDTO,
+  ProjectDTO,
+} from "../../interfaces";
 import BackEndService from "../../../services/BackEnd";
 import WeekColumn from "./WeekColumn/WeekColumn";
 import { calculateWeeklyHours } from "../HelperFunctions/helperFunctions";
@@ -93,21 +97,64 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     setCurrentDate(newDate);
   };
 
-  const handleDrop = (
+  //Used for drag n' drop
+  const calculateNewDateForWeek = (
+    currentDate: string,
+    newWeekNumber: number
+  ): string => {
+    // Example: Move the booking to the correct week and preserve the same day of the week
+    const current = new Date(currentDate);
+    const currentWeekNumber = getWeekNumber(current);
+    const weekDifference = newWeekNumber - currentWeekNumber;
+
+    // Set the new date by adjusting the week
+    const newDate = new Date(
+      current.setDate(current.getDate() + weekDifference * 7)
+    );
+
+    // Return the updated date in the "YYYY-MM-DDT00:00:00" format
+    return newDate.toISOString().split("T")[0] + "T00:00:00";
+  };
+  const handleDrop = async (
     movedBooking: IRegistration,
     newWeekNumber: number
-  ): void => {
-    const updatedBookings = registrations.map((booking) => {
-      if (booking.id === movedBooking.id) {
-        return { ...booking, date: `2024-W${newWeekNumber}` };
-      }
-      return booking;
-    });
-    setRegistrations(updatedBookings);
+  ): Promise<void> => {
+    const updatedDate = calculateNewDateForWeek(
+      movedBooking.date,
+      newWeekNumber
+    );
+
+    const updatedBooking: EditRegistrationRequestDTO = {
+      id: movedBooking.id,
+      shortDescription: movedBooking.shortDescription,
+      description: movedBooking.description,
+      projectId: movedBooking.projectId,
+      date: updatedDate,
+      start: movedBooking.start, // Use the same start time
+      end: movedBooking.end, // Use the same end time
+      registrationType: movedBooking.registrationType,
+    };
+    console.log("Payload being sent:", updatedBooking); //For debugging, removing later
+
+    try {
+      await BackEndService.Instance.updateRegistrations(updatedBooking);
+
+      const updatedBookings = registrations.map((booking) => {
+        if (booking.id === movedBooking.id) {
+          return { ...booking, date: updatedDate };
+        }
+        return booking;
+      });
+      setRegistrations(updatedBookings);
+
+      console.log("Booking updated successfully!");
+    } catch (error) {
+      console.error("Failed to update booking:", error);
+    }
   };
 
   const handleEmployeeClick = (booking: IRegistration): void => {
-    setSelectedBooking(booking); // Update selected booking
+    setSelectedBooking(booking);
   };
 
   // Filter bookings based on selected filters (employee, customer, project)

@@ -23,7 +23,9 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   z-index: 1;
-  color: #333; /* Darker text color for better readability */
+  color: #333;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
 }
 
 .bookingContent {
@@ -54,4 +56,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.hoveredTimeSlot {
+  background-color: #e0f7fa; /* Light blue background for hover effect */
+  border: 1px solid #0288d1; /* Blue border to indicate hover */
 }

@@ -72,7 +72,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     });
   }, [currentWeekNumber, employeeId]);
 
-  // Helper function to calculate the difference in hours between two times - needs to be reworked later
+  // Helper function to calculate the difference in hours between two times
   const calculateHoursFromStartAndEnd = (
     start: string,
     end: string

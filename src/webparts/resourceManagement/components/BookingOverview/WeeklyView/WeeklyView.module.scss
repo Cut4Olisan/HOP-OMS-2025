@@ -27,14 +27,14 @@
   flex-grow: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  height: 600px;
+  height: 800px;
   scrollbar-width: none;
 }
 
 .gridContainer {
   display: grid;
   grid-template-columns: 100px repeat(5, 1fr); /* One fixed column for time, and 5 flexible columns for days */
-  width: 100%; /* Ensure it uses the full available width */
+  width: 100%;
   position: relative;
 }
 
@@ -103,9 +103,4 @@
 
 .upIconScale {
   transform: scale(1.25);
-}
-
-.timeSlot.hovered {
-  background-color: rgba(0, 120, 212, 0.1);
-  border: 1px solid rgba(0, 120, 212, 0.4);
 }

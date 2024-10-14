@@ -5,12 +5,12 @@ import { IRegistration } from "../../interfaces/IRegistrationProps";
 import BookingCardMenu from "../FiveWeekView/BookingCard/bookingCardMenu";
 import { getBookingDate } from "../HelperFunctions/helperFunctions";
 import styles from "./TimeSlot.module.scss";
-import { Text } from "@fluentui/react";
+import { Text, TooltipHost } from "@fluentui/react";
 import { formatEmployeeName } from "../HelperFunctions/helperFunctions";
+import useGlobal from "../../../hooks/useGlobal";
 
 const ItemType = "BOOKING"; // Draggable item type
 
-// Adjust `TimeSlot` for date checks and alignment
 const TimeSlot: React.FC<{
   timeSlotId: string;
   date: string;
@@ -30,17 +30,38 @@ const TimeSlot: React.FC<{
   projects,
   customers,
 }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+  const { setIsDraggingBooking, isDraggingGlobal } = useGlobal();
+
   const [, drop] = useDrop({
     accept: ItemType,
     drop: (item: IRegistration) => {
       onDrop(item, date, timeSlotId);
+      setIsHovered(false); // Reset hover state on drop
     },
+    hover: () => {
+      setIsHovered(true); // Set hover state when hovering over the slot
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
   });
+
+  const handleDragLeave = () => {
+    setIsHovered(false); // Reset hover state when the drag leaves
+  };
 
   const [, drag] = useDrag({
     type: ItemType,
     item: booking,
     canDrag: !!booking,
+    collect: (monitor) => {
+      if (monitor.isDragging()) {
+        setIsDraggingBooking(true);
+      } else {
+        setIsDraggingBooking(false);
+      }
+    },
   });
 
   const [, setRegistrations] = React.useState<IRegistration[]>([]);
@@ -57,51 +78,75 @@ const TimeSlot: React.FC<{
 
   const bookingTime = booking ? `${booking.start} - ${booking.end}` : "";
 
+  // Adjust if the booking doesn't start exactly on the hour
   const shouldAdjustOffset = booking
     ? parseTime(booking.start).minute !== 0
     : false;
 
+  // Get the minute offset as a percentage of the 15-minute block
+  const minuteOffset = booking ? parseTime(booking.start).minute : 0;
+  const minutePercentage = (minuteOffset / 60) * 100; // Minute offset in percentage of the 60-minute block
+
   return (
-    <div ref={drop}>
-      {booking && bookingDate && (
-        <div
-          ref={drag}
-          className={styles.booking}
-          style={{
-            top: shouldAdjustOffset
-              ? `calc(${topOffset}px - 0px)`
-              : `${topOffset}px`,
-            height: `${span * 15}px`,
-          }}
-        >
-          <div className={styles.bookingContent}>
-            <div className={styles.TitelAndEditIcon}>
-              <Text className={styles.bookingTitle}>
-                {booking.shortDescription}
+    <TooltipHost
+      content={`Start time: ${timeSlotId}, Date: ${new Date(date).toLocaleDateString("da-DK")}`}
+      delay={0}
+      hidden={!isDraggingGlobal} // Show tooltip only when dragging
+    >
+      <div
+        ref={drop}
+        onMouseLeave={handleDragLeave} // Reset hover state when the mouse leaves
+        className={`${styles.timeSlot} ${isHovered ? styles.hoveredTimeSlot : ""}`}
+        style={{
+          height: "15px", // Fixed height for each time slot (15-minute blocks)
+          position: "relative", // Ensure relative positioning within the grid
+        }}
+      >
+        {booking && bookingDate && (
+          <div
+            ref={drag}
+            className={styles.booking}
+            style={{
+              top: shouldAdjustOffset
+                ? `${minutePercentage}%` // Adjust the top based on the minute offset
+                : "0", // If no adjustment is needed, top is set to 0
+              height: `${span * 15}px`, // Booking spans based on its duration
+              left: 0,
+              right: 0,
+              position: "absolute", // Absolute positioning inside the time slot
+            }}
+          >
+            <div className={styles.bookingContent}>
+              <div className={styles.TitelAndEditIcon}>
+                <Text className={styles.bookingTitle}>
+                  {booking.shortDescription}
+                </Text>
+                <BookingCardMenu
+                  registration={booking}
+                  onBookingDeleted={(deletedBookingId) => {
+                    setRegistrations((prevRegistrations) =>
+                      prevRegistrations.filter(
+                        (reg) => reg.id !== deletedBookingId
+                      )
+                    );
+                  }}
+                />
+              </div>
+              <Text className={styles.bookingEmployee}>
+                {formatEmployeeName}
               </Text>
-              <BookingCardMenu
-                registration={booking}
-                onBookingDeleted={(deletedBookingId) => {
-                  setRegistrations((prevRegistrations) =>
-                    prevRegistrations.filter(
-                      (reg) => reg.id !== deletedBookingId
-                    )
-                  );
-                }}
-              />
+              <Text
+                className={styles.bookingProject}
+              >{`Customer: ${customerName}`}</Text>
+              <Text
+                className={styles.bookingProject}
+              >{`Project: ${projectName}`}</Text>
+              <Text className={styles.bookingTime}>{bookingTime}</Text>
             </div>
-            <Text className={styles.bookingEmployee}>{formatEmployeeName}</Text>
-            <Text
-              className={styles.bookingProject}
-            >{`Customer: ${customerName}`}</Text>
-            <Text
-              className={styles.bookingProject}
-            >{`Project: ${projectName}`}</Text>
-            <Text className={styles.bookingTime}>{bookingTime}</Text>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </TooltipHost>
   );
 };
 

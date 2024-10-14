@@ -8,18 +8,27 @@ export const getBookingDate = (bookingDate: string): Date => {
 
 // Helper function to calculate the top offset based on start time
 export const calculateTopOffset = (start: string): number => {
-  const startParts = start.split(":").map(Number);
-  return (startParts[1] / 60) * 100; // Convert minutes to a percentage for offset
+  const [hours, minutes] = start.split(":").map(Number);
+
+  // Calculate the number of 15-minute blocks since the start of the day
+  const totalBlocks = hours * 4 + Math.floor(minutes / 15);
+
+  // Each block is 15px high, so the top offset is simply the number of blocks * 15px
+  return totalBlocks * 15;
 };
 
 // Helper function to calculate the duration of a booking in timeslots
 export const calculateSpan = (start: string, end: string): number => {
-  const startParts = start.split(":").map(Number);
-  const endParts = end.split(":").map(Number);
-  const startMinutes = startParts[0] * 60 + startParts[1];
-  const endMinutes = endParts[0] * 60 + endParts[1];
-  const durationInMinutes = endMinutes - startMinutes;
-  return Math.ceil(durationInMinutes / 15); // Each timeslot represents 15 minutes
+  const [startHours, startMinutes] = start.split(":").map(Number);
+  const [endHours, endMinutes] = end.split(":").map(Number);
+
+  // Convert start and end times to total minutes
+  const startTotalMinutes = startHours * 60 + startMinutes;
+  const endTotalMinutes = endHours * 60 + endMinutes;
+
+  // Calculate duration in minutes and return the span in 15-minute blocks
+  const durationInMinutes = endTotalMinutes - startTotalMinutes;
+  return Math.ceil(durationInMinutes / 15); // Return the number of 15-minute slots
 };
 
 export const getWeekStartDate = (weekNumber: number): Date => {

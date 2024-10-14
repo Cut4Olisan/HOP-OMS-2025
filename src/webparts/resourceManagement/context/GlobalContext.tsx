@@ -28,10 +28,6 @@ export interface IGlobalContext {
   setProjects: React.Dispatch<ProjectDTO[]>;
   loading: boolean;
   setLoading: React.Dispatch<boolean>;
-  isDraggingBooking: boolean;
-  setIsDraggingBooking: React.Dispatch<boolean>;
-  isDraggingGlobal: boolean;
-  setIsDraggingGlobal: React.Dispatch<boolean>;
 }
 
 export const GlobalContext = React.createContext<IGlobalContext | undefined>(
@@ -57,10 +53,6 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const [projects, setProjects] = React.useState<ProjectDTO[]>([]);
   const [isEditMode, setIsEditMode] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(true);
-  const [isDraggingBooking, setIsDraggingBooking] =
-    React.useState<boolean>(false);
-  const [isDraggingGlobal, setIsDraggingGlobal] =
-    React.useState<boolean>(false);
 
   React.useEffect(() => {
     (async () => {
@@ -105,10 +97,6 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setIsEditMode,
           loading,
           setLoading,
-          isDraggingBooking,
-          setIsDraggingBooking,
-          isDraggingGlobal,
-          setIsDraggingGlobal,
         }}
       >
         <>{children}</>

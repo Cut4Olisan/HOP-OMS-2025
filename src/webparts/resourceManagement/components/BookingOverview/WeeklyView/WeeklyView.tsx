@@ -16,7 +16,6 @@ import {
 } from "../HelperFunctions/helperFunctions";
 import TimeSlot from "./TimeSlot";
 import { EditRegistrationRequestDTO } from "../../interfaces";
-//import useGlobal from "../../../hooks/useGlobal";
 
 interface WeeklyViewProps {
   weekNumber: string;

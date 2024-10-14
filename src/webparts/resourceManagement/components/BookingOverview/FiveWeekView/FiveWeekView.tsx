@@ -125,19 +125,22 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     );
 
     const updatedBooking: EditRegistrationRequestDTO = {
-      id: movedBooking.id,
       shortDescription: movedBooking.shortDescription,
       description: movedBooking.description,
       projectId: movedBooking.projectId,
       date: updatedDate,
-      start: movedBooking.start, // Use the same start time
-      end: movedBooking.end, // Use the same end time
+      start: movedBooking.start,
+      end: movedBooking.end,
       registrationType: movedBooking.registrationType,
     };
-    console.log("Payload being sent:", updatedBooking); //For debugging, removing later
+
+    console.log("Payload being sent:", updatedBooking); //For debugging, removing laterrrr
 
     try {
-      await BackEndService.Instance.updateRegistrations(updatedBooking);
+      await BackEndService.Instance.updateRegistrations(
+        movedBooking.id,
+        updatedBooking
+      );
 
       const updatedBookings = registrations.map((booking) => {
         if (booking.id === movedBooking.id) {

@@ -216,7 +216,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       try {
         const updatePromises = registrations.map(async (r) => {
           const updateData: EditRegistrationRequestDTO = {
-            id: registration.id,
             shortDescription: r.shortDescription,
             description: r.description,
             projectId: r.projectId,
@@ -227,7 +226,10 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             registrationType: r.registrationType,
           };
 
-          return await BackEndService.Instance.updateRegistrations(updateData);
+          return await BackEndService.Instance.updateRegistrations(
+            registration.id,
+            updateData
+          );
         });
 
         await Promise.all(updatePromises);

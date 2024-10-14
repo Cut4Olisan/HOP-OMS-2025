@@ -15,6 +15,8 @@ import {
   formatEmployeeName,
 } from "../HelperFunctions/helperFunctions";
 import TimeSlot from "./TimeSlot";
+import { EditRegistrationRequestDTO } from "../../interfaces";
+//import useGlobal from "../../../hooks/useGlobal";
 
 interface WeeklyViewProps {
   weekNumber: string;
@@ -102,20 +104,84 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     return totalHours;
   };
 
-  const onBookingDrop = (
+  const calculateDuration = (startTime: string, endTime: string): number => {
+    const [startHours, startMinutes] = startTime.split(":").map(Number);
+    const [endHours, endMinutes] = endTime.split(":").map(Number);
+
+    // Convert both start and end times to minutes
+    const startTotalMinutes = startHours * 60 + startMinutes;
+    const endTotalMinutes = endHours * 60 + endMinutes;
+
+    // Return the difference in minutes
+    return endTotalMinutes - startTotalMinutes;
+  };
+
+  const calculateNewEndTime = (
+    newStartTime: string,
+    duration: number
+  ): string => {
+    const [startHours, startMinutes] = newStartTime.split(":").map(Number);
+
+    // Convert new start time to total minutes
+    const startTotalMinutes = startHours * 60 + startMinutes;
+
+    // Calculate the new end time in total minutes
+    const newEndTotalMinutes = startTotalMinutes + duration;
+
+    // Convert the new end time back to hours and minutes
+    const newEndHours = Math.floor(newEndTotalMinutes / 60);
+    const newEndMinutes = newEndTotalMinutes % 60;
+
+    // Return the new end time in "HH:MM" format
+    return `${newEndHours.toString().padStart(2, "0")}:${newEndMinutes
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  const snapToNearestSlot = (timeSlotId: string): string => {
+    const [hour, minute] = timeSlotId.split(":").map(Number);
+    const roundedMinutes = Math.round(minute / 15) * 15; // Snap to nearest 15
+    return `${hour}:${roundedMinutes.toString().padStart(2, "0")}`;
+  };
+
+  const onBookingDrop = async (
     movedBooking: IRegistration,
+    newDate: string,
     newStart: string
-  ): void => {
-    const updatedBookings = currentBookings.map((b) => {
-      if (b.id === movedBooking.id) {
-        const newDate = new Date(b.date);
-        newDate.setHours(Number(newStart.split(":")[0]));
-        newDate.setMinutes(Number(newStart.split(":")[1]));
-        return { ...b, date: newDate.toISOString() };
-      }
-      return b;
-    });
-    setCurrentBookings(updatedBookings);
+  ): Promise<void> => {
+    const snappedStart = snapToNearestSlot(newStart);
+    const duration = calculateDuration(movedBooking.start, movedBooking.end);
+    const newEnd = calculateNewEndTime(snappedStart, duration);
+
+    const updatedBooking: EditRegistrationRequestDTO = {
+      shortDescription: movedBooking.shortDescription,
+      description: movedBooking.description,
+      projectId: movedBooking.projectId,
+      date: newDate,
+      start: snappedStart, // Updated start time
+      end: newEnd,
+      registrationType: movedBooking.registrationType,
+    };
+
+    try {
+      await BackEndService.Instance.updateRegistrations(
+        movedBooking.id,
+        updatedBooking
+      );
+
+      // Update local state with the updated booking
+      setCurrentBookings((prevBookings) =>
+        prevBookings.map((b) =>
+          b.id === movedBooking.id
+            ? { ...b, date: newDate, start: snappedStart, end: newEnd }
+            : b
+        )
+      );
+
+      console.log("Booking updated successfully!");
+    } catch (error) {
+      console.error("Failed to update booking:", error);
+    }
   };
 
   const handlePreviousWeek = async (): Promise<void> => {
@@ -179,7 +245,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
                 <strong>{day}</strong>
                 <Text>({calculateDailyHours(weekDays[i])} timer)</Text>
               </Text>
-              <Text>{weekDays[i].toLocaleDateString()}</Text>
+              <Text>{weekDays[i].toLocaleDateString("da-DK")}</Text>
             </div>
           ))}
         </div>
@@ -222,6 +288,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
                           <TimeSlot
                             key={timeSlotId}
                             timeSlotId={timeSlotId}
+                            date={dayDate.toISOString()}
                             booking={booking}
                             onDrop={onBookingDrop}
                             span={span}

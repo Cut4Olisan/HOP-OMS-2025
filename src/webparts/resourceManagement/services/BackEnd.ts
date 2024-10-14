@@ -77,9 +77,10 @@ class BackEndService extends Api<unknown> {
   }
 
   public async updateRegistrations(
+    id: number,
     data: EditRegistrationRequestDTO
   ): Promise<void> {
-    const response = await this.api.registrationsUpdate(data, {
+    const response = await this.api.registrationsUpdate(id, data, {
       headers: BackEndService.getHeaders(),
     });
     await BackEndService.handleResponse(response);

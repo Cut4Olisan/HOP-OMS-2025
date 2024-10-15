@@ -122,6 +122,31 @@ export interface CustomerDTO {
   economicId?: number | null;
 }
 
+export interface DateOnly {
+  /** @format int32 */
+  year?: number;
+  /** @format int32 */
+  month?: number;
+  /** @format int32 */
+  day?: number;
+  dayOfWeek?: DayOfWeek;
+  /** @format int32 */
+  dayOfYear?: number;
+  /** @format int32 */
+  dayNumber?: number;
+}
+
+/** @format int32 */
+export enum DayOfWeek {
+  Value0 = 0,
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+  Value4 = 4,
+  Value5 = 5,
+  Value6 = 6,
+}
+
 export interface EditCustomerRequestDTO {
   /** @format int32 */
   id?: number;
@@ -214,6 +239,19 @@ export interface EditRequestsRequestDTO {
   /** @format int32 */
   estimatedHours?: number | null;
   createRegistrationRequestDTO?: CreateRegistrationRequestDTO;
+}
+
+export interface EmployeeDTO {
+  /** @format int32 */
+  id?: number;
+  email?: string | null;
+  givenName?: string | null;
+  surName?: string | null;
+  allocatable?: boolean;
+  /** @format int32 */
+  invoiceTarget?: number | null;
+  hireDate?: DateOnly;
+  hiredWithVacation?: boolean | null;
 }
 
 export interface InvoiceDTO {
@@ -615,6 +653,21 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<void, any>({
         path: `/api/customers/${id}`,
         method: "DELETE",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Employee
+     * @name EmployeeList
+     * @request GET:/api/employee
+     */
+    employeeList: (params: RequestParams = {}) =>
+      this.request<EmployeeDTO[], any>({
+        path: `/api/employee`,
+        method: "GET",
+        format: "json",
         ...params,
       }),
 

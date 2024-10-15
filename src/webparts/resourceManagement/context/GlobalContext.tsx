@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IRegistration } from "../components/interfaces/IRegistrationProps";
 import BackEndService from "../services/BackEnd";
-import { CustomerDTO, ProjectDTO, RequestsDTO } from "../components/interfaces";
+import { CustomerDTO, EmployeeDTO, ProjectDTO, RequestsDTO, } from "../components/interfaces";
 
 export interface IGlobalContext {
   showBookingComponentPanel: boolean;
@@ -16,6 +16,8 @@ export interface IGlobalContext {
   setCustomers: React.Dispatch<CustomerDTO[]>;
   projects: ProjectDTO[];
   setProjects: React.Dispatch<ProjectDTO[]>;
+  employees: EmployeeDTO[];
+  setEmployees: React.Dispatch<EmployeeDTO[]>;
 }
 
 export const GlobalContext = React.createContext<IGlobalContext | undefined>(
@@ -37,6 +39,7 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
   >(undefined);
   const [customers, setCustomers] = React.useState<CustomerDTO[]>([]);
   const [projects, setProjects] = React.useState<ProjectDTO[]>([]);
+  const [employees, setEmployees] = React.useState<EmployeeDTO[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
 
   React.useEffect(() => {
@@ -52,9 +55,15 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           headers: BackEndService.getHeaders(),
         })
       ).data;
+      const e = (
+        await BackEndService.Instance.api.employeeList({
+          headers: BackEndService.getHeaders(),
+        })
+      ).data;
       setLoading(false);
       setCustomers(c);
       setProjects(p);
+      setEmployees(e);
     })().catch((e) => console.log(e));
   }, []);
 
@@ -76,6 +85,8 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setCustomers,
           projects,
           setProjects,
+          employees,
+          setEmployees,
         }}
       >
         <>{children}</>

@@ -91,8 +91,6 @@ export interface CreateRegistrationRequestDTO {
   /** @format double */
   time?: number;
   invoiceable?: boolean;
-  /** @format int32 */
-  hourlyRate?: number;
   employee?: string | null;
   /** @format int32 */
   registrationType?: number;
@@ -187,8 +185,6 @@ export interface EditProjectRequestDTO {
 }
 
 export interface EditRegistrationRequestDTO {
-  /** @format int32 */
-  id?: number;
   shortDescription?: string | null;
   description?: string | null;
   /** @format int32 */
@@ -202,8 +198,6 @@ export interface EditRegistrationRequestDTO {
   /** @format double */
   time?: number | null;
   invoiceable?: boolean;
-  /** @format int32 */
-  hourlyRate?: number | null;
   /** @format int32 */
   registrationType?: number | null;
   /** @format int32 */
@@ -307,8 +301,6 @@ export interface RegistrationDTO {
   /** @format double */
   time?: number | null;
   invoiceable?: boolean;
-  /** @format int32 */
-  hourlyRate?: number | null;
   employee?: string | null;
   /** @format int32 */
   registrationType?: number | null;
@@ -585,22 +577,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Customers
-     * @name CustomersUpdate
-     * @request PUT:/api/customers
-     */
-    customersUpdate: (data: EditCustomerRequestDTO, params: RequestParams = {}) =>
-      this.request<void, ProblemDetails>({
-        path: `/api/customers`,
-        method: "PUT",
-        body: data,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Customers
      * @name CustomersActiveList
      * @request GET:/api/customers/active
      */
@@ -609,6 +585,22 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/api/customers/active`,
         method: "GET",
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Customers
+     * @name CustomersUpdate
+     * @request PUT:/api/customers/{id}
+     */
+    customersUpdate: (id: number, data: EditCustomerRequestDTO, params: RequestParams = {}) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/customers/${id}`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -662,11 +654,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @tags Invoice
      * @name InvoiceUpdate
-     * @request PUT:/api/invoice
+     * @request PUT:/api/invoice/{id}
      */
-    invoiceUpdate: (data: EditInvoiceDTO, params: RequestParams = {}) =>
+    invoiceUpdate: (id: number, data: EditInvoiceDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
-        path: `/api/invoice`,
+        path: `/api/invoice/${id}`,
         method: "PUT",
         body: data,
         type: ContentType.Json,
@@ -768,11 +760,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @tags invoiceLinesLine
      * @name InvoicelinesUpdate
-     * @request PUT:/api/invoicelines
+     * @request PUT:/api/invoicelines/{id}
      */
-    invoicelinesUpdate: (data: EditInvoiceLineDTO, params: RequestParams = {}) =>
+    invoicelinesUpdate: (id: number, data: EditInvoiceLineDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
-        path: `/api/invoicelines`,
+        path: `/api/invoicelines/${id}`,
         method: "PUT",
         body: data,
         type: ContentType.Json,
@@ -829,11 +821,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @tags Phase
      * @name PhaseUpdate
-     * @request PUT:/api/phase
+     * @request PUT:/api/phase/{id}
      */
-    phaseUpdate: (data: EditPhaseDTO, params: RequestParams = {}) =>
+    phaseUpdate: (id: number, data: EditPhaseDTO, params: RequestParams = {}) =>
       this.request<void, any>({
-        path: `/api/phase`,
+        path: `/api/phase/${id}`,
         method: "PUT",
         body: data,
         type: ContentType.Json,
@@ -889,22 +881,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Projects
-     * @name ProjectsUpdate
-     * @request PUT:/api/projects
-     */
-    projectsUpdate: (data: EditProjectRequestDTO, params: RequestParams = {}) =>
-      this.request<void, ProblemDetails>({
-        path: `/api/projects`,
-        method: "PUT",
-        body: data,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Projects
      * @name ProjectsCustomerDetail
      * @request GET:/api/projects/customer/{id}
      */
@@ -913,6 +889,22 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/api/projects/customer/${id}`,
         method: "GET",
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Projects
+     * @name ProjectsUpdate
+     * @request PUT:/api/projects/{id}
+     */
+    projectsUpdate: (id: number, data: EditProjectRequestDTO, params: RequestParams = {}) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/projects/${id}`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -971,22 +963,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<void, ProblemDetails>({
         path: `/api/registrations`,
         method: "POST",
-        body: data,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Registrations
-     * @name RegistrationsUpdate
-     * @request PUT:/api/registrations
-     */
-    registrationsUpdate: (data: EditRegistrationRequestDTO, params: RequestParams = {}) =>
-      this.request<void, ProblemDetails>({
-        path: `/api/registrations`,
-        method: "PUT",
         body: data,
         type: ContentType.Json,
         ...params,
@@ -1069,6 +1045,22 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Registrations
+     * @name RegistrationsUpdate
+     * @request PUT:/api/registrations/{id}
+     */
+    registrationsUpdate: (id: number, data: EditRegistrationRequestDTO, params: RequestParams = {}) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/registrations/${id}`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Registrations
      * @name RegistrationsDelete
      * @request DELETE:/api/registrations/{id}
      */
@@ -1130,14 +1122,28 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @tags Request
      * @name RequestsUpdate
-     * @request PUT:/api/Requests
+     * @request PUT:/api/Requests/{id}
      */
-    requestsUpdate: (data: EditRequestsRequestDTO, params: RequestParams = {}) =>
+    requestsUpdate: (id: number, data: EditRequestsRequestDTO, params: RequestParams = {}) =>
       this.request<void, ProblemDetails>({
-        path: `/api/Requests`,
+        path: `/api/Requests/${id}`,
         method: "PUT",
         body: data,
         type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Request
+     * @name RequestsDelete
+     * @request DELETE:/api/Requests/{id}
+     */
+    requestsDelete: (id: number, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/Requests/${id}`,
+        method: "DELETE",
         ...params,
       }),
 
@@ -1168,20 +1174,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<void, ProblemDetails>({
         path: `/api/Requests/${id}/reject`,
         method: "PATCH",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Request
-     * @name RequestsDelete
-     * @request DELETE:/api/Requests/{id}
-     */
-    requestsDelete: (id: number, params: RequestParams = {}) =>
-      this.request<void, any>({
-        path: `/api/Requests/${id}`,
-        method: "DELETE",
         ...params,
       }),
   };

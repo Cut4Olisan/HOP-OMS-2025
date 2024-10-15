@@ -11,6 +11,7 @@ import {
   CommandBar,
   ICommandBarItemProps,
   IComboBoxOption,
+  PanelType,
 } from "@fluentui/react";
 import {
   ArrowLeftRegular,
@@ -190,7 +191,10 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     { setTrue: openBurnDownPanel, setFalse: dismissBurnDownPanel },
   ] = useBoolean(false);
 
-  const { setShowBookingComponentPanel, setSelectedRegistration } = useGlobal();
+  const {
+    setShowBookingComponentPanel,
+    setSelectedRegistration,
+  } = useGlobal();
 
   useEffect(() => {
     const fetchData = async (): Promise<void> => {
@@ -347,7 +351,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     <div className={styles.teamsContext}>
       <DndProvider backend={HTML5Backend}>
         <div className={styles.container}>
-          <CommandBar items={_items}></CommandBar>
+          <CommandBar items={_items}/>
           <div className={styles.controlsContainer}>
             <div className={styles.filterContainer}>
               <PeoplePickerComboBox
@@ -412,7 +416,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
             <div className={styles.navigationContainer}>
               <Panel
-                type={5}
+                type={PanelType.medium}
                 isOpen={isRequestOpen}
                 closeButtonAriaLabel="Close"
                 isHiddenOnDismiss={false}

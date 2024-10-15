@@ -135,7 +135,7 @@ export const getWeekStartDate = (weekNumber: number): Date => {
   return startOfYear;
 };
 
-export const parseTime = (timeString: string) => {
+export const parseTime = (timeString: string): object => {
   const [hour, minute] = timeString.split(":").map(Number);
   return { hour, minute };
 };

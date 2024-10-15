@@ -44,7 +44,7 @@ const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
       formatDate={(date) =>
         date ? formatDateForDisplay(date.toISOString()) : ""
       }
-      onChange={disabled ? () => {} : onChange}
+      onChange={disabled ? () => undefined : onChange}
       disabled={disabled}
     />
   );

@@ -3,14 +3,12 @@ import {
   IRequestCreateDTO,
   IRequestProps,
 } from "./interfaces/IRequestComponentProps";
-import globalStyles from "../BookingCreation/BookingComponent.module.scss";
 import {
   DefaultButton,
   IPersonaProps,
   PrimaryButton,
   Stack,
   TextField,
-  Text,
   MessageBar,
   MessageBarType,
 } from "@fluentui/react";
@@ -29,7 +27,12 @@ import {
   formatTime,
 } from "../dateUtils";
 import { IRegistrationData } from "../interfaces/IRegistrationProps";
-import { AcceptRequestRequestDTO, CustomerDTO, ProjectDTO, RegistrationDTO } from "../interfaces";
+import {
+  AcceptRequestRequestDTO,
+  CustomerDTO,
+  ProjectDTO,
+  RegistrationDTO,
+} from "../interfaces";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 // import useGlobal from "../../hooks/useGlobal";
 
@@ -50,6 +53,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
   context,
   mode,
   onFinish,
+  onDismiss,
   request,
 }) => {
   const [formData, setFormData] = React.useState<IRequestComponentFormData>({
@@ -60,7 +64,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
     projects: [],
   });
   // const { customers, projects } = useGlobal();
-
   const [error, setError] = React.useState<string | undefined>();
   const [warning, setWarning] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
@@ -202,7 +205,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
       };
       setFormData(data);
       setInitialState(JSON.stringify(data));
-    })();
+    })().catch((e) => console.log(e));
   }, [request, formData.customers, formData.projects]);
 
   const onAccept = async (): Promise<void> => {
@@ -267,6 +270,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
 
     try {
       const result = await BackEndService.Instance.api.requestsUpdate(
+        request.id,
         {
           id: request.id,
           createRegistrationRequestDTO: { ...completeBooking },
@@ -328,9 +332,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
       {error && (
         <MessageBar messageBarType={MessageBarType.error}>{error}</MessageBar>
       )}
-      <Text variant={"xxLargePlus"} className={globalStyles.headingMargin}>
-        {isCreationMode ? "Anmod om booking" : "Bekræft booking"}
-      </Text>
+
       <TextField
         label="Titel"
         placeholder="Titel"

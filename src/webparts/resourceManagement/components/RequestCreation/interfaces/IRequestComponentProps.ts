@@ -11,6 +11,7 @@ export interface IRequestProps {
   context: WebPartContext;
   mode: FormMode;
   onFinish: (requests: IRequestCreateDTO) => void;
+  onDismiss?: () => void;
   request?: RequestsDTO;
 }
 
@@ -22,14 +23,14 @@ export interface IRequest {
   accepted?: boolean; // null = pending, 0 = rejected, 1 = accepted
   estimatedHours?: number;
 }
- 
+
 export interface IRequestCreateDTO {
   title: string;
   shortDescription: string;
   estimatedHours?: number;
   registration?: IRegistrationData;
 }
- 
+
 export interface IRequestEditDTO {
   id: number;
   title: string;
@@ -38,7 +39,7 @@ export interface IRequestEditDTO {
   estimatedHours?: number;
   registration?: IRegistrationData; // overrides the existing registrationid if pressent - Remember to alert the user if this was intended (that there is already a registration connected)
 }
- 
+
 export interface IRequestAcceptDTO {
   // InPath - id: int;
   start: Date;

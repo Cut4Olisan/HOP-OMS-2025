@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useDrop } from "react-dnd";
 import { Text } from "@fluentui/react";
-import { IRegistration } from "../../../interfaces/IRegistrationProps";
+import { RegistrationDTO } from "../../../interfaces";
 import styles from "./WeekColumn.module.scss";
 import BookingCard from "../BookingCard/BookingCard";
 
@@ -11,13 +11,13 @@ const WeekColumn: React.FC<{
   weekNumber: number;
   startDate: string;
   endDate: string;
-  bookings: IRegistration[];
-  onDrop: (booking: IRegistration, newWeekNumber: number) => void;
-  onEmployeeClick: (booking: IRegistration) => void;
+  bookings: RegistrationDTO[];
+  onDrop: (booking: RegistrationDTO, newWeekNumber: number) => void;
+  onEmployeeClick: (booking: RegistrationDTO) => void;
 }> = ({ weekNumber, bookings, onDrop, onEmployeeClick }) => {
   const [, drop] = useDrop({
     accept: ItemType,
-    drop: (item: IRegistration) => {
+    drop: (item: RegistrationDTO) => {
       onDrop(item, weekNumber);
     },
   });

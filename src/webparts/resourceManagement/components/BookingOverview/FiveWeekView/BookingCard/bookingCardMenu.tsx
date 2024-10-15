@@ -16,11 +16,11 @@ import {
 } from "@fluentui/react-icons";
 import BackEndService from "../../../../services/BackEnd";
 import { TooltipHost } from "@fluentui/react";
-import { IRegistration } from "../../../interfaces/IRegistrationProps";
+import { RegistrationDTO } from "../../../interfaces";
 import useGlobal from "../../../../hooks/useGlobal";
 
 interface IBookingCardMenuProps {
-  registration: IRegistration;
+  registration: RegistrationDTO;
   onBookingDeleted: (bookingId: number) => void;
 }
 
@@ -40,8 +40,8 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
     );
     if (confirmation) {
       try {
-        await BackEndService.Instance.deleteBooking(registration.id); // Backend call to delete booking
-        onBookingDeleted(registration.id); // Pass the bookingId back to the parent
+        await BackEndService.Api.registrationsDelete(registration.id ?? 0);
+        onBookingDeleted(registration.id ?? 0);
       } catch (error) {
         console.error("Failed to delete booking:", error);
         alert("Kunne ikke slette booking. Prøv igen.");

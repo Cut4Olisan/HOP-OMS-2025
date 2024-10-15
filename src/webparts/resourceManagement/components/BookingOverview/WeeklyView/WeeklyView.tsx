@@ -4,7 +4,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { Text, PrimaryButton } from "@fluentui/react";
 import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./WeeklyView.module.scss";
-import { IRegistration } from "../../interfaces/IRegistrationProps";
+import { RegistrationDTO } from "../../interfaces";
 import BackEndService from "../../../services/BackEnd";
 import { getWeekNumber } from "../../dateUtils";
 import { Button } from "@fluentui/react-components";
@@ -20,7 +20,7 @@ import { EditRegistrationRequestDTO } from "../../interfaces";
 interface WeeklyViewProps {
   weekNumber: string;
   employeeId: string;
-  weekBookings: IRegistration[];
+  weekBookings: RegistrationDTO[];
   employeeName: string;
   onBack: () => void;
   onPreviousWeek: () => void;
@@ -40,9 +40,9 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   customers,
 }): JSX.Element => {
   const formattedEmployeeName = formatEmployeeName(employeeName);
-  const [currentBookings, setCurrentBookings] = React.useState<IRegistration[]>(
-    []
-  );
+  const [currentBookings, setCurrentBookings] = React.useState<
+    RegistrationDTO[]
+  >([]);
   const [currentWeekNumber, setCurrentWeekNumber] = React.useState<number>(
     parseInt(weekNumber, 10)
   );
@@ -53,14 +53,16 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   const fetchWeekBookings = async (weekNum: number): Promise<void> => {
     try {
       const fetchedBookings =
-        await BackEndService.Instance.getRegistrationsByType(2);
-      const filteredBookings = fetchedBookings.filter(
+        await BackEndService.Api.registrationsTypeDetail(2);
+      const filteredBookings = fetchedBookings.data.filter(
         (b) =>
           b.employee === employeeId &&
-          getWeekNumber(new Date(b.date)) === weekNum
+          getWeekNumber(new Date(b.date ?? "")) === weekNum
       );
+
+      // Update state with the filtered bookings and adjust start of week
       setCurrentBookings(filteredBookings);
-      setStartOfWeek(getWeekStartDate(weekNum)); // Adjust start of week based on the week number
+      setStartOfWeek(getWeekStartDate(weekNum));
     } catch (error) {
       console.error("Error fetching bookings:", error);
     }
@@ -88,7 +90,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
 
   const calculateDailyHours = (dayDate: Date): number => {
     const filteredBookings = currentBookings.filter((booking) => {
-      const bookingDate = new Date(booking.date);
+      const bookingDate = new Date(booking.date ?? "");
       const isSameDay = bookingDate.toDateString() === dayDate.toDateString();
       return isSameDay;
     });
@@ -96,7 +98,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     const totalHours = filteredBookings.reduce((total, booking) => {
       const bookingHours =
         booking.time ??
-        calculateHoursFromStartAndEnd(booking.start, booking.end);
+        calculateHoursFromStartAndEnd(booking.start ?? "", booking.end ?? "");
       return total + bookingHours;
     }, 0);
 
@@ -137,12 +139,15 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   };
 
   const onBookingDrop = async (
-    movedBooking: IRegistration,
+    movedBooking: RegistrationDTO,
     newDate: string,
     newStart: string
   ): Promise<void> => {
     const snappedStart = snapToNearestSlot(newStart);
-    const duration = calculateDuration(movedBooking.start, movedBooking.end);
+    const duration = calculateDuration(
+      movedBooking.start ?? "",
+      movedBooking.end ?? ""
+    );
     const newEnd = calculateNewEndTime(snappedStart, duration);
 
     // Convert the newDate to local time in 'YYYY-MM-DD'
@@ -164,8 +169,8 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
 
     try {
       console.log("Sending booking update to backend:", updatedBooking);
-      await BackEndService.Instance.updateRegistrations(
-        movedBooking.id,
+      await BackEndService.Api.registrationsUpdate(
+        movedBooking.id ?? 0,
         updatedBooking
       );
 
@@ -265,12 +270,16 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
                       {Array.from({ length: 4 }).map((_, j) => {
                         const timeSlotId = `${hour}:${j * 15}`;
                         const booking = currentBookings.find((b) => {
-                          const bookingDate = new Date(b.date);
+                          const bookingDate = b.date ? new Date(b.date) : null;
                           const [startHour, startMinute] = b.start
-                            .split(":")
-                            .map(Number);
+                            ? b.start.split(":").map(Number)
+                            : [null, null];
+
                           return (
+                            bookingDate &&
                             bookingDate.getDate() === dayDate.getDate() &&
+                            startHour !== null &&
+                            startMinute !== null &&
                             startHour === hour &&
                             startMinute >= j * 15 &&
                             startMinute < (j + 1) * 15
@@ -278,10 +287,13 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
                         });
 
                         const span = booking
-                          ? calculateSpan(booking.start, booking.end)
+                          ? calculateSpan(
+                              booking.start ?? "",
+                              booking.end ?? ""
+                            )
                           : 1;
                         const topOffset = booking
-                          ? calculateTopOffset(booking.start)
+                          ? calculateTopOffset(booking.start ?? "")
                           : 0;
 
                         return (

@@ -16,19 +16,14 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
   React.useEffect(() => {
     const fetchRequests = async (): Promise<void> => {
       try {
-        const data = (
-          await BackEndService.Instance.api.requestsList({
-            headers: BackEndService.getHeaders(),
-          })
-        ).data;
-        setRequests(data);
-        console.log("Requests:", data);
+        const response = await BackEndService.Api.requestsList();
+        setRequests(response.data);
       } catch (error) {
         console.error("Kunne ikke hente anmodninger:", error);
       }
     };
 
-    fetchRequests().catch((e) => console.error(e));
+    fetchRequests();
   }, []);
 
   return (

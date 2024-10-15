@@ -31,7 +31,6 @@ import {
   AcceptRequestRequestDTO,
   CustomerDTO,
   ProjectDTO,
-  RegistrationDTO,
 } from "../interfaces";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 // import useGlobal from "../../hooks/useGlobal";
@@ -136,15 +135,12 @@ const RequestComponent: React.FC<IRequestProps> = ({
     console.log("registration", completeBooking);
     console.log("requestDTO:", requestDTO);
     try {
-      const result = await BackEndService.Instance.api.requestsCreate(
-        {
-          createRegistrationRequestDTO: { ...completeBooking },
-          title: requestDTO.title,
-          shortDescription: requestDTO.shortDescription,
-          estimatedHours: requestDTO.estimatedHours,
-        },
-        { headers: BackEndService.getHeaders() }
-      );
+      const result = await BackEndService.Api.requestsCreate({
+        createRegistrationRequestDTO: { ...completeBooking },
+        title: requestDTO.title,
+        shortDescription: requestDTO.shortDescription,
+        estimatedHours: requestDTO.estimatedHours,
+      });
       setWarning(undefined);
       if (hasSufficientInformation) {
         setSuccess("Booking oprettet!");
@@ -173,10 +169,9 @@ const RequestComponent: React.FC<IRequestProps> = ({
       }
 
       const registration = request.registrationId
-        ? await BackEndService.client.api
-            .registrationsTypeDetail(5)
-            .then((r) => r.json() as Promise<RegistrationDTO[]>)
-            .then((d) => d.find((data) => data.id === request.registrationId))
+        ? await BackEndService.Api.registrationsTypeDetail(5).then((response) =>
+            response.data.find((data) => data.id === request.registrationId)
+          )
         : undefined;
 
       const project = formData.projects.find(
@@ -229,10 +224,9 @@ const RequestComponent: React.FC<IRequestProps> = ({
     );
 
     try {
-      await BackEndService.Instance.api.requestsAcceptPartialUpdate(
+      await BackEndService.Api.requestsAcceptPartialUpdate(
         request.id,
-        acceptRequestData,
-        { headers: BackEndService.getHeaders() }
+        acceptRequestData
       );
       setSuccess("Anmodning bekræftet!");
       console.warn("Anmodning bekræftet:", acceptRequestData);
@@ -249,10 +243,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
     }
     if (confirm("Er du sikker på du vil afvise denne anmodning?")) {
       try {
-        await BackEndService.Instance.api.requestsRejectPartialUpdate(
-          request.id,
-          { headers: BackEndService.getHeaders() }
-        );
+        await BackEndService.Api.requestsRejectPartialUpdate(request.id);
         setSuccess("Anmodning afvist!");
         console.warn("Anmodning afvist", request);
       } catch (error) {
@@ -269,17 +260,13 @@ const RequestComponent: React.FC<IRequestProps> = ({
     }
 
     try {
-      const result = await BackEndService.Instance.api.requestsUpdate(
-        request.id,
-        {
-          id: request.id,
-          createRegistrationRequestDTO: { ...completeBooking },
-          title: requestDTO.title,
-          shortDescription: requestDTO.shortDescription,
-          estimatedHours: requestDTO.estimatedHours,
-        },
-        { headers: BackEndService.getHeaders() }
-      );
+      const result = await BackEndService.Api.requestsUpdate(request.id, {
+        id: request.id,
+        createRegistrationRequestDTO: { ...completeBooking },
+        title: requestDTO.title,
+        shortDescription: requestDTO.shortDescription,
+        estimatedHours: requestDTO.estimatedHours,
+      });
 
       setWarning(undefined);
       setSuccess("Anmodning opdateret!");
@@ -307,7 +294,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
   React.useEffect(() => {
     const fetchRequests = async (): Promise<void> => {
       try {
-        const data = await BackEndService.Instance.getRequests();
+        const data = (await BackEndService.Api.requestsList()).data;
+        //const data = await BackEndService.Instance.getRequests();
         console.log(data);
       } catch (err) {
         console.error(err);

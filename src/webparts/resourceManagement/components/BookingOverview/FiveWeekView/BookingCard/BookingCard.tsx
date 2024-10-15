@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useDrag } from "react-dnd";
 import { Text } from "@fluentui/react";
 import { Divider } from "@fluentui/react-components";
-import { IRegistration } from "../../../interfaces/IRegistrationProps";
+import { RegistrationDTO } from "../../../interfaces";
 import styles from "./BookingCard.module.scss";
 import BookingCardMenu from "./bookingCardMenu";
 import useGlobal from "../../../../hooks/useGlobal";
@@ -12,9 +12,9 @@ const ItemType = "BOOKING"; //Til drag n' drop WIP
 
 //***                 Booking Card component                 ***//
 const BookingCard: React.FC<{
-  booking: IRegistration;
-  onDrop: (booking: IRegistration, newWeekNumber: number) => void;
-  onEmployeeClick: (booking: IRegistration) => void;
+  booking: RegistrationDTO;
+  onDrop: (booking: RegistrationDTO, newWeekNumber: number) => void;
+  onEmployeeClick: (booking: RegistrationDTO) => void;
 }> = ({ booking, onDrop, onEmployeeClick }) => {
   const { customers, projects } = useGlobal();
   const [, drag] = useDrag({
@@ -35,10 +35,10 @@ const BookingCard: React.FC<{
   const capitalize = (word: string): string =>
     word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 
-  const employeeFullName = booking.employee.split("@")[0];
+  const employeeFullName = booking.employee ?? " ".split("@")[0];
   const employeeNameParts = employeeFullName.split(".");
   const formattedEmployeeName = `${capitalize(employeeNameParts[0])} ${capitalize(employeeNameParts[1])}`;
-  const [, setRegistrations] = useState<IRegistration[]>([]);
+  const [, setRegistrations] = useState<RegistrationDTO[]>([]);
 
   return (
     <div ref={drag} className={styles.bookingCard}>

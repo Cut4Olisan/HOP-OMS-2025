@@ -1,5 +1,4 @@
-import { ProjectDTO } from "../../interfaces";
-import { IRegistration } from "../../interfaces/IRegistrationProps";
+import { ProjectDTO, RegistrationDTO } from "../../interfaces";
 
 // Function to get the date object from the booking date string
 export const getBookingDate = (bookingDate: string): Date => {
@@ -51,7 +50,7 @@ export const formatEmployeeName = (email: string): string => {
 export const calculateWeeklyHours = (
   startDate: Date,
   endDate: Date,
-  bookings: IRegistration[],
+  bookings: RegistrationDTO[],
   projects: ProjectDTO[],
   selectedEmployees: string[] = [],
   selectedCustomerId?: number,
@@ -59,12 +58,12 @@ export const calculateWeeklyHours = (
 ): number => {
   const filteredBookings = bookings.filter((booking) => {
     const project = projects.find((p) => Number(p.id) === booking.projectId);
-    const bookingDate = new Date(booking.date);
+    const bookingDate = new Date(booking.date ?? "");
 
     const matchesDateRange = bookingDate >= startDate && bookingDate <= endDate;
     const matchesEmployee =
       selectedEmployees.length === 0 ||
-      selectedEmployees.includes(booking.employee);
+      selectedEmployees.includes(booking.employee ?? "");
     const matchesCustomer =
       !selectedCustomerId || project?.customerId === selectedCustomerId;
     const matchesProject =

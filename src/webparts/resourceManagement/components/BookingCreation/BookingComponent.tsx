@@ -24,10 +24,7 @@ import {
 } from "../dateUtils";
 import RecursionPanel from "./RecursionDate";
 import DateTimePickerComponent from "./DateTimePicker";
-import {
-  IRegistration,
-  IRegistrationData,
-} from "../interfaces/IRegistrationProps";
+import { IRegistrationData } from "../interfaces/IRegistrationProps";
 import BackEndService from "../../services/BackEnd";
 import CustomerProjects from "./CustomerAndProjects/CustomerProjects";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
@@ -36,6 +33,7 @@ import {
   CustomerDTO,
   EditRegistrationRequestDTO,
   ProjectDTO,
+  RegistrationDTO,
 } from "../interfaces";
 import useGlobal from "../../hooks/useGlobal";
 import { parseTime } from "../dateUtils";
@@ -56,7 +54,7 @@ export interface IBookingComponentProps {
   context: WebPartContext;
   onFinish: (bookings: unknown[]) => void;
   dismissPanel: () => void;
-  registration?: IRegistration;
+  registration?: RegistrationDTO;
 }
 
 const BookingComponent: React.FC<IBookingComponentProps> = ({
@@ -84,11 +82,13 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
     if (!project || !customer) return;
 
-    const datePart = registration.date.split("T")[0];
+    const datePart = registration.date ?? "".split("T")[0];
     const { hour: startHour, minute: startMinute } = parseTime(
-      registration.start
+      registration.start ?? ""
     );
-    const { hour: endHour, minute: endMinute } = parseTime(registration.end);
+    const { hour: endHour, minute: endMinute } = parseTime(
+      registration.end ?? ""
+    );
 
     const startDateTime = new Date(datePart);
     startDateTime.setHours(startHour, startMinute, 0, 0);
@@ -105,10 +105,10 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     }
 
     setFormData({
-      title: registration.shortDescription,
+      title: registration.shortDescription || "",
       info: registration.description || "",
       isRecurring: false,
-      selectedCoworkers: [registration.employee],
+      selectedCoworkers: [registration.employee ?? ""],
       selectedCustomer: customer,
       selectedProject: project,
       startDateTime: startDateTime,
@@ -226,8 +226,8 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             registrationType: r.registrationType,
           };
 
-          return await BackEndService.Instance.updateRegistrations(
-            registration.id,
+          return await BackEndService.Api.registrationsUpdate(
+            registration.id ?? 0,
             updateData
           );
         });
@@ -242,7 +242,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       //Create new booking
       try {
         const createPromises = registrations.map(async (r) => {
-          return await BackEndService.Instance.createRegistration(r);
+          return await BackEndService.Api.registrationsCreate(r);
         });
 
         await Promise.all(createPromises);

@@ -1,10 +1,10 @@
 import * as React from "react";
-import { IRegistration } from "../components/interfaces/IRegistrationProps";
 import BackEndService from "../services/BackEnd";
 import {
   CustomerDTO,
   EmployeeDTO,
   ProjectDTO,
+  RegistrationDTO,
   RequestsDTO,
 } from "../components/interfaces";
 
@@ -25,8 +25,8 @@ export interface IGlobalContext {
   setIsEditMode: React.Dispatch<boolean>;
   ///*** State to track edit/create for bookingcomponent ***///
 
-  selectedRegistration: IRegistration | undefined;
-  setSelectedRegistration: React.Dispatch<IRegistration | undefined>;
+  selectedRegistration: RegistrationDTO | undefined;
+  setSelectedRegistration: React.Dispatch<RegistrationDTO | undefined>;
   showRequestComponentPanel: boolean;
   setShowRequestComponentPanel: React.Dispatch<boolean>;
   selectedRequest: RequestsDTO | undefined;
@@ -62,7 +62,7 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
     React.useState<boolean>(false);
 
   const [selectedRegistration, setSelectedRegistration] = React.useState<
-    IRegistration | undefined
+    RegistrationDTO | undefined
   >();
   const [showRequestComponentPanel, setShowRequestComponentPanel] =
     React.useState<boolean>(false);
@@ -82,21 +82,9 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
   React.useEffect(() => {
     (async () => {
       setLoading(true);
-      const c = (
-        await BackEndService.Instance.api.customersList({
-          headers: BackEndService.getHeaders(),
-        })
-      ).data;
-      const p = (
-        await BackEndService.Instance.api.projectsList({
-          headers: BackEndService.getHeaders(),
-        })
-      ).data;
-      const e = (
-        await BackEndService.Instance.api.employeeList({
-          headers: BackEndService.getHeaders(),
-        })
-      ).data;
+      const c = (await BackEndService.Api.customersList()).data;
+      const p = (await BackEndService.Api.projectsList()).data;
+      const e = (await BackEndService.Api.employeeList()).data;
       setLoading(false);
       setCustomers(c);
       setProjects(p);

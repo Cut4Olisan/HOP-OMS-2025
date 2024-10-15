@@ -16,7 +16,6 @@ import {
 } from "@fluentui/react-icons";
 import styles from "./FiveWeekView.module.scss";
 import WeeklyView from "../WeeklyView/WeeklyView";
-import { IRegistration } from "../../interfaces/IRegistrationProps";
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import PeoplePickerComboBox from "./peoplePickerComponent";
@@ -26,6 +25,7 @@ import {
   CustomerDTO,
   EditRegistrationRequestDTO,
   ProjectDTO,
+  RegistrationDTO,
 } from "../../interfaces";
 import BackEndService from "../../../services/BackEnd";
 import WeekColumn from "./WeekColumn/WeekColumn";
@@ -37,7 +37,7 @@ interface IFiveWeekViewProps {
 
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const { projects, customers } = useGlobal();
-  const [registrations, setRegistrations] = useState<IRegistration[]>([]);
+  const [registrations, setRegistrations] = useState<RegistrationDTO[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
   const [clearSelection, setClearSelection] = useState<boolean>(false);
   const [selectedCustomer, setSelectedCustomer] = useState<
@@ -47,7 +47,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     undefined
   );
   const [selectedBooking, setSelectedBooking] = useState<
-    IRegistration | undefined
+    RegistrationDTO | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
   const {
@@ -59,8 +59,8 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   useEffect(() => {
     const fetchData = async (): Promise<void> => {
       try {
-        const fetchedRegistrations =
-          await BackEndService.Instance.getRegistrationsByType();
+        const response = await BackEndService.Api.registrationsTypeDetail(2);
+        const fetchedRegistrations = response.data;
         setRegistrations(fetchedRegistrations);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -97,76 +97,67 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     setCurrentDate(newDate);
   };
 
-  //Used for drag n' drop
   const calculateNewDateForWeek = (
     currentDate: string,
     newWeekNumber: number
   ): string => {
-    // Example: Move the booking to the correct week and preserve the same day of the week
     const current = new Date(currentDate);
     const currentWeekNumber = getWeekNumber(current);
     const weekDifference = newWeekNumber - currentWeekNumber;
 
-    // Set the new date by adjusting the week
     const newDate = new Date(
       current.setDate(current.getDate() + weekDifference * 7)
     );
 
-    // Return the updated date in the "YYYY-MM-DDT00:00:00" format
     return newDate.toISOString().split("T")[0] + "T00:00:00";
   };
+
   const handleDrop = async (
-    movedBooking: IRegistration,
+    movedBooking: RegistrationDTO,
     newWeekNumber: number
   ): Promise<void> => {
     const updatedDate = calculateNewDateForWeek(
-      movedBooking.date,
+      movedBooking.date ?? new Date().toISOString(),
       newWeekNumber
     );
 
     const updatedBooking: EditRegistrationRequestDTO = {
-      shortDescription: movedBooking.shortDescription,
-      description: movedBooking.description,
-      projectId: movedBooking.projectId,
+      shortDescription: movedBooking.shortDescription ?? "Ingen beskrivelse",
+      description: movedBooking.description ?? "",
+      projectId: movedBooking.projectId ?? 0,
       date: updatedDate,
-      start: movedBooking.start,
-      end: movedBooking.end,
-      registrationType: movedBooking.registrationType,
+      start: movedBooking.start ?? "",
+      end: movedBooking.end ?? "",
+      registrationType: movedBooking.registrationType ?? 2,
     };
 
-    console.log("Payload being sent:", updatedBooking); //For debugging, removing laterrrr
-
     try {
-      await BackEndService.Instance.updateRegistrations(
-        movedBooking.id,
+      await BackEndService.Api.registrationsUpdate(
+        movedBooking.id!,
         updatedBooking
       );
 
-      const updatedBookings = registrations.map((booking) => {
-        if (booking.id === movedBooking.id) {
-          return { ...booking, date: updatedDate };
-        }
-        return booking;
-      });
+      const updatedBookings = registrations.map((booking) =>
+        booking.id === movedBooking.id
+          ? { ...booking, date: updatedDate }
+          : booking
+      );
       setRegistrations(updatedBookings);
-
-      console.log("Booking updated successfully!");
     } catch (error) {
       console.error("Failed to update booking:", error);
     }
   };
 
-  const handleEmployeeClick = (booking: IRegistration): void => {
+  const handleEmployeeClick = (booking: RegistrationDTO): void => {
     setSelectedBooking(booking);
   };
 
-  // Filter bookings based on selected filters (employee, customer, project)
   const filteredBookings = registrations.filter((booking) => {
     const project = projects.find((p) => Number(p.id) === booking.projectId);
     return (
       booking.registrationType === 2 &&
       (selectedEmployee.length === 0 ||
-        selectedEmployee.includes(booking.employee)) &&
+        selectedEmployee.includes(booking.employee ?? "")) &&
       (!selectedCustomer || project?.customerId === selectedCustomer?.id) &&
       (!selectedProject || booking.projectId === Number(selectedProject))
     );
@@ -176,12 +167,11 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     ? projects.filter((p) => p.customerId === selectedCustomer.id)
     : projects;
 
-  // If an employee is clicked, render the WeeklyView
   if (selectedBooking) {
-    const selectedWeekNumber = getWeekNumber(new Date(selectedBooking.date));
+    const selectedWeekNumber = getWeekNumber(new Date(selectedBooking.date!));
     const weekBookings = registrations.filter(
       (booking) =>
-        getWeekNumber(new Date(booking.date)) === selectedWeekNumber &&
+        getWeekNumber(new Date(booking.date!)) === selectedWeekNumber &&
         booking.employee === selectedBooking.employee &&
         booking.registrationType === 2
     );
@@ -189,10 +179,10 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     return (
       <WeeklyView
         weekNumber={selectedWeekNumber.toString()}
-        employeeId={selectedBooking.employee}
+        employeeId={selectedBooking.employee ?? ""}
         weekBookings={weekBookings}
-        employeeName={selectedBooking.employee}
-        onBack={() => setSelectedBooking(undefined)} // Reset to go back to FiveWeekView
+        employeeName={selectedBooking.employee ?? ""}
+        onBack={() => setSelectedBooking(undefined)}
         onPreviousWeek={handlePreviousWeeks}
         onNextWeek={handleNextWeeks}
         projects={projects}
@@ -335,7 +325,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               const weekNumber = week.weekNumber;
               const weekBookings = filteredBookings.filter(
                 (booking) =>
-                  getWeekNumber(new Date(booking.date)) === weekNumber
+                  getWeekNumber(new Date(booking.date!)) === weekNumber
               );
 
               return (

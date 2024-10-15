@@ -1,21 +1,21 @@
 import React from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { parseTime } from "../../dateUtils";
-import { IRegistration } from "../../interfaces/IRegistrationProps";
 import BookingCardMenu from "../FiveWeekView/BookingCard/bookingCardMenu";
 import { getBookingDate } from "../HelperFunctions/helperFunctions";
 import styles from "./TimeSlot.module.scss";
 import { Text, TooltipHost } from "@fluentui/react";
 import { formatEmployeeName } from "../HelperFunctions/helperFunctions";
 import useGlobal from "../../../hooks/useGlobal";
+import { RegistrationDTO } from "../../interfaces";
 
 const ItemType = "BOOKING"; // Draggable item type
 
 const TimeSlot: React.FC<{
   timeSlotId: string;
   date: string;
-  booking: IRegistration | undefined;
-  onDrop: (booking: IRegistration, newDate: string, newStart: string) => void;
+  booking: RegistrationDTO | undefined;
+  onDrop: (booking: RegistrationDTO, newDate: string, newStart: string) => void;
   span: number;
   topOffset: number;
   projects: any[];
@@ -35,7 +35,7 @@ const TimeSlot: React.FC<{
 
   const [, drop] = useDrop({
     accept: ItemType,
-    drop: (item: IRegistration) => {
+    drop: (item: RegistrationDTO) => {
       onDrop(item, date, timeSlotId);
       setIsHovered(false); // Reset hover state on drop
     },
@@ -64,9 +64,9 @@ const TimeSlot: React.FC<{
     },
   });
 
-  const [, setRegistrations] = React.useState<IRegistration[]>([]);
+  const [, setRegistrations] = React.useState<RegistrationDTO[]>([]);
 
-  const bookingDate = booking ? getBookingDate(booking.date) : null;
+  const bookingDate = booking ? getBookingDate(booking.date ?? "") : null;
 
   const project = projects.find((p) => p.id === booking?.projectId);
   const projectName = project?.name || "Unknown Project";
@@ -79,7 +79,7 @@ const TimeSlot: React.FC<{
   const bookingTime = booking ? `${booking.start} - ${booking.end}` : "";
 
   // Calculate the minute offset and convert to a percentage of the hour
-  const minuteOffset = booking ? parseTime(booking.start).minute : 0;
+  const minuteOffset = booking ? parseTime(booking.start ?? "").minute : 0;
   const minutePercentage = (minuteOffset / 60) * 100;
 
   return (

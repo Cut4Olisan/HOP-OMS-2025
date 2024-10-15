@@ -1,36 +1,20 @@
 import * as React from "react";
 import {
-  Panel,
   Stack,
   CommandBar,
   ICommandBarItemProps,
-  PanelType,
 } from "@fluentui/react";
 import useGlobal from "../hooks/useGlobal";
-import BookingComponent from "./BookingCreation/BookingComponent";
-import RequestComponent from "./RequestCreation/RequestComponent";
-import RequestList from "./RequestCreation/RequestList";
-import BurnDownRate from "./BookingOverview/ProjectBurnDownRate/BurnDownRate/BurnDownRate";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { FormMode } from "./RequestCreation/interfaces/IRequestComponentProps";
 import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent";
+import Panels from "./PanelsComponent";
 
 const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
   const {
-    showBookingComponentPanel,
-    setShowBookingComponentPanel,
-    showRequestPanel,
     setShowRequestPanel,
-    showRequestListPanel,
     setShowRequestListPanel,
-    showBurnDownPanel,
     setShowBurnDownPanel,
-    selectedRegistration,
     loading,
-    setShowRequestComponentPanel,
-    showRequestComponentPanel,
-    selectedRequest,
-    setSelectedRequest,
   } = useGlobal();
 
   const _faritems: ICommandBarItemProps[] = [
@@ -89,71 +73,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
     <Stack>
       <CommandBar farItems={_faritems} items={[]} />
       <BookingOverviewComponent context={context} />
-      <Panel
-        type={PanelType.medium}
-        isOpen={showBookingComponentPanel}
-        onDismiss={() => setShowBookingComponentPanel(false)}
-      >
-        <BookingComponent
-          registration={selectedRegistration}
-          context={context}
-          dismissPanel={() => setShowBookingComponentPanel(false)}
-          onFinish={() => undefined}
-        />
-      </Panel>
-
-      <Panel
-        type={PanelType.medium}
-        isOpen={showRequestPanel}
-        onDismiss={() => setShowRequestPanel(false)}
-      >
-        <RequestComponent
-          context={context}
-          mode={FormMode.CreateRequest}
-          onFinish={(request) => setShowRequestPanel(false)}
-          onDismiss={() => setShowRequestPanel(false)}
-        />
-      </Panel>
-
-      <Panel
-        type={PanelType.medium}
-        isOpen={showRequestListPanel}
-        onDismiss={() => setShowRequestListPanel(false)}
-      >
-        <RequestList context={context} />
-      </Panel>
-
-      <Panel
-        type={PanelType.medium}
-        isOpen={showBurnDownPanel}
-        onDismiss={() => setShowBurnDownPanel(false)}
-      >
-        <BurnDownRate />
-      </Panel>
-      <Panel
-        type={PanelType.medium}
-        isOpen={showRequestComponentPanel}
-        onDismiss={() => {
-          setShowRequestComponentPanel(false);
-          setSelectedRequest(undefined);
-        }}
-        headerText="Håndter en anmodning"
-      >
-        <RequestComponent
-          context={context}
-          mode={FormMode.ConfirmRequest}
-          onFinish={(request) => {
-            console.log("Finished request confirmation", request);
-            setShowRequestComponentPanel(false);
-            setSelectedRequest(undefined);
-          }}
-          onDismiss={() => {
-            setShowRequestComponentPanel(false);
-            setSelectedRequest(undefined);
-          }}
-          request={selectedRequest}
-        />
-      </Panel>
+      <Panels context={context}/>
     </Stack>
   );
 };

@@ -120,18 +120,11 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     duration: number
   ): string => {
     const [startHours, startMinutes] = newStartTime.split(":").map(Number);
-
-    // Convert new start time to total minutes
     const startTotalMinutes = startHours * 60 + startMinutes;
-
-    // Calculate the new end time in total minutes
     const newEndTotalMinutes = startTotalMinutes + duration;
-
-    // Convert the new end time back to hours and minutes
     const newEndHours = Math.floor(newEndTotalMinutes / 60);
     const newEndMinutes = newEndTotalMinutes % 60;
 
-    // Return the new end time in "HH:MM" format
     return `${newEndHours.toString().padStart(2, "0")}:${newEndMinutes
       .toString()
       .padStart(2, "0")}`;
@@ -152,34 +145,42 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     const duration = calculateDuration(movedBooking.start, movedBooking.end);
     const newEnd = calculateNewEndTime(snappedStart, duration);
 
+    // Convert the newDate to local time in 'YYYY-MM-DD'
+    const correctedDate = new Date(newDate);
+    const year = correctedDate.getFullYear();
+    const month = String(correctedDate.getMonth() + 1).padStart(2, "0");
+    const day = String(correctedDate.getDate()).padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+
     const updatedBooking: EditRegistrationRequestDTO = {
       shortDescription: movedBooking.shortDescription,
       description: movedBooking.description,
       projectId: movedBooking.projectId,
-      date: newDate,
-      start: snappedStart, // Updated start time
+      date: formattedDate,
+      start: snappedStart,
       end: newEnd,
       registrationType: movedBooking.registrationType,
     };
 
     try {
+      console.log("Sending booking update to backend:", updatedBooking);
       await BackEndService.Instance.updateRegistrations(
         movedBooking.id,
         updatedBooking
       );
 
-      // Update local state with the updated booking
+      // Update the booking in the local state
       setCurrentBookings((prevBookings) =>
         prevBookings.map((b) =>
           b.id === movedBooking.id
-            ? { ...b, date: newDate, start: snappedStart, end: newEnd }
+            ? { ...b, date: formattedDate, start: snappedStart, end: newEnd }
             : b
         )
       );
 
-      console.log("Booking updated successfully!");
+      console.log("Booking updated!");
     } catch (error) {
-      console.error("Failed to update booking:", error);
+      console.error("Error updating booking:", error);
     }
   };
 

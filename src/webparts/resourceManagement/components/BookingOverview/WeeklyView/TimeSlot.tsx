@@ -78,28 +78,23 @@ const TimeSlot: React.FC<{
 
   const bookingTime = booking ? `${booking.start} - ${booking.end}` : "";
 
-  // Adjust if the booking doesn't start exactly on the hour
-  const shouldAdjustOffset = booking
-    ? parseTime(booking.start).minute !== 0
-    : false;
-
-  // Get the minute offset as a percentage of the 15-minute block
+  // Calculate the minute offset and convert to a percentage of the hour
   const minuteOffset = booking ? parseTime(booking.start).minute : 0;
-  const minutePercentage = (minuteOffset / 60) * 100; // Minute offset in percentage of the 60-minute block
+  const minutePercentage = (minuteOffset / 60) * 100;
 
   return (
     <TooltipHost
       content={`Start time: ${timeSlotId}, Date: ${new Date(date).toLocaleDateString("da-DK")}`}
       delay={0}
-      hidden={!isDraggingGlobal} // Show tooltip only when dragging
+      hidden={!isDraggingGlobal}
     >
       <div
         ref={drop}
         onMouseLeave={handleDragLeave} // Reset hover state when the mouse leaves
         className={`${styles.timeSlot} ${isHovered ? styles.hoveredTimeSlot : ""}`}
         style={{
-          height: "15px", // Fixed height for each time slot (15-minute blocks)
-          position: "relative", // Ensure relative positioning within the grid
+          height: "15px",
+          position: "relative",
         }}
       >
         {booking && bookingDate && (
@@ -107,13 +102,11 @@ const TimeSlot: React.FC<{
             ref={drag}
             className={styles.booking}
             style={{
-              top: shouldAdjustOffset
-                ? `${minutePercentage}%` // Adjust the top based on the minute offset
-                : "0", // If no adjustment is needed, top is set to 0
+              top: `${minutePercentage}%`, // Using minute percentage to position the booking
               height: `${span * 15}px`, // Booking spans based on its duration
               left: 0,
               right: 0,
-              position: "absolute", // Absolute positioning inside the time slot
+              position: "absolute",
             }}
           >
             <div className={styles.bookingContent}>

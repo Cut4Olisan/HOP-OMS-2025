@@ -6,6 +6,9 @@ import Overview from "./Overview";
 export enum DEV_WP_VIEW {
   BookingComponent,
   BookingOverview,
+  CreateRequestComponent,
+  ConfirmRequestComponent,
+  RequestList,
 }
 
 export interface IResourceManagementProps {

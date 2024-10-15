@@ -4,6 +4,7 @@ import {
   Stack,
   CommandBar,
   ICommandBarItemProps,
+  PanelType,
 } from "@fluentui/react";
 import useGlobal from "../hooks/useGlobal";
 import BookingComponent from "./BookingCreation/BookingComponent";
@@ -26,6 +27,10 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
     setShowBurnDownPanel,
     selectedRegistration,
     loading,
+    setShowRequestComponentPanel,
+    showRequestComponentPanel,
+    selectedRequest,
+    setSelectedRequest,
   } = useGlobal();
 
   const _faritems: ICommandBarItemProps[] = [
@@ -106,7 +111,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
           context={context}
           mode={FormMode.CreateRequest}
           onFinish={(request) => setShowRequestPanel(false)}
-          dismissPanel={() => setShowRequestPanel(false)}
+          onDismiss={() => setShowRequestPanel(false)}
         />
       </Panel>
 
@@ -124,6 +129,30 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
         onDismiss={() => setShowBurnDownPanel(false)}
       >
         <BurnDownRate />
+      </Panel>
+      <Panel
+        type={PanelType.medium}
+        isOpen={showRequestComponentPanel}
+        onDismiss={() => {
+          setShowRequestComponentPanel(false);
+          setSelectedRequest(undefined);
+        }}
+        headerText="Håndter en anmodning"
+      >
+        <RequestComponent
+          context={context}
+          mode={FormMode.ConfirmRequest}
+          onFinish={(request) => {
+            console.log("Finished request confirmation", request);
+            setShowRequestComponentPanel(false);
+            setSelectedRequest(undefined);
+          }}
+          onDismiss={() => {
+            setShowRequestComponentPanel(false);
+            setSelectedRequest(undefined);
+          }}
+          request={selectedRequest}
+        />
       </Panel>
     </Stack>
   );

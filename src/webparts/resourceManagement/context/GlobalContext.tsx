@@ -1,7 +1,12 @@
 import * as React from "react";
 import { IRegistration } from "../components/interfaces/IRegistrationProps";
 import BackEndService from "../services/BackEnd";
-import { CustomerDTO, ProjectDTO } from "../components/interfaces";
+import {
+  CustomerDTO,
+  EmployeeDTO,
+  ProjectDTO,
+  RequestsDTO,
+} from "../components/interfaces";
 
 export interface IGlobalContext {
   ///***      Panel controls      ***///
@@ -22,6 +27,10 @@ export interface IGlobalContext {
 
   selectedRegistration: IRegistration | undefined;
   setSelectedRegistration: React.Dispatch<IRegistration | undefined>;
+  showRequestComponentPanel: boolean;
+  setShowRequestComponentPanel: React.Dispatch<boolean>;
+  selectedRequest: RequestsDTO | undefined;
+  setSelectedRequest: React.Dispatch<RequestsDTO | undefined>;
   customers: CustomerDTO[];
   setCustomers: React.Dispatch<CustomerDTO[]>;
   projects: ProjectDTO[];
@@ -32,6 +41,8 @@ export interface IGlobalContext {
   setIsDraggingBooking: React.Dispatch<boolean>;
   isDraggingGlobal: boolean;
   setIsDraggingGlobal: React.Dispatch<boolean>;
+  employees: EmployeeDTO[];
+  setEmployees: React.Dispatch<EmployeeDTO[]>;
 }
 
 export const GlobalContext = React.createContext<IGlobalContext | undefined>(
@@ -53,9 +64,15 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const [selectedRegistration, setSelectedRegistration] = React.useState<
     IRegistration | undefined
   >();
+  const [showRequestComponentPanel, setShowRequestComponentPanel] =
+    React.useState<boolean>(false);
+  const [selectedRequest, setSelectedRequest] = React.useState<
+    RequestsDTO | undefined
+  >(undefined);
   const [customers, setCustomers] = React.useState<CustomerDTO[]>([]);
   const [projects, setProjects] = React.useState<ProjectDTO[]>([]);
   const [isEditMode, setIsEditMode] = React.useState<boolean>(false);
+  const [employees, setEmployees] = React.useState<EmployeeDTO[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [isDraggingBooking, setIsDraggingBooking] =
     React.useState<boolean>(false);
@@ -75,9 +92,15 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           headers: BackEndService.getHeaders(),
         })
       ).data;
+      const e = (
+        await BackEndService.Instance.api.employeeList({
+          headers: BackEndService.getHeaders(),
+        })
+      ).data;
       setLoading(false);
       setCustomers(c);
       setProjects(p);
+      setEmployees(e);
     })().catch((e) => console.log(e));
   }, []);
 
@@ -97,6 +120,10 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setShowBurnDownPanel,
           selectedRegistration,
           setSelectedRegistration,
+          showRequestComponentPanel,
+          setShowRequestComponentPanel,
+          selectedRequest,
+          setSelectedRequest,
           customers,
           setCustomers,
           projects,
@@ -109,6 +136,8 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setIsDraggingBooking,
           isDraggingGlobal,
           setIsDraggingGlobal,
+          employees,
+          setEmployees,
         }}
       >
         <>{children}</>

@@ -90,7 +90,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       <CommandBar farItems={_faritems} items={[]} />
       <BookingOverviewComponent context={context} />
       <Panel
-        type={5}
+        type={PanelType.medium}
         isOpen={showBookingComponentPanel}
         onDismiss={() => setShowBookingComponentPanel(false)}
       >
@@ -103,7 +103,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       </Panel>
 
       <Panel
-        type={5}
+        type={PanelType.medium}
         isOpen={showRequestPanel}
         onDismiss={() => setShowRequestPanel(false)}
       >
@@ -116,7 +116,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       </Panel>
 
       <Panel
-        type={5}
+        type={PanelType.medium}
         isOpen={showRequestListPanel}
         onDismiss={() => setShowRequestListPanel(false)}
       >
@@ -124,7 +124,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       </Panel>
 
       <Panel
-        type={5}
+        type={PanelType.medium}
         isOpen={showBurnDownPanel}
         onDismiss={() => setShowBurnDownPanel(false)}
       >

@@ -285,9 +285,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           />
 
           <CustomerProjects
-            customers={customers}
             customerLabel="Vælg kunde"
-            projects={projects}
             projectLabel="Vælg projekt"
             selectedCustomer={formData.selectedCustomer}
             onUpdateSelectedCustomer={(customer) =>

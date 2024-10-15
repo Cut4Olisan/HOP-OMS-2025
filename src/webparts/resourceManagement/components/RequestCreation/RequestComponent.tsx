@@ -344,9 +344,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
         disabled={false}
       />
       <CustomerProjects
-        customers={formData.customers}
         customerLabel={isCreationMode ? "Vælg kunde" : "Valgt kunde"}
-        projects={formData.projects}
         projectLabel={
           isCreationMode ? "Vælg kundeprojekt" : "Valgt kundeprojekt"
         }

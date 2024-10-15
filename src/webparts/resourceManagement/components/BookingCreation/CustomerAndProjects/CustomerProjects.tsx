@@ -2,11 +2,10 @@ import * as React from "react";
 import { ComboBox, IComboBoxOption } from "@fluentui/react";
 import styles from "./CustomerProjects.module.scss";
 import { CustomerDTO, ProjectDTO } from "../../interfaces";
+import useGlobal from "../../../hooks/useGlobal";
 
 export interface ICustomerProjectsProps {
-  customers: CustomerDTO[];
   customerLabel: string;
-  projects: ProjectDTO[];
   projectLabel: string;
   selectedCustomer: CustomerDTO | undefined;
   onUpdateSelectedCustomer: (customer: CustomerDTO) => void;
@@ -16,9 +15,7 @@ export interface ICustomerProjectsProps {
 }
 
 const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
-  customers,
   customerLabel,
-  projects,
   projectLabel,
   selectedCustomer,
   onUpdateSelectedCustomer,
@@ -26,6 +23,8 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
   onUpdateSelectedProject,
   required,
 }) => {
+  const { customers, projects } = useGlobal();
+
   React.useEffect(() => {
     console.log(selectedProject);
   }, [selectedProject]);

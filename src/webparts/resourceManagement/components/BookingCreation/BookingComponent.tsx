@@ -7,14 +7,9 @@ import {
   PrimaryButton,
   Stack,
   Toggle,
-  IPersonaProps,
   MessageBar,
   MessageBarType,
 } from "@fluentui/react";
-import {
-  PeoplePicker,
-  PrincipalType,
-} from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import {
   formatDateForApi,
   extractTime,
@@ -37,6 +32,7 @@ import {
 } from "../interfaces";
 import useGlobal from "../../hooks/useGlobal";
 import { parseTime } from "../dateUtils";
+import OurPeoplePicker from "../PeoplePicker";
 
 export interface IComponentFormData {
   title: string;
@@ -63,6 +59,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   dismissPanel,
   registration,
 }) => {
+  const { employees } = useGlobal();
   const { customers, projects, isEditMode } = useGlobal();
   const [formData, setFormData] = React.useState<IComponentFormData>({
     title: "",
@@ -133,13 +130,13 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     setTimeout(() => setError(undefined), 5000);
   }, [error]);
 
-  const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
-    const emails = items.map((item) => item.secondaryText);
-    setFormData({
-      ...formData,
-      selectedCoworkers: emails.filter((e) => !!e) as string[],
-    });
-  };
+  // const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
+  //   const emails = items.map((item) => item.secondaryText);
+  //   setFormData({
+  //     ...formData,
+  //     selectedCoworkers: emails.filter((e) => !!e) as string[],
+  //   });
+  // };
 
   const onSave = async (): Promise<void> => {
     if (!formData.title)
@@ -328,7 +325,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             />
           )}
 
-          <PeoplePicker
+          {/* <PeoplePicker
             placeholder="Vælg medarbejder"
             context={{
               absoluteUrl: context.pageContext.web.absoluteUrl,
@@ -348,6 +345,20 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             }
             principalTypes={[PrincipalType.User]}
             resolveDelay={1000}
+          /> */}
+
+          <OurPeoplePicker
+            employees={employees}
+            onChange={(employee) => {
+              employee
+                ? setFormData({
+                    ...formData,
+                    selectedCoworkers: employee.email ? [employee.email] : [],
+                  })
+                : setFormData({ ...formData, selectedCoworkers: [] });
+            }}
+            label="Vælg medarbejder"
+            placeholder="Vælg medarbejder"
           />
 
           <TextField

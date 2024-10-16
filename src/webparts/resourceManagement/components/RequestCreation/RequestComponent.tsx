@@ -5,17 +5,13 @@ import {
 } from "./interfaces/IRequestComponentProps";
 import {
   DefaultButton,
-  IPersonaProps,
   PrimaryButton,
   Stack,
   TextField,
   MessageBar,
   MessageBarType,
 } from "@fluentui/react";
-import {
-  PeoplePicker,
-  PrincipalType,
-} from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import {} from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import DateTimePickerComponent from "../BookingCreation/DateTimePicker";
 import { FormMode } from "./interfaces/IRequestComponentProps";
 import BackEndService from "../../services/BackEnd";
@@ -33,6 +29,8 @@ import {
   ProjectDTO,
 } from "../interfaces";
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
+import OurPeoplePicker from "../PeoplePicker";
+import useGlobal from "../../hooks/useGlobal";
 // import useGlobal from "../../hooks/useGlobal";
 
 export interface IRequestComponentFormData {
@@ -55,6 +53,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
   onDismiss,
   request,
 }) => {
+  const { employees } = useGlobal();
   const [formData, setFormData] = React.useState<IRequestComponentFormData>({
     title: "",
     info: "",
@@ -70,13 +69,13 @@ const RequestComponent: React.FC<IRequestProps> = ({
   const [initialState, setInitialState] = React.useState<string>(
     JSON.stringify(formData)
   );
-  const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
-    const emails = items.map((item) => item.secondaryText);
-    setFormData({
-      ...formData,
-      selectedCoworkers: emails.filter((e) => !!e) as string[],
-    });
-  };
+  // const _getPeoplePickerItems = (items: EmployeeDTO[]): void => {
+  //   const emails = items.map((item) => item.email);
+  //   setFormData({
+  //     ...formData,
+  //     selectedCoworkers: emails.filter((e) => !!e) as string[],
+  //   });
+  // };
 
   const isConfirmMode = mode === FormMode.ConfirmRequest;
   const isCreationMode = mode === FormMode.CreateRequest;
@@ -391,19 +390,32 @@ const RequestComponent: React.FC<IRequestProps> = ({
       )}
       {/* Viser people picker i creation mode */}
       {isCreationMode && (
-        <PeoplePicker
-          placeholder="Vælg medarbejder"
-          context={{
-            absoluteUrl: context.pageContext.web.absoluteUrl,
-            msGraphClientFactory: context.msGraphClientFactory,
-            spHttpClient: context.spHttpClient,
+        // <PeoplePicker
+        //   placeholder="Vælg medarbejder"
+        //   context={{
+        //     absoluteUrl: context.pageContext.web.absoluteUrl,
+        //     msGraphClientFactory: context.msGraphClientFactory,
+        //     spHttpClient: context.spHttpClient,
+        //   }}
+        //   titleText="Vælg medarbejder"
+        //   personSelectionLimit={3}
+        //   groupName={""}
+        //   onChange={_getPeoplePickerItems}
+        //   principalTypes={[PrincipalType.User]}
+        //   resolveDelay={1000}
+        // />
+        <OurPeoplePicker
+          employees={employees}
+          onChange={(employee) => {
+            employee
+              ? setFormData({
+                  ...formData,
+                  selectedCoworkers: employee.email ? [employee.email] : [],
+                })
+              : setFormData({ ...formData, selectedCoworkers: [] });
           }}
-          titleText="Vælg medarbejder"
-          personSelectionLimit={3}
-          groupName={""}
-          onChange={_getPeoplePickerItems}
-          principalTypes={[PrincipalType.User]}
-          resolveDelay={1000}
+          label="Vælg medarbejder"
+          placeholder="Vælg medarbejder"
         />
       )}
       {/* Viser valgte medarbejdere i et disabled textfield i readOnly */}

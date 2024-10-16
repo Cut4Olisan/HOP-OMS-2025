@@ -111,16 +111,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       startDateTime: startDateTime,
       endDateTime: endDateTime,
     });
-
-    console.log("Form data set with registration:", {
-      title: registration.shortDescription,
-      info: registration.description || "",
-      selectedCoworkers: [registration.employee],
-      selectedCustomer: customer,
-      selectedProject: project,
-      startDateTime: startDateTime,
-      endDateTime: endDateTime,
-    });
   }, [registration, projects, customers]);
 
   React.useEffect(() => {
@@ -129,14 +119,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   React.useEffect(() => {
     setTimeout(() => setError(undefined), 5000);
   }, [error]);
-
-  // const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
-  //   const emails = items.map((item) => item.secondaryText);
-  //   setFormData({
-  //     ...formData,
-  //     selectedCoworkers: emails.filter((e) => !!e) as string[],
-  //   });
-  // };
 
   const onSave = async (): Promise<void> => {
     if (!formData.title)
@@ -324,28 +306,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
               }
             />
           )}
-
-          {/* <PeoplePicker
-            placeholder="Vælg medarbejder"
-            context={{
-              absoluteUrl: context.pageContext.web.absoluteUrl,
-              msGraphClientFactory: context.msGraphClientFactory,
-              spHttpClient: context.spHttpClient,
-            }}
-            titleText="Vælg medarbejder"
-            personSelectionLimit={3}
-            groupName={""} // Empty = filter from all users
-            showtooltip={false}
-            required={false}
-            onChange={_getPeoplePickerItems}
-            defaultSelectedUsers={
-              formData.selectedCoworkers.filter(
-                (email) => email !== undefined
-              ) as string[]
-            }
-            principalTypes={[PrincipalType.User]}
-            resolveDelay={1000}
-          /> */}
 
           <OurPeoplePicker
             employees={employees}

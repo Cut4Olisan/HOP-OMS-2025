@@ -133,7 +133,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
     try {
       await BackEndService.Api.registrationsUpdate(
-        movedBooking.id!,
+        movedBooking.id ?? 0,
         updatedBooking
       );
 

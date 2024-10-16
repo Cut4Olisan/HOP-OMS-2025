@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ComboBox, IComboBoxOption } from "@fluentui/react";
+import { ComboBox, IComboBoxOption, Stack } from "@fluentui/react";
 import styles from "./CustomerProjects.module.scss";
 import { CustomerDTO, ProjectDTO } from "../../interfaces";
 import useGlobal from "../../../hooks/useGlobal";
@@ -25,11 +25,8 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
 }) => {
   const { customers, projects } = useGlobal();
 
-  React.useEffect(() => {
-    console.log(selectedProject);
-  }, [selectedProject]);
   return (
-    <>
+    <Stack>
       <ComboBox
         label={customerLabel}
         placeholder="Vælg en kunde"
@@ -82,7 +79,7 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
           required={required}
         />
       )}
-    </>
+    </Stack>
   );
 };
 

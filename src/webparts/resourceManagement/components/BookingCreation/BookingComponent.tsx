@@ -292,7 +292,8 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             onUpdateSelectedProject={(project) =>
               setFormData({ ...formData, selectedProject: project })
             }
-            required={true}
+            customerRequired={true}
+            projectRequired={false}
           />
 
           <DateTimePickerComponent
@@ -308,7 +309,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           />
 
           <Toggle
-            label="Skal denne booking gentages ugentligt?"
+            label="Gentag booking"
             checked={formData.isRecurring}
             onChange={(e, checked) =>
               setFormData({ ...formData, isRecurring: !!checked })
@@ -325,28 +326,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             />
           )}
 
-          {/* <PeoplePicker
-            placeholder="Vælg medarbejder"
-            context={{
-              absoluteUrl: context.pageContext.web.absoluteUrl,
-              msGraphClientFactory: context.msGraphClientFactory,
-              spHttpClient: context.spHttpClient,
-            }}
-            titleText="Vælg medarbejder"
-            personSelectionLimit={3}
-            groupName={""} // Empty = filter from all users
-            showtooltip={false}
-            required={false}
-            onChange={_getPeoplePickerItems}
-            defaultSelectedUsers={
-              formData.selectedCoworkers.filter(
-                (email) => email !== undefined
-              ) as string[]
-            }
-            principalTypes={[PrincipalType.User]}
-            resolveDelay={1000}
-          /> */}
-
           <OurPeoplePicker
             employees={employees}
             onChange={(employee) => {
@@ -359,6 +338,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             }}
             label="Vælg medarbejder"
             placeholder="Vælg medarbejder"
+            context={context}
           />
 
           <TextField

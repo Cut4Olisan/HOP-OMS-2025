@@ -43,7 +43,7 @@ export interface IRequestComponentFormData {
   selectedCustomer?: CustomerDTO;
   customers: CustomerDTO[];
   selectedProject?: ProjectDTO;
-  projects: ProjectDTO[];
+  projects?: ProjectDTO[];
 }
 
 const RequestComponent: React.FC<IRequestProps> = ({
@@ -173,9 +173,9 @@ const RequestComponent: React.FC<IRequestProps> = ({
           )
         : undefined;
 
-      const project = formData.projects.find(
+      const project = formData.projects? formData.projects.find(
         (p) => p.id === registration?.projectId
-      );
+      ) : undefined;
       const customer = formData.customers.find(
         (c) => c.id === project?.customerId
       );
@@ -343,7 +343,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
         onUpdateSelectedProject={(project) =>
           setFormData({ ...formData, selectedProject: project })
         }
-        required={isCreationMode}
+        customerRequired={true}
+        projectRequired={false}
       />
       <TextField
         label="Antal timer"
@@ -390,20 +391,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
       )}
       {/* Viser people picker i creation mode */}
       {isCreationMode && (
-        // <PeoplePicker
-        //   placeholder="Vælg medarbejder"
-        //   context={{
-        //     absoluteUrl: context.pageContext.web.absoluteUrl,
-        //     msGraphClientFactory: context.msGraphClientFactory,
-        //     spHttpClient: context.spHttpClient,
-        //   }}
-        //   titleText="Vælg medarbejder"
-        //   personSelectionLimit={3}
-        //   groupName={""}
-        //   onChange={_getPeoplePickerItems}
-        //   principalTypes={[PrincipalType.User]}
-        //   resolveDelay={1000}
-        // />
         <OurPeoplePicker
           employees={employees}
           onChange={(employee) => {
@@ -416,6 +403,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
           }}
           label="Vælg medarbejder"
           placeholder="Vælg medarbejder"
+          context={context}
         />
       )}
       {/* Viser valgte medarbejdere i et disabled textfield i readOnly */}

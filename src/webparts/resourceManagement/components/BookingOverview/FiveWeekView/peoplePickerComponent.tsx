@@ -1,198 +1,86 @@
 import * as React from "react";
-import {
-  ComboBox,
-  IComboBox,
-  IComboBoxOption,
-  IComboBoxStyles,
-} from "@fluentui/react";
-import { Persona } from "@fluentui/react-components"; // Fluent UI v9 Persona //Ikke skiftes til v7 Avatar - For now atleast..
-import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { MSGraphClientV3 } from "@microsoft/sp-http";
-import { ResponseType } from "@microsoft/microsoft-graph-client";
-import styles from "./FiveWeekView.module.scss";
+import { ComboBox, IComboBox, IComboBoxOption, Stack } from "@fluentui/react";
+import { Persona, PersonaSize } from "@fluentui/react/lib/Persona";
+import BackEndService from "../../../services/BackEnd";
+import { EmployeeDTO } from "../../interfaces";
 
-interface IPeoplePickerComboBoxProps {
-  context: WebPartContext;
-  onChange: (selectedEmails: string[]) => void;
-  clearSelection: boolean;
+export interface IPeoplePickerComponentProps {
+  onSelectionChange: (selectedEmployees: EmployeeDTO[]) => void;
+  selectedEmployees: EmployeeDTO[];
 }
-
-interface IUser {
-  id: string;
-  displayName: string;
-  mail: string;
-}
-
-const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
-  context,
-  onChange,
-  clearSelection,
+const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
+  onSelectionChange,
+  selectedEmployees,
 }) => {
   const [employeeOptions, setEmployeeOptions] = React.useState<
     IComboBoxOption[]
   >([]);
   const [selectedKeys, setSelectedKeys] = React.useState<string[]>([]);
-  //const [selectedUserKey, setSelectedUserKey] = React.useState<string[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(true);
-
-  const fetchUserProfilePicture = async (userId: string): Promise<string> => {
-    try {
-      const client: MSGraphClientV3 =
-        await context.msGraphClientFactory.getClient("3");
-      const response = await client
-        .api(`/users/${userId}/photo/$value`)
-        .responseType(ResponseType.BLOB)
-        .get();
-      return URL.createObjectURL(response);
-    } catch (error) {
-      console.error(
-        `Error fetching profile picture for user ${userId}:`,
-        error
-      );
-      return "";
-    }
-  };
-
-  const fetchUsers = async (): Promise<void> => {
-    try {
-      const client: MSGraphClientV3 =
-        await context.msGraphClientFactory.getClient("3");
-
-      const currentUser = await client
-        .api("/me")
-        .select("id,displayName,mail")
-        .get();
-      setSelectedKeys(currentUser.id);
-
-      const response = await client
-        .api("/users")
-        .select("displayName,mail,id")
-        .get();
-
-      const filteredUsers = response.value.filter(
-        (user: IUser) =>
-          user.mail &&
-          (user.mail.endsWith("@ngage.dk") ||
-            user.mail.endsWith("@dev4ngage.onmicrosoft.com"))
-      );
-
-      const users = await Promise.all(
-        filteredUsers.map(async (user: IUser) => {
-          const imageUrl = await fetchUserProfilePicture(user.id);
-          return {
-            key: user.id,
-            text: user.displayName || "No Name",
-            data: {
-              id: user.id,
-              mail: user.mail,
-              text: user.displayName || "No Name",
-              imageUrl: imageUrl || "",
-              initials: user.displayName
-                .split(" ")
-                .map((name: string) => name[0])
-                .join(""),
-            },
-          };
-        })
-      );
-
-      setEmployeeOptions(users);
-    } catch (error) {
-      console.error("Error fetching users from Microsoft Graph:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] = React.useState<boolean>(false);
 
   React.useEffect(() => {
-    const fetchData = async (): Promise<void> => {
+    const fetchEmployees = async (): Promise<void> => {
+      setLoading(true);
       try {
-        await fetchUsers();
+        const response = await BackEndService.Api.employeeList();
+        const fetchedEmployees: EmployeeDTO[] = response.data;
+
+        const options = fetchedEmployees.map((employee) => ({
+          key: employee.email || employee.id || (0).toString(),
+          text: `${employee.givenName} ${employee.surName}`,
+          data: {
+            persona: (
+              <Persona
+                text={`${employee.givenName} ${employee.surName}`}
+                size={PersonaSize.size40}
+              />
+            ),
+            employee: employee,
+          },
+        }));
+
+        setEmployeeOptions(options);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching employees:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchData();
-  }, []);
 
-  React.useEffect(() => {
-    if (clearSelection) {
-      setSelectedKeys([]);
-    }
-  }, [clearSelection]);
+    fetchEmployees().catch(console.error);
+  }, [onSelectionChange]);
 
   const handleComboBoxChange = (
     event: React.FormEvent<IComboBox>,
-    option?: IComboBoxOption
+    option?: IComboBoxOption,
+    index?: number
   ): void => {
-    if (option) {
-      const newSelectedKeys = option.selected
-        ? [...selectedKeys, option.key as string]
-        : selectedKeys.filter((key) => key !== option.key);
+    if (!option) return;
+    const newSelectedKeys = option.selected
+      ? [...selectedKeys, option.key as string]
+      : selectedKeys.filter((key) => key !== option.key);
+    setSelectedKeys(newSelectedKeys);
 
-      setSelectedKeys(newSelectedKeys);
-
-      // Extract only the `mail` strings
-      const selectedEmails = newSelectedKeys
-        .map((key) => {
-          const selectedOption = employeeOptions.find((opt) => opt.key === key);
-          return selectedOption?.data?.mail || "";
-        })
-        .filter((email) => email); // Remove empty strings
-
-      onChange(selectedEmails);
-    }
+    const selectedEmployeeData = employeeOptions
+      .filter((opt) => newSelectedKeys.includes(opt.key as string))
+      .map((opt) => opt.data.employee);
+    onSelectionChange(selectedEmployeeData);
   };
-
-  console.log(selectedKeys, "selectedkeys");
-
-  const onRenderOption = (option: IComboBoxOption): JSX.Element => {
-    const { text, data } = option;
-    return (
-      <div
-        style={{ display: "flex", alignItems: "center", padding: "5px 10px" }}
-      >
-        <Persona
-          name={text || "No Name"}
-          avatar={{
-            image: data?.imageUrl ? { src: data.imageUrl } : undefined,
-            name: text,
-            initials: data?.initials || text.charAt(0),
-          }}
-          size="medium"
-          style={{ marginRight: 8 }}
-        />
-      </div>
-    );
-  };
-
-  const comboBoxStyles: Partial<IComboBoxStyles> = {
-    root: { maxWidth: 300 },
-    input: { padding: 0 },
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <ComboBox
-      multiSelect
-      options={employeeOptions}
-      selectedKey={selectedKeys}
-      onChange={handleComboBoxChange}
-      onRenderOption={onRenderOption}
-      placeholder="Vælg en medarbejder"
-      className={styles.peoplePickerComboBox}
-      styles={comboBoxStyles}
-      calloutProps={{
-        doNotLayer: true,
-        className: styles.limitCalloutSize,
-      }}
-      allowFreeform={false}
-      autoComplete="on"
-    />
+    <Stack tokens={{ childrenGap: 10 }}>
+      <ComboBox
+        placeholder="Vælg medarbejder"
+        multiSelect
+        options={employeeOptions}
+        selectedKey={selectedKeys}
+        onChange={handleComboBoxChange}
+        useComboBoxAsMenuWidth
+        disabled={loading}
+        allowFreeInput={false}
+        onRenderOption={(option) => option?.data?.persona}
+      />
+      {loading && <p>Henter medarbejdere...</p>}
+    </Stack>
   );
 };
-
-export default PeoplePickerComboBox;
+export default PeoplePickerComponent;

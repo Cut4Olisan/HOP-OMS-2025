@@ -20,6 +20,7 @@ import useGlobal from "../../../hooks/useGlobal";
 import {
   CustomerDTO,
   EditRegistrationRequestDTO,
+  EmployeeDTO,
   ProjectDTO,
   RegistrationDTO,
 } from "../../interfaces";
@@ -35,6 +36,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const { projects, customers } = useGlobal();
   const [registrations, setRegistrations] = useState<RegistrationDTO[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
+  const [, setSelectedEmployees] = useState<EmployeeDTO[]>([]);
   const [clearSelection, setClearSelection] = useState<boolean>(false);
   const [selectedCustomer, setSelectedCustomer] = useState<
     CustomerDTO | undefined
@@ -190,11 +192,10 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
           <div className={styles.controlsContainer}>
             <div className={styles.filterContainer}>
               <PeoplePickerComboBox
-                context={context}
-                onChange={(selectedEmails) =>
-                  setSelectedEmployee(selectedEmails)
-                }
-                clearSelection={clearSelection}
+                onSelectionChange={(selectedEmployees) => {
+                  setSelectedEmployees(selectedEmployees);
+                }}
+                selectedEmployees={[]}
               />
 
               <ComboBox

@@ -62,6 +62,7 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
         .api("/me")
         .select("id,displayName,mail")
         .get();
+      setSelectedKeys(currentUser.id);
 
       const response = await client
         .api("/users")
@@ -96,7 +97,6 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
       );
 
       setEmployeeOptions(users);
-      setSelectedKeys(currentUser.id);
     } catch (error) {
       console.error("Error fetching users from Microsoft Graph:", error);
     } finally {

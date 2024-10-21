@@ -1,9 +1,5 @@
 import * as React from "react";
-import {
-  Panel,
-  Stack,
-  PanelType,
-} from "@fluentui/react";
+import { Panel, Stack, PanelType } from "@fluentui/react";
 import useGlobal from "../hooks/useGlobal";
 import BookingComponent from "./BookingCreation/BookingComponent";
 import RequestComponent from "./RequestCreation/RequestComponent";
@@ -27,8 +23,8 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
     showRequestComponentPanel,
     selectedRequest,
     setSelectedRequest,
+    isEditMode,
   } = useGlobal();
-
 
   return (
     <Stack>
@@ -36,6 +32,7 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
         type={PanelType.medium}
         isOpen={showBookingComponentPanel}
         onDismiss={() => setShowBookingComponentPanel(false)}
+        headerText={isEditMode? "Rediger booking" : "Opret booking"}
       >
         <BookingComponent
           registration={selectedRegistration}
@@ -49,6 +46,7 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
         type={PanelType.medium}
         isOpen={showRequestPanel}
         onDismiss={() => setShowRequestPanel(false)}
+        headerText="Opret anmodning"
       >
         <RequestComponent
           context={context}
@@ -62,6 +60,7 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
         type={PanelType.medium}
         isOpen={showRequestListPanel}
         onDismiss={() => setShowRequestListPanel(false)}
+        headerText="Modtagne anmodninger"
       >
         <RequestList context={context} />
       </Panel>

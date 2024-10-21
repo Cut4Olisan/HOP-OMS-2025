@@ -1,41 +1,20 @@
 import * as React from "react";
-import {
-  Text,
-  Checkbox,
-  Stack,
-  TextField,
-  ITextFieldStyles,
-  DayOfWeek,
-} from "@fluentui/react";
+import { Text, Checkbox, Stack, DayOfWeek, SpinButton } from "@fluentui/react";
 import styles from "./BookingComponent.module.scss";
 
 export interface IRecursionProps {
   onRecursionChange: (days: DayOfWeek[], weeks: number) => void;
 }
 
-const narrowTextFieldStyles: Partial<ITextFieldStyles> = {
-  fieldGroup: { width: 42, height: 22 },
-  field: { padding: "0 6px" },
-};
-
-const MAX_INPUT_LENGTH = 3;
+const SUFFIX = ' uger';
+const MIN = 0;
+const MAX = 52;
 
 const RecursionPanel: React.FC<IRecursionProps> = ({ onRecursionChange }) => {
-  const [TextFieldValue, setTextFieldValue] = React.useState("");
   const [selectedDays, setSelectedDays] = React.useState<DayOfWeek[]>([]);
+  const [weeks, setWeeks] = React.useState<number>(0);
 
-  const limitTextFieldLength = React.useCallback(
-    (
-      event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
-      newValue?: string
-    ): void => {
-      if (!newValue || newValue.length <= MAX_INPUT_LENGTH) {
-        setTextFieldValue(newValue || "");
-      }
-    },
-    []
-  );
-
+  // Funktion til at håndtere valg af dage
   const toggleDaySelection = (day: DayOfWeek): void => {
     setSelectedDays((prevDays) =>
       prevDays.includes(day)
@@ -44,13 +23,33 @@ const RecursionPanel: React.FC<IRecursionProps> = ({ onRecursionChange }) => {
     );
   };
 
+  const onSpinButtonChange = (
+    event: React.SyntheticEvent<HTMLElement>,
+    newValue?: string
+  ): void => {
+    const value = parseInt(newValue || "0", 10);
+    if (!isNaN(value)) {
+      setWeeks(value);
+    }
+  };
+
+  const onIncrement = (value: string): string => {
+    const newValue = Math.min(parseInt(value, 10) + 1, MAX);
+    setWeeks(newValue);
+    return newValue.toString() + SUFFIX;
+  };
+
+  const onDecrement = (value: string): string => {
+    const newValue = Math.max(parseInt(value, 10) - 1, MIN);
+    setWeeks(newValue);
+    return newValue.toString() + SUFFIX;
+  };
+
   React.useEffect(() => {
-    if (!parseInt(TextFieldValue, 10)) return;
-
-    if (!selectedDays.length) return;
-
-    return onRecursionChange(selectedDays, parseInt(TextFieldValue, 10));
-  }, [TextFieldValue, selectedDays]);
+    if (!weeks || !selectedDays.length) return;
+    onRecursionChange(selectedDays, weeks);
+    console.log(selectedDays, weeks)
+  }, [weeks, selectedDays]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -89,16 +88,19 @@ const RecursionPanel: React.FC<IRecursionProps> = ({ onRecursionChange }) => {
         tokens={{ childrenGap: 5 }}
         className={styles.verticalAligned}
       >
-        <Text style={{ fontWeight: 600 }}>I de næste</Text>
-        <TextField
-          placeholder="..."
-          value={TextFieldValue}
-          styles={narrowTextFieldStyles}
-          onChange={limitTextFieldLength}
+        <SpinButton
+          label="Gentag de næste"
+          value={weeks + SUFFIX}
+          min={MIN}
+          max={MAX}
+          step={1}
+          onIncrement={onIncrement}
+          onDecrement={onDecrement}
+          onChange={onSpinButtonChange}
         />
-        <Text style={{ fontWeight: 600 }}>uger</Text>
       </Stack>
     </div>
   );
 };
+
 export default RecursionPanel;

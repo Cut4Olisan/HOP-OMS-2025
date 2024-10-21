@@ -53,8 +53,9 @@ const OurPeoplePicker: React.FC<IOurPeoplePicker> = ({
         getTextFromItem={getTextFromItem}
         onEmptyResolveSuggestions={() => employees.map((empl) => {
             const persona: IPersonaProps = {
-              text: `${empl.givenName} ${empl.surName}`,
-              secondaryText: empl.email as string,
+                text: `${empl.givenName} ${empl.surName}`,
+                secondaryText: empl.email as string,
+                imageUrl: `${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${empl.email}`
             };
             return persona;
           })}

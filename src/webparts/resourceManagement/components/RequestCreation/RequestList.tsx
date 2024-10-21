@@ -28,7 +28,7 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
 
   return (
     <Stack tokens={{ childrenGap: 15 }}>
-      <Text variant="xLarge">Anmodninger</Text>
+      <Separator/>
       {requests.map((req, index) => (
         <React.Fragment key={req.id}>
           <Text

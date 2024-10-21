@@ -1,7 +1,6 @@
 import * as React from "react";
 import styles from "./BookingComponent.module.scss";
 import {
-  Text,
   TextField,
   DefaultButton,
   PrimaryButton,
@@ -12,9 +11,7 @@ import {
 } from "@fluentui/react";
 import {
   formatDateForApi,
-  extractTime,
   calculateEstimatedHours,
-  getDatesBetween,
   calculateRecurrenceDates,
 } from "../dateUtils";
 import RecursionPanel from "./RecursionDate";
@@ -31,7 +28,7 @@ import {
   RegistrationDTO,
 } from "../interfaces";
 import useGlobal from "../../hooks/useGlobal";
-import { parseTime } from "../dateUtils";
+// import { parseTime } from "../dateUtils";
 import OurPeoplePicker from "../PeoplePicker";
 
 export interface IComponentFormData {
@@ -39,8 +36,9 @@ export interface IComponentFormData {
   info: string;
   selectedCustomer?: CustomerDTO;
   selectedProject?: ProjectDTO;
-  startDateTime?: Date;
-  endDateTime?: Date;
+  date: Date;
+  startTime: string;
+  endTime: string;
   selectedCoworkers: string[];
   isRecurring: boolean;
   recursionData?: IRecursionData;
@@ -66,11 +64,24 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     info: "",
     isRecurring: false,
     selectedCoworkers: [],
+    date: new Date(),
+    startTime: "",
+    endTime: "",
   });
-
+  // const [dateArray, setDateArray] = React.useState<Date[] | undefined>();
   const [error, setError] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
 
+  React.useEffect(() => {
+    if (!registration) return;
+
+    setFormData({
+      ...formData,
+      date: new Date(registration.date || ""),
+      startTime: registration.start || "",
+      endTime: registration.end || "",
+    });
+  }, []);
   React.useEffect(() => {
     if (!registration) return;
 
@@ -80,26 +91,26 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     if (!project || !customer) return;
 
     const datePart = registration.date ?? "".split("T")[0];
-    const { hour: startHour, minute: startMinute } = parseTime(
-      registration.start ?? ""
-    );
-    const { hour: endHour, minute: endMinute } = parseTime(
-      registration.end ?? ""
-    );
+    // const { hour: startHour, minute: startMinute } = parseTime(
+    //   registration.start ?? ""
+    // );
+    // const { hour: endHour, minute: endMinute } = parseTime(
+    //   registration.end ?? ""
+    // );
 
-    const startDateTime = new Date(datePart);
-    startDateTime.setHours(startHour, startMinute, 0, 0);
+    // const startDateTime = new Date(datePart);
+    // startDateTime.setHours(startHour, startMinute, 0, 0);
 
-    const endDateTime = new Date(datePart);
-    endDateTime.setHours(endHour, endMinute, 0, 0);
+    // const endDateTime = new Date(datePart);
+    // endDateTime.setHours(endHour, endMinute, 0, 0);
 
-    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
-      console.error("Invalid date format in registration:", {
-        startDateTimeString: registration.start,
-        endDateTimeString: registration.end,
-      });
-      return; //Exit if we have invalid dates
-    }
+    // if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+    //   console.error("Invalid date format in registration:", {
+    //     startDateTimeString: registration.start,
+    //     endDateTimeString: registration.end,
+    //   });
+    //   return; //Exit if we have invalid dates
+    // }
 
     setFormData({
       title: registration.shortDescription || "",
@@ -108,8 +119,9 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       selectedCoworkers: [registration.employee ?? ""],
       selectedCustomer: customer,
       selectedProject: project,
-      startDateTime: startDateTime,
-      endDateTime: endDateTime,
+      date: new Date(datePart),
+      startTime: registration.start || "",
+      endTime: registration.end || "",
     });
 
     console.log("Form data set with registration:", {
@@ -118,16 +130,19 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       selectedCoworkers: [registration.employee],
       selectedCustomer: customer,
       selectedProject: project,
-      startDateTime: startDateTime,
-      endDateTime: endDateTime,
+      date: new Date(datePart),
+      startTime: registration.start || "",
+      endTime: registration.end || "",
     });
   }, [registration, projects, customers]);
 
   React.useEffect(() => {
-    setTimeout(() => setSuccess(undefined), 5000);
+    const timer = setTimeout(() => setSuccess(undefined), 5000);
+    return () => clearTimeout(timer);
   }, [success]);
   React.useEffect(() => {
-    setTimeout(() => setError(undefined), 5000);
+    const timer = setTimeout(() => setError(undefined), 5000);
+    return () => clearTimeout(timer);
   }, [error]);
 
   // const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
@@ -143,23 +158,21 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       return setError("Kunne ikke oprette booking - Titel er påkrævet");
     if (!formData.selectedCustomer)
       return setError("Kunne ikke oprette booking - Manglende kunde");
-    if (!formData.selectedProject)
-      return setError("Kunne ikke oprette booking - Manglende projekt");
-    if (!formData.startDateTime || !formData.endDateTime)
-      return setError("Kunne ikke oprette booking - Manglende datoer");
+    if (!formData.date)
+      return setError("Kunne ikke oprette booking - Manglende dato");
     if (!formData.selectedCoworkers || formData.selectedCoworkers.length === 0)
       return setError("Kunne ikke oprette booking - Manglende medarbejdere");
 
     let dates: Date[] = [];
-    const dateResult = getDatesBetween(
-      formData.startDateTime,
-      formData.endDateTime
-    );
-    if (dateResult instanceof Error) {
-      console.log(dateResult.message);
-    } else {
-      dates = dateResult;
-    }
+    // const dateResult = getDatesBetween(
+    //   formData.startDateTime,
+    //   formData.endDateTime
+    // );
+    // if (dateResult instanceof Error) {
+    //   console.log(dateResult.message);
+    // } else {
+    //   dates = dateResult;
+    // }
 
     if (
       formData.isRecurring &&
@@ -167,18 +180,16 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       formData.recursionData.weeks > 0
     ) {
       const recurrenceDates = calculateRecurrenceDates(
-        formData.startDateTime,
+        formData.date,
         formData.recursionData.days,
         formData.recursionData.weeks
       );
       dates = [...dates, ...recurrenceDates];
     }
 
-    const startTime = extractTime(formData.startDateTime);
-    const endTime = extractTime(formData.endDateTime);
     const estimatedHours = calculateEstimatedHours(
-      formData.startDateTime,
-      formData.endDateTime
+      formData.startTime,
+      formData.endTime
     );
 
     if (dates === undefined || estimatedHours === undefined) {
@@ -196,8 +207,8 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           shortDescription: formData.title,
           description: formData.info,
           date: formatDateForApi(date),
-          start: startTime,
-          end: endTime,
+          start: formData.startTime,
+          end: formData.endTime,
           time: estimatedHours,
           employee: coworker,
           registrationType: 2, // Booking
@@ -263,10 +274,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           <MessageBar messageBarType={MessageBarType.error}>{error}</MessageBar>
         )}
         <Stack tokens={{ childrenGap: 15 }}>
-          <Text variant={"xxLargePlus"} className={styles.headingMargin}>
-            {isEditMode ? "Redigere booking" : "Opret booking"}
-          </Text>
-
           <TextField
             label="Titel"
             placeholder="Titel"
@@ -297,17 +304,22 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           />
 
           <DateTimePickerComponent
-            label="Starttid"
-            value={formData.startDateTime}
-            onChange={(d) => setFormData({ ...formData, startDateTime: d })}
+            label="Dato"
+            value={{
+              date: formData.date,
+              endTime: formData.endTime,
+              startTime: formData.startTime,
+            }}
+            onChange={(d) =>
+              setFormData({
+                ...formData,
+                date: d.date,
+                startTime: d.startTime,
+                endTime: d.endTime,
+              })
+            }
           />
-
-          <DateTimePickerComponent
-            label="Sluttid"
-            value={formData.endDateTime}
-            onChange={(d) => setFormData({ ...formData, endDateTime: d })}
-          />
-
+          
           <Toggle
             label="Gentag booking"
             checked={formData.isRecurring}

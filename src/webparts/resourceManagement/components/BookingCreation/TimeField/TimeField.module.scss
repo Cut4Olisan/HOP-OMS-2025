@@ -1,0 +1,70 @@
+$nonMobileSize: 260px; // Change also the one in file AddRegistration.module.scss AND DropDown.module.scss
+$mobileSize: 46%;
+
+.container {
+  position: static;
+  width: $nonMobileSize;
+}
+
+.mobileContainer {
+  width: $mobileSize;
+}
+
+.searchBoxContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchBox {
+  width: 100%;
+  // padding: 5px;
+  box-sizing: border-box;
+  height: 32px;
+
+  border-color: "[theme: neutralSecondaryAlt, default: #8a8886]";
+  padding: 5px;
+  border: 1px solid;
+  border-radius: 2px;
+  position: relative; // for the iconButton (iconButton)
+  padding-right: 35px;
+}
+
+.searchBox:focus {
+  outline-color: "[theme: themePrimary, default: #0078d4]";
+}
+
+.iconButton {
+  margin-left: 8px;
+  position: absolute; // place it inside of the input field (searchBox)
+  height: 28px;
+  right: 2px;
+  top: 50%;
+  transform: translateY((-50%));
+}
+
+.suggestionList {
+  z-index: 4;
+  margin-top: 1px; // a little space :)
+  list-style-type: none;
+  position: absolute;
+  max-height: 250px;
+  overflow-y: auto;
+  width: 45%;
+  overflow-x: auto;
+  background-color: "[theme: white, default: #ffffff]";
+  border: 1px solid #ccc;
+  border-radius: 4;
+  padding: unset;
+}
+
+.suggestionItem {
+  padding: 10px;
+  color: "[theme: black, default: #000000]";
+  cursor: pointer;
+}
+
+.suggestionItem:hover,
+.highlightedItem {
+  background-color: "[theme: themeLighter, default: #deecf9]";
+}

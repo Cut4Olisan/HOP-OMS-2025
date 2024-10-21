@@ -1,9 +1,5 @@
 import * as React from "react";
-import {
-  Stack,
-  CommandBar,
-  ICommandBarItemProps,
-} from "@fluentui/react";
+import { Stack, CommandBar, ICommandBarItemProps } from "@fluentui/react";
 import useGlobal from "../hooks/useGlobal";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent";
@@ -14,6 +10,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
     setShowRequestPanel,
     setShowRequestListPanel,
     setShowBurnDownPanel,
+    setShowBookingComponentPanel,
     loading,
   } = useGlobal();
 
@@ -23,6 +20,12 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       text: "Oversigt",
       iconProps: { iconName: "TimelineMatrixView" },
       onClick: () => undefined,
+    },
+    {
+      key: "CreateBooking",
+      text: "Opret booking",
+      iconProps: { iconName: "OpenEnrollment" },
+      onClick: () => setShowBookingComponentPanel(true),
     },
     {
       key: "Capacity",
@@ -73,7 +76,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
     <Stack>
       <CommandBar farItems={_faritems} items={[]} />
       <BookingOverviewComponent context={context} />
-      <Panels context={context}/>
+      <Panels context={context} />
     </Stack>
   );
 };

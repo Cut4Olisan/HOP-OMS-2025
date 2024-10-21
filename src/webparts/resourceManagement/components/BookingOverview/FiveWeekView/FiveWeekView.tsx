@@ -9,11 +9,7 @@ import {
   TooltipHost,
   IComboBoxOption,
 } from "@fluentui/react";
-import {
-  ArrowLeftRegular,
-  ArrowRightRegular,
-  AddSquareMultipleRegular,
-} from "@fluentui/react-icons";
+import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./FiveWeekView.module.scss";
 import WeeklyView from "../WeeklyView/WeeklyView";
 import { getWeeksFromDate, getWeekNumber } from "../../dateUtils";
@@ -50,11 +46,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     RegistrationDTO | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const {
-    setShowBookingComponentPanel,
-    setSelectedRegistration,
-    setIsEditMode,
-  } = useGlobal();
+  const {} = useGlobal();
 
   useEffect(() => {
     const fetchData = async (): Promise<void> => {
@@ -277,27 +269,13 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                   onClick={handleNextWeeks}
                 />
               </TooltipHost>
-
-              <TooltipHost content="Opret booking..">
-                <Button
-                  className={styles.upIconScale}
-                  appearance="subtle"
-                  size="large"
-                  icon={<AddSquareMultipleRegular />}
-                  onClick={() => {
-                    setShowBookingComponentPanel(true);
-                    setSelectedRegistration(undefined);
-                    setIsEditMode(false);
-                  }}
-                />
-              </TooltipHost>
             </div>
           </div>
           <div className={styles.gridHeader}>
             {weeksToDisplay.map((week, index) => (
               <div key={index} className={styles.weekHeader}>
                 <Text variant="large">
-                  <strong>Uge {week.weekNumber}</strong>
+                  <strong>Uge {week.weekNumber} </strong>
                   <Text>
                     (
                     {calculateWeeklyHours(

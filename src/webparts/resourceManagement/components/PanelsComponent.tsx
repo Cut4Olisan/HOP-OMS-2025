@@ -60,7 +60,7 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
         type={PanelType.medium}
         isOpen={showRequestListPanel}
         onDismiss={() => setShowRequestListPanel(false)}
-        headerText="Modtagne anmodninger"
+        headerText="Modtagede anmodninger"
       >
         <RequestList context={context} />
       </Panel>

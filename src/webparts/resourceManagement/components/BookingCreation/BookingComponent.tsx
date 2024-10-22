@@ -57,7 +57,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   dismissPanel,
   registration,
 }) => {
-  const { employees } = useGlobal();
+  const { employees, setShowBookingComponentPanel } = useGlobal();
   const { customers, projects, isEditMode } = useGlobal();
   const [formData, setFormData] = React.useState<IComponentFormData>({
     title: "",
@@ -242,9 +242,12 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
         await Promise.all(updatePromises);
         setSuccess("Booking opdateret!");
+        setTimeout(() => {
+          setShowBookingComponentPanel(false)
+        }, 2000);
         return onFinish([]);
       } catch (error) {
-        setError("Kunne ikke opdatere booking.");
+        return setError("Kunne ikke opdatere booking.");
       }
     } else {
       //Create new booking
@@ -255,6 +258,9 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
 
         await Promise.all(createPromises);
         setSuccess("Booking oprettet!");
+        setTimeout(() => {
+          setShowBookingComponentPanel(false)
+        }, 2000);
         return onFinish([]);
       } catch (error) {
         setError("Kunne ikke oprette booking.");
@@ -319,7 +325,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
               })
             }
           />
-          
+
           <Toggle
             label="Gentag booking"
             checked={formData.isRecurring}

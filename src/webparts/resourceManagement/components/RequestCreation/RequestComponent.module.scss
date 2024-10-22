@@ -1,0 +1,11 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+.requestCard {
+  cursor: pointer;
+  background-color: "[theme: neutralLighterAlt, default: #f8f8f8]";
+  padding: 1em 2em;
+}
+
+.cardTitle {
+  font-weight: bold;
+}

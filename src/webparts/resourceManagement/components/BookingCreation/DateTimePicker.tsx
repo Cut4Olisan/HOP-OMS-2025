@@ -17,11 +17,6 @@ export interface IDateTimeProps {
   disabled?: boolean;
 }
 
-export enum ChosenTime {
-  StartTime,
-  EndTime,
-}
-
 const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
   label,
   value,
@@ -31,7 +26,6 @@ const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
   if (!value)return <></>
   return (
     <Stack>
-      {JSON.stringify(value)}
       <DatePicker
         label={label}
         placeholder="Vælg en dato"

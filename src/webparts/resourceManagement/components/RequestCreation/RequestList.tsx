@@ -5,6 +5,7 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { RequestsDTO } from "../interfaces/index";
 import useGlobal from "../../hooks/useGlobal";
 import styles from "./RequestComponent.module.scss";
+import { formatDateForDisplay } from "../dateUtils";
 
 interface IRequestListProps {
   context: WebPartContext;
@@ -72,6 +73,7 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
           {req.registrationId && registrations[req.registrationId] ? (
             <Persona
               size={PersonaSize.size24}
+              className={styles.blockSpacing}
               imageUrl={`${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${registrations[req.registrationId].employee}`}
               text={registrations[req.registrationId].employee
                 .split("@")[0]
@@ -84,12 +86,13 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
           ) : (
             <Persona
               size={PersonaSize.size24}
+              className={styles.blockSpacing}
               showUnknownPersonaCoin={true}
               text="Ingen medarbejder tilkoblet"
             />
           )}
           {req.registrationId && registrations[req.registrationId] ? (
-            <Text>{`${registrations[req.registrationId].date.split("T")[0]} ${registrations[req.registrationId].start}-${registrations[req.registrationId].end}`}</Text>
+            <Text>{`${formatDateForDisplay(registrations[req.registrationId].date.split("T")[0])} ${registrations[req.registrationId].start}-${registrations[req.registrationId].end}`}</Text>
           ) : (
             <Text>Ingen dato valgt</Text>
           )}

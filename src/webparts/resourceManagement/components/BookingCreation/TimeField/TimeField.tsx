@@ -36,18 +36,6 @@ const TimeFieldComponent: React.FC<TimeFieldProps> = (
     setDropdownVisible(!isDropdownVisible);
   };
 
-  useEffect(() => {
-    if (props.name !== inputValue) {
-      filterValues(props.name);
-      return setInputValue(props.name);
-    }
-  }, [props.name]);
-
-  useEffect(() => {
-    const intervals = generateTimeIntervals();
-    setAllValues(intervals);
-  }, []);
-
   const filterValues = (value: string): void => {
     const searchValue = value.replace(":", "");
     const filtered = allValues.filter((item) =>
@@ -92,6 +80,17 @@ const TimeFieldComponent: React.FC<TimeFieldProps> = (
     }
   };
 
+  useEffect(() => {
+    if (props.name !== inputValue) {
+      filterValues(props.name);
+      return setInputValue(props.name);
+    }
+  }, [props.name]);
+
+  useEffect(() => {
+    const intervals = generateTimeIntervals();
+    setAllValues(intervals);
+  }, []);
   useEffect(() => {
     if (allValues.length > 0)
       if (props.name) filterValues(props.name);

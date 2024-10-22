@@ -112,7 +112,7 @@ const PeoplePickerComboBox: React.FC<IPeoplePickerComboBoxProps> = ({
         console.error("Error fetching users:", error);
       }
     };
-    fetchData();
+    fetchData().catch((e) => console.error(e))
   }, []);
 
   React.useEffect(() => {

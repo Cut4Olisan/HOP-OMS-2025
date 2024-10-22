@@ -19,21 +19,7 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
   );
 
   React.useEffect(() => {
-    const fetchRequests = async (): Promise<void> => {
-      try {
-        const response = await BackEndService.Api.requestsList();
-        setRequests(response.data);
-        response.data.forEach((req: RequestsDTO) => {
-          if (req.registrationId) {
-            fetchRegistrationDetail(req.registrationId);
-          }
-        });
-      } catch (error) {
-        console.error("Kunne ikke hente anmodninger:", error);
-      }
-    };
-
-    const fetchRegistrationDetail = async (registrationId: number) => {
+    const fetchRegistrationDetail = async (registrationId: number):Promise<void> => {
       try {
         const response = await BackEndService.Api.registrationsTypeDetail(5);
         const registration = response.data.find(
@@ -52,8 +38,22 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
         );
       }
     };
+    const fetchRequests = async (): Promise<void> => {
+      try {
+        const response = await BackEndService.Api.requestsList();
+        setRequests(response.data);
+        response.data.forEach((req: RequestsDTO) => {
+          if (req.registrationId) {
+            return fetchRegistrationDetail(req.registrationId);
+          }
+        });
+      } catch (error) {
+        console.error("Kunne ikke hente anmodninger:", error);
+      }
+    };
 
-    fetchRequests();
+
+    fetchRequests().catch((e) => console.error(e))
   }, []);
 
   return (
@@ -96,6 +96,7 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
           ) : (
             <Text>Ingen dato valgt</Text>
           )}
+          <Text>{req.accepted}</Text>
           {/* {!!requests[index + 1] ? <Separator /> : undefined} */}
         </div>
       ))}

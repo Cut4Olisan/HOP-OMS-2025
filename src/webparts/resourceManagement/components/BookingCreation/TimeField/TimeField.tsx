@@ -37,7 +37,13 @@ const TimeFieldComponent: React.FC<TimeFieldProps> = (
   };
 
   useEffect(() => {
-    console.log(props.name);
+    if (props.name !== inputValue) {
+      filterValues(props.name);
+      return setInputValue(props.name);
+    }
+  }, [props.name]);
+
+  useEffect(() => {
     const intervals = generateTimeIntervals();
     setAllValues(intervals);
   }, []);

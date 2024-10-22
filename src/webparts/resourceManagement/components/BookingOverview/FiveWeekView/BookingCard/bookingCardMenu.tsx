@@ -1,4 +1,4 @@
-import styles from "../bookingCardMenu.module.scss";
+import styles from "./bookingCardMenu.module.scss";
 import {
   Button,
   Menu,

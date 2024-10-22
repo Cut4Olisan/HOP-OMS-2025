@@ -17,13 +17,34 @@ export interface IDateTimeProps {
   disabled?: boolean;
 }
 
+enum ChosenTime {
+  StartTime = "startTime",
+  EndTime = "endTime",
+}
+
 const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
   label,
   value,
   onChange,
   disabled = false,
 }) => {
-  if (!value)return <></>
+  const handleDateChange = (newDate: Date | null | undefined): void => {
+    if (newDate) {
+      onChange({
+        ...value,
+        date: newDate,
+      });
+    }
+  };
+
+  const handleTimeChange = (newTime: string, timeType: ChosenTime): void => {
+    onChange({
+      ...value,
+      [timeType]: newTime,
+    });
+  };
+
+  if (!value) return <></>;
   return (
     <Stack>
       <DatePicker
@@ -35,7 +56,7 @@ const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
         formatDate={(date) =>
           date ? formatDateForDisplay(date.toISOString()) : ""
         }
-        onSelectDate={disabled ? undefined : undefined/* handleDateChange */}
+        onSelectDate={disabled ? undefined : handleDateChange}
         disabled={disabled}
       />
       <Stack
@@ -47,7 +68,7 @@ const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
           label="Start"
           name={!!value.startTime ? value.startTime : ""}
           selectedName={(newTime) =>
-            undefined//handleTimeChange(newTime, ChosenTime.StartTime)
+            handleTimeChange(newTime, ChosenTime.StartTime)
           }
           isMobile={true}
         />
@@ -55,7 +76,7 @@ const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
           label="Slut"
           name={!!value.endTime ? value.endTime : ""}
           selectedName={(newTime) =>
-            undefined//handleTimeChange(newTime, ChosenTime.EndTime)
+            handleTimeChange(newTime, ChosenTime.EndTime)
           }
           isMobile={true}
         />

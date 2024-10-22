@@ -68,7 +68,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     startTime: "",
     endTime: "",
   });
-  // const [dateArray, setDateArray] = React.useState<Date[] | undefined>();
   const [error, setError] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
 
@@ -144,14 +143,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     const timer = setTimeout(() => setError(undefined), 5000);
     return () => clearTimeout(timer);
   }, [error]);
-
-  // const _getPeoplePickerItems = (items: IPersonaProps[]): void => {
-  //   const emails = items.map((item) => item.secondaryText);
-  //   setFormData({
-  //     ...formData,
-  //     selectedCoworkers: emails.filter((e) => !!e) as string[],
-  //   });
-  // };
 
   const onSave = async (): Promise<void> => {
     if (!formData.title)

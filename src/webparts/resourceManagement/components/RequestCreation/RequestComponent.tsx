@@ -54,7 +54,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
     startTime: "",
     endTime: "",
   });
-  // const { customers, projects } = useGlobal();
   const [error, setError] = React.useState<string | undefined>();
   const [warning, setWarning] = React.useState<string | undefined>();
   const [success, setSuccess] = React.useState<string | undefined>();
@@ -62,13 +61,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
   const [initialState, setInitialState] = React.useState<string>(
     JSON.stringify(formData)
   );
-  // const _getPeoplePickerItems = (items: EmployeeDTO[]): void => {
-  //   const emails = items.map((item) => item.email);
-  //   setFormData({
-  //     ...formData,
-  //     selectedCoworkers: emails.filter((e) => !!e) as string[],
-  //   });
-  // };
 
   const isConfirmMode = mode === FormMode.ConfirmRequest;
   const isCreationMode = mode === FormMode.CreateRequest;
@@ -78,10 +70,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
     formData.selectedCoworkers.length > 0 &&
     formData.date;
 
-  /*   const updateChangedRequest = (key: keyof IRequestCreateDTO, value: any) => {
-    setChangedRequest((prev) => ({ ...prev, [key]: value }));
-    setHasChanges(true);
-  }; */
   React.useEffect(() => {
     console.log(formData);
   }, [formData]);
@@ -174,13 +162,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
         selectedCoworkers: registration?.employee
           ? [registration.employee]
           : [],
-        // startDateTime: registration
-        //   ? new Date(
-        //       `${dateOnly(registration.date as string)}${formatTime(
-        //         registration.start as string
-        //       )}`
-        //     )
-        //   : undefined,
         date: new Date(`${dateOnly(registration?.date as string)}`),
         startTime: registration?.start ? registration.start : "",
         endTime: registration?.end ? registration.end : "",
@@ -206,11 +187,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
       start: `${formatDateForApi(formData.date)}${formatTime(formData.startTime)}`,
       end: `${formatDateForApi(formData.date)}${formatTime(formData.endTime)}`,
     };
-
-    console.log(
-      `${formatDateForApi(formData.date)}${formatTime(formData.startTime)}`,
-      `${formatDateForApi(formData.date)}${formatTime(formData.endTime)}`
-    );
 
     try {
       await BackEndService.Api.requestsAcceptPartialUpdate(

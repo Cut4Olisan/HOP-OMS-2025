@@ -1,11 +1,10 @@
 .weekColumn {
   display: flex;
   flex-direction: column;
-  //border: 1px solid #ccc;
-  background-color: #f9f9f9;
+  background-color: "[theme: themeLighterAlt, default: #eff6fc]";
   padding: 10px;
-  max-height: 800px; /* Set a max height for scrolling */
-  overflow-y: auto; /* Enable vertical scrolling within each column */
+  max-height: 800px;
+  overflow-y: auto;
   scrollbar-width: none;
   overflow-x: hidden;
 }

@@ -4,23 +4,26 @@
   justify-content: space-around;
   padding: 10px;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #ccc;
+  border: 1px solid;
   cursor: move;
   gap: 10px;
+  background-color: "[theme: themeLighter, default: #deecf9]";
 }
 
 .TitelAndEditIcon {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  top: 0;
+  max-width: 100%;
 }
 
 .projectName {
+  display: inline;
+  justify-content: flex-start;
+  text-overflow: clip;
   font-weight: bold;
-  overflow-wrap: break-word;
+  //max-width: calc(80%);
 }
 
 .employeeName {
@@ -33,6 +36,5 @@
   gap: 5px;
   flex-direction: column;
   width: 100%;
-  color: #555;
   overflow-wrap: break-word;
 }

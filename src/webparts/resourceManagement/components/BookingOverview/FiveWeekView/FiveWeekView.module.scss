@@ -8,8 +8,9 @@
   row-gap: 5px;
   padding: 10px;
   font-weight: bold;
-  border-right: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  background-color: "[theme: themeLight, default: #c7e0f4]";
 }
 
 .teamsContext {
@@ -26,7 +27,7 @@
   display: flex;
   padding: 20px;
   flex-direction: column;
-  border-bottom: 1px solid #f9f9f9;
+  //border-bottom: 1px solid;
 }
 
 .controlsContainer {
@@ -42,10 +43,6 @@
   gap: 10px;
 }
 
-.comboboxScaling {
-  transform: scale(1.25);
-}
-
 .navigationContainer {
   display: flex;
   justify-content: flex-end;
@@ -55,8 +52,7 @@
 .gridHeader {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  background-color: var(--colorBrandBackground2);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  //background-color: var(--colorBrandBackground2);
   padding-top: 10px;
   text-align: center;
   font-weight: bold;

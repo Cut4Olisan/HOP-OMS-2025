@@ -5,10 +5,10 @@ import { Text } from "@fluentui/react";
 import { Divider } from "@fluentui/react-components";
 import { RegistrationDTO } from "../../../interfaces";
 import styles from "./BookingCard.module.scss";
-import BookingCardMenu from "./bookingCardMenu";
+import BookingCardMenu from "./BookingCardMenu";
 import useGlobal from "../../../../hooks/useGlobal";
 
-const ItemType = "BOOKING"; //Til drag n' drop WIP
+const ItemType = "BOOKING"; //Til drag n' drop
 
 //***                 Booking Card component                 ***//
 const BookingCard: React.FC<{
@@ -43,9 +43,11 @@ const BookingCard: React.FC<{
   return (
     <div ref={drag} className={styles.bookingCard}>
       <div className={styles.TitelAndEditIcon}>
-        <Text className={styles.projectName} variant="large">
-          {booking.shortDescription}
-        </Text>
+        <div>
+          <Text className={styles.projectName} variant="large">
+            {booking.shortDescription}
+          </Text>
+        </div>
         <BookingCardMenu
           registration={booking}
           onBookingDeleted={(deletedBookingId) => {

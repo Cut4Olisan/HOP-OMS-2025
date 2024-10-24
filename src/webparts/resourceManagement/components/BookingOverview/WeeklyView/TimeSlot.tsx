@@ -1,7 +1,7 @@
 import React from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { parseTime } from "../../dateUtils";
-import BookingCardMenu from "../FiveWeekView/BookingCard/bookingCardMenu";
+import BookingCardMenu from "../FiveWeekView/BookingCard/BookingCardMenu";
 import { getBookingDate } from "../HelperFunctions/helperFunctions";
 import styles from "./TimeSlot.module.scss";
 import { Text, TooltipHost } from "@fluentui/react";

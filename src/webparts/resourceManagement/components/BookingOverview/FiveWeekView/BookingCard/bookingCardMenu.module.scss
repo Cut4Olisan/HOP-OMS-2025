@@ -1,29 +1,8 @@
-@import "~@fluentui/react/dist/sass/References.scss";
-
-.menuPopover {
-  display: block;
-  min-width: 48px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  padding: 4px;
-  background-color: var(--colorNeutralBackground1, #ffffff);
-  border-radius: 4px;
-}
-
-.menuListItems {
+.cardMenu {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  padding: 4px;
-  margin-top: 2px;
-  font-family: var(--fontFamilyBase, "Segoe UI", sans-serif);
-  font-size: var(--fontSizeBase300, 14px);
-}
-
-.menuListItems .msMenuItem {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 8px 12px;
+  justify-content: flex-end;
+  //max-width: calc(20%);
+  top: 0;
+  right: 0;
+  position: sticky;
 }

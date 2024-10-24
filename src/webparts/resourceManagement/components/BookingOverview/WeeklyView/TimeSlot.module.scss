@@ -3,29 +3,26 @@
 .timeSlot {
   display: flex;
   height: 15px; /* Each time slot is 15 minutes */
-  position: relative; /* Ensure the booking element is positioned relative to this */
-  background-color: #f9f9f9;
-  border-right: 1px solid #ccc;
-  overflow: visible; /* Ensure the overflow is visible so bookings can extend */
+  position: relative;
+  //background-color: #f9f9f9;
+  border-right: 1px solid;
+  overflow: visible;
 }
 
 .booking {
   position: absolute;
   left: 0;
   right: 0;
-  background-color: var(--colorBrandBackground2);
+  background-color: "[theme: themeLighter, default: #deecf9]";
   border-radius: 4px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   padding: 10px;
   margin: 2px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   z-index: 1;
-  color: #333;
-  border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
+  border: 1px solid;
 }
 
 .bookingContent {
@@ -34,7 +31,7 @@
   align-items: flex-start;
   flex-direction: column;
   margin: 5px;
-  gap: 5px; /* Add space between each content block */
+  gap: 5px;
 }
 
 .bookingTitle {

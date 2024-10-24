@@ -196,6 +196,8 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                   setSelectedEmployees(selectedEmployees);
                 }}
                 selectedEmployees={[]}
+                context={context}
+                clearSelection={clearSelection}
               />
 
               <ComboBox
@@ -292,8 +294,8 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                   </Text>
                 </Text>
                 <Text>
-                  {week.start.toLocaleDateString()} -{" "}
-                  {week.end.toLocaleDateString()}
+                  {week.start.toLocaleDateString("da-DK")} -{" "}
+                  {week.end.toLocaleDateString("da-DK")}
                 </Text>
               </div>
             ))}

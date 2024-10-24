@@ -3,14 +3,19 @@ import { ComboBox, IComboBox, IComboBoxOption, Stack } from "@fluentui/react";
 import { Persona, PersonaSize } from "@fluentui/react/lib/Persona";
 import BackEndService from "../../../services/BackEnd";
 import { EmployeeDTO } from "../../interfaces";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
 
 export interface IPeoplePickerComponentProps {
   onSelectionChange: (selectedEmployees: EmployeeDTO[]) => void;
   selectedEmployees: EmployeeDTO[];
+  context: WebPartContext;
+  clearSelection: boolean;
 }
 const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
   onSelectionChange,
   selectedEmployees,
+  context,
+  clearSelection,
 }) => {
   const [employeeOptions, setEmployeeOptions] = React.useState<
     IComboBoxOption[]
@@ -24,20 +29,24 @@ const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
       try {
         const response = await BackEndService.Api.employeeList();
         const fetchedEmployees: EmployeeDTO[] = response.data;
-
-        const options = fetchedEmployees.map((employee) => ({
-          key: employee.email || employee.id || (0).toString(),
-          text: `${employee.givenName} ${employee.surName}`,
-          data: {
-            persona: (
-              <Persona
-                text={`${employee.givenName} ${employee.surName}`}
-                size={PersonaSize.size40}
-              />
-            ),
-            employee: employee,
-          },
-        }));
+        const options = fetchedEmployees.map((employee) => {
+          const email = employee.email || "";
+          const personaImageUrl = `${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${email}`; //sharepoint aspx bruges her
+          return {
+            key: email,
+            text: `${employee.givenName} ${employee.surName}`,
+            data: {
+              persona: (
+                <Persona
+                  text={`${employee.givenName} ${employee.surName}`}
+                  imageUrl={personaImageUrl}
+                  size={PersonaSize.size32}
+                />
+              ),
+              employee: employee,
+            },
+          };
+        });
 
         setEmployeeOptions(options);
       } catch (error) {

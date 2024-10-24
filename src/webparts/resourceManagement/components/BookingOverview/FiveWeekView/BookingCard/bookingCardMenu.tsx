@@ -1,8 +1,7 @@
-//import styles from "../bookingCardMenu.module.scss";
+import styles from "./bookingCardMenu.module.scss";
 import { IIconProps, IconButton } from "@fluentui/react";
 import * as React from "react";
 import BackEndService from "../../../../services/BackEnd";
-//import { TooltipHost } from "@fluentui/react";
 import { RegistrationDTO } from "../../../interfaces";
 import useGlobal from "../../../../hooks/useGlobal";
 
@@ -49,7 +48,7 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
   const deleteIcon: IIconProps = { iconName: "Delete" };
 
   return (
-    <div>
+    <div className={styles.cardMenu}>
       <IconButton iconProps={penIcon} onClick={handleEditBooking} />
 
       <IconButton iconProps={copyIcon} onClick={copyBooking} />

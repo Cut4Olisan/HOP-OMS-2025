@@ -19,11 +19,9 @@
 }
 
 .projectName {
-  display: inline;
-  justify-content: flex-start;
-  text-overflow: clip;
+  display: flex;
+  overflow-wrap: anywhere;
   font-weight: bold;
-  //max-width: calc(80%);
 }
 
 .employeeName {

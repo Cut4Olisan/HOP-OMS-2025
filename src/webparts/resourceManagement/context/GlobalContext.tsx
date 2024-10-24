@@ -18,6 +18,8 @@ export interface IGlobalContext {
   setShowRequestListPanel: React.Dispatch<boolean>;
   showBurnDownPanel: boolean;
   setShowBurnDownPanel: React.Dispatch<boolean>;
+  setShowMyWeekView: React.Dispatch<boolean>;
+  showMyWeekView: boolean;
   ///***      Panel controls      ***///
 
   ///*** State to track edit/create for bookingcomponent ***///
@@ -60,6 +62,7 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
     React.useState<boolean>(false);
   const [showBurnDownPanel, setShowBurnDownPanel] =
     React.useState<boolean>(false);
+  const [showMyWeekView, setShowMyWeekView] = React.useState<boolean>(false);
 
   const [selectedRegistration, setSelectedRegistration] = React.useState<
     RegistrationDTO | undefined
@@ -110,6 +113,8 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setSelectedRegistration,
           showRequestComponentPanel,
           setShowRequestComponentPanel,
+          showMyWeekView,
+          setShowMyWeekView,
           selectedRequest,
           setSelectedRequest,
           customers,

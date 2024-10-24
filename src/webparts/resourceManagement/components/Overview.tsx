@@ -11,6 +11,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
     setShowRequestListPanel,
     setShowBurnDownPanel,
     setShowBookingComponentPanel,
+    setShowMyWeekView,
     loading,
   } = useGlobal();
 
@@ -20,6 +21,12 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       text: "Oversigt",
       iconProps: { iconName: "TimelineMatrixView" },
       onClick: () => undefined,
+    },
+    {
+      key: "Overview",
+      text: "Min uge",
+      iconProps: { iconName: "CalendarDay" },
+      onClick: () => setShowMyWeekView(true),
     },
     {
       key: "CreateBooking",

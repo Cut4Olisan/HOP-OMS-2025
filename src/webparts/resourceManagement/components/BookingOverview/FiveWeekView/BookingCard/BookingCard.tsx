@@ -11,6 +11,7 @@ import useGlobal from "../../../../hooks/useGlobal";
 const ItemType = "BOOKING"; //Til drag n' drop
 
 //***                 Booking Card component                 ***//
+
 const BookingCard: React.FC<{
   booking: RegistrationDTO;
   onDrop: (booking: RegistrationDTO, newWeekNumber: number) => void;
@@ -26,7 +27,6 @@ const BookingCard: React.FC<{
     (project) => Number(project.id) === booking.projectId
   );
   const projectName = project?.name || "Unknown Project";
-
   const customer = customers.find(
     (customer) => customer.id === project?.customerId
   );
@@ -41,7 +41,11 @@ const BookingCard: React.FC<{
   const [, setRegistrations] = useState<RegistrationDTO[]>([]);
 
   return (
-    <div ref={drag} className={styles.bookingCard}>
+    <div
+      ref={drag}
+      onDoubleClick={() => onEmployeeClick(booking)}
+      className={styles.bookingCard}
+    >
       <div className={styles.TitelAndEditIcon}>
         <div>
           <Text className={styles.projectName} variant="large">

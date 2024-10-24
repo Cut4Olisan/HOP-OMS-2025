@@ -84,6 +84,5 @@ export const calculateWeeklyHours = (
     const bookingTime = booking.time || 0;
     return total + bookingTime;
   }, 0);
-
   return totalHours;
 };

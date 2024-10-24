@@ -129,7 +129,7 @@ export const getWeeksFromDate = (
 
 export const getWeekStartDate = (weekNumber: number): Date => {
   const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0; // Adjust if the year starts on a Sunday
+  const startDayOffset = startOfYear.getDay() === 0 ? 1 : 0;
   const daysToAdd = (weekNumber - 1) * 7 - startDayOffset;
   startOfYear.setDate(startOfYear.getDate() + daysToAdd);
   return startOfYear;

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useDrag } from "react-dnd";
 import { Text } from "@fluentui/react";
 import { Divider } from "@fluentui/react-components";
+import { Persona, PersonaSize } from "@fluentui/react/lib/Persona";
 import { RegistrationDTO } from "../../../interfaces";
 import styles from "./BookingCard.module.scss";
 import BookingCardMenu from "./BookingCardMenu";
@@ -15,7 +16,7 @@ const BookingCard: React.FC<{
   onDrop: (booking: RegistrationDTO, newWeekNumber: number) => void;
   onEmployeeClick: (booking: RegistrationDTO) => void;
 }> = ({ booking, onDrop, onEmployeeClick }) => {
-  const { customers, projects } = useGlobal();
+  const { customers, projects, employees } = useGlobal();
   const [, drag] = useDrag({
     type: ItemType,
     item: booking,
@@ -36,14 +37,8 @@ const BookingCard: React.FC<{
     return null;
   }
 
-  const capitalize = (word: string): string =>
-    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-
-  const employeeFullName = booking.employee ?? " ".split("@")[0];
-  const employeeNameParts = employeeFullName.split(".");
-  const formattedEmployeeName = `${capitalize(employeeNameParts[0])} ${capitalize(
-    employeeNameParts[1]
-  )}`;
+  const employee = employees.find((emp) => emp.email === booking.employee);
+  const personaImageUrl = `${window.location.origin}/_layouts/15/userphoto.aspx?size=M&accountname=${employee?.email}`;
 
   const [, setRegistrations] = useState<RegistrationDTO[]>([]);
 
@@ -69,13 +64,16 @@ const BookingCard: React.FC<{
         />
       </div>
       <Divider />
-      <Text
-        className={styles.employeeName}
-        variant="medium"
-        onClick={() => onEmployeeClick(booking)}
-      >
-        <strong>{formattedEmployeeName}</strong>
-      </Text>
+      <div>
+        <Persona
+          text={`${employee?.givenName ?? ""} ${employee?.surName ?? ""}`}
+          secondaryText={`${employee?.givenName ?? ""} ${employee?.surName ?? ""}`}
+          imageUrl={personaImageUrl}
+          size={PersonaSize.size32}
+          onClick={() => onEmployeeClick(booking)}
+        />
+      </div>
+
       <div className={styles.customerAndProjectName}>
         <Text variant="medium">
           <strong>Kunde: </strong> {customerName}

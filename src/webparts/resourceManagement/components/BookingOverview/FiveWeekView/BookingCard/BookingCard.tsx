@@ -8,9 +8,7 @@ import styles from "./BookingCard.module.scss";
 import BookingCardMenu from "./BookingCardMenu";
 import useGlobal from "../../../../hooks/useGlobal";
 
-const ItemType = "BOOKING"; //Til drag n' drop
-
-//***                 Booking Card component                 ***//
+const ItemType = "BOOKING"; // For drag and drop functionality
 
 const BookingCard: React.FC<{
   booking: RegistrationDTO;
@@ -26,18 +24,27 @@ const BookingCard: React.FC<{
   const project = projects.find(
     (project) => Number(project.id) === booking.projectId
   );
-  const projectName = project?.name || "Unknown Project";
   const customer = customers.find(
     (customer) => customer.id === project?.customerId
   );
-  const customerName = customer?.name || "Unknown Customer";
+
+  const projectName = project?.name || "";
+  const customerName = customer?.name || "";
+  const bookingTitle = booking.shortDescription || "";
+
+  if (!bookingTitle || !customerName) {
+    return null;
+  }
 
   const capitalize = (word: string): string =>
     word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 
   const employeeFullName = booking.employee ?? " ".split("@")[0];
   const employeeNameParts = employeeFullName.split(".");
-  const formattedEmployeeName = `${capitalize(employeeNameParts[0])} ${capitalize(employeeNameParts[1])}`;
+  const formattedEmployeeName = `${capitalize(employeeNameParts[0])} ${capitalize(
+    employeeNameParts[1]
+  )}`;
+
   const [, setRegistrations] = useState<RegistrationDTO[]>([]);
 
   return (
@@ -57,7 +64,7 @@ const BookingCard: React.FC<{
           onBookingDeleted={(deletedBookingId) => {
             setRegistrations((prevRegistrations) =>
               prevRegistrations.filter((reg) => reg.id !== deletedBookingId)
-            ); // Update the registrations state by removing the deleted booking
+            );
           }}
         />
       </div>
@@ -71,10 +78,10 @@ const BookingCard: React.FC<{
       </Text>
       <div className={styles.customerAndProjectName}>
         <Text variant="medium">
-          <strong>Kunde </strong> {customerName}
+          <strong>Kunde: </strong> {customerName}
         </Text>
         <Text variant="medium">
-          <strong>Projekt </strong> {projectName}
+          <strong>Projekt: </strong> {projectName}
         </Text>
       </div>
     </div>

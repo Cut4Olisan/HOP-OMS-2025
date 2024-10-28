@@ -1,4 +1,5 @@
 import * as React from "react";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
 import BackEndService from "../services/BackEnd";
 import {
   CustomerDTO,
@@ -7,6 +8,12 @@ import {
   RegistrationDTO,
   RequestsDTO,
 } from "../components/interfaces";
+
+export enum ViewMode {
+  Overview = "Overview",
+  MyWeek = "MyWeek",
+  Capacity = "Capacity",
+}
 
 export interface IGlobalContext {
   ///***      Panel controls      ***///
@@ -18,9 +25,16 @@ export interface IGlobalContext {
   setShowRequestListPanel: React.Dispatch<boolean>;
   showBurnDownPanel: boolean;
   setShowBurnDownPanel: React.Dispatch<boolean>;
-  setShowMyWeekView: React.Dispatch<boolean>;
-  showMyWeekView: boolean;
+  currentView: ViewMode;
+  setCurrentView: React.Dispatch<React.SetStateAction<ViewMode>>;
   ///***      Panel controls      ***///
+
+  ///***      Controls for My week view in the commandbar      ***///
+  currentEmployee: EmployeeDTO | undefined;
+  setCurrentEmployee: React.Dispatch<
+    React.SetStateAction<EmployeeDTO | undefined>
+  >;
+  ///***      Controls for My week view in the commandbar      ***///
 
   ///*** State to track edit/create for bookingcomponent ***///
   isEditMode: boolean;
@@ -45,15 +59,20 @@ export interface IGlobalContext {
   setIsDraggingGlobal: React.Dispatch<boolean>;
   employees: EmployeeDTO[];
   setEmployees: React.Dispatch<EmployeeDTO[]>;
+  registrations: RegistrationDTO[];
+  setRegistrations: React.Dispatch<React.SetStateAction<RegistrationDTO[]>>;
 }
 
 export const GlobalContext = React.createContext<IGlobalContext | undefined>(
   undefined
 );
 
-const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
-  children,
-}) => {
+const GlobalContextProvider: React.FC<
+  React.PropsWithChildren<{ context: WebPartContext }>
+> = ({ children, context }) => {
+  const [currentView, setCurrentView] = React.useState<ViewMode>(
+    ViewMode.Overview
+  );
   const [showBookingComponentPanel, setShowBookingComponentPanel] =
     React.useState<boolean>(false);
   const [showRequestPanel, setShowRequestPanel] =
@@ -62,8 +81,9 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
     React.useState<boolean>(false);
   const [showBurnDownPanel, setShowBurnDownPanel] =
     React.useState<boolean>(false);
-  const [showMyWeekView, setShowMyWeekView] = React.useState<boolean>(false);
-
+  const [registrations, setRegistrations] = React.useState<RegistrationDTO[]>(
+    []
+  );
   const [selectedRegistration, setSelectedRegistration] = React.useState<
     RegistrationDTO | undefined
   >();
@@ -72,6 +92,10 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const [selectedRequest, setSelectedRequest] = React.useState<
     RequestsDTO | undefined
   >(undefined);
+  const [currentEmployee, setCurrentEmployee] = React.useState<
+    EmployeeDTO | undefined
+  >(undefined);
+
   const [customers, setCustomers] = React.useState<CustomerDTO[]>([]);
   const [projects, setProjects] = React.useState<ProjectDTO[]>([]);
   const [isEditMode, setIsEditMode] = React.useState<boolean>(false);
@@ -84,16 +108,71 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
 
   React.useEffect(() => {
     (async () => {
-      setLoading(true);
-      const c = (await BackEndService.Api.customersList()).data;
-      const p = (await BackEndService.Api.projectsList()).data;
-      const e = (await BackEndService.Api.employeeList()).data;
-      setLoading(false);
-      setCustomers(c);
-      setProjects(p);
-      setEmployees(e);
-    })().catch((e) => console.log(e));
-  }, []);
+      try {
+        setLoading(true);
+
+        const [customersResponse, projectsResponse, employeesResponse] =
+          await Promise.all([
+            BackEndService.Api.customersList(),
+            BackEndService.Api.projectsList(),
+            BackEndService.Api.employeeList(),
+          ]);
+        const customers = customersResponse.data;
+        const projects = projectsResponse.data;
+        const employees = employeesResponse.data;
+
+        setCustomers(customers);
+        setProjects(projects);
+        setEmployees(employees);
+
+        const currentUserEmail = context.pageContext.user.email;
+
+        let foundEmployee = employees.find(
+          (emp) => emp.email === currentUserEmail
+        );
+
+        // Fallback mechanism for dev account - temporary for testing
+        if (
+          !foundEmployee &&
+          currentUserEmail === "oliver.sund@dev4ngage.onmicrosoft.com"
+        ) {
+          foundEmployee = {
+            id: -1,
+            email: "oliver.sund@dev4ngage.onmicrosoft.com",
+            givenName: "Oliver",
+            surName: "Sund",
+            allocatable: true,
+          } as EmployeeDTO;
+
+          setEmployees([]);
+        }
+
+        setCurrentEmployee(foundEmployee);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [context]);
+
+  /*    For actual use after testing
+       
+       const foundEmployee = employees.find(
+          (emp) => emp.email === currentUserEmail
+        );
+
+        
+        if (foundEmployee) {
+          setCurrentEmployee(foundEmployee);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [context]);*/
 
   if (loading) return <>Loading</>;
 
@@ -101,6 +180,8 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
     <>
       <GlobalContext.Provider
         value={{
+          currentView,
+          setCurrentView,
           showBookingComponentPanel,
           setShowBookingComponentPanel,
           showRequestPanel,
@@ -113,8 +194,6 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setSelectedRegistration,
           showRequestComponentPanel,
           setShowRequestComponentPanel,
-          showMyWeekView,
-          setShowMyWeekView,
           selectedRequest,
           setSelectedRequest,
           customers,
@@ -131,6 +210,10 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setIsDraggingGlobal,
           employees,
           setEmployees,
+          currentEmployee,
+          setCurrentEmployee,
+          registrations,
+          setRegistrations,
         }}
       >
         <>{children}</>

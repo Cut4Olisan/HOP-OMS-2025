@@ -1,9 +1,12 @@
 import * as React from "react";
 import { Stack, CommandBar, ICommandBarItemProps } from "@fluentui/react";
 import useGlobal from "../hooks/useGlobal";
+import { ViewMode } from "../context/GlobalContext"; //used for fullpages
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent";
 import Panels from "./PanelsComponent";
+import WeeklyView from "./BookingOverview/WeeklyView/WeeklyView";
+import { getWeekNumber } from "./dateUtils";
 
 const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
   const {
@@ -11,7 +14,10 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
     setShowRequestListPanel,
     setShowBurnDownPanel,
     setShowBookingComponentPanel,
-    setShowMyWeekView,
+    setCurrentView,
+    currentView,
+    currentEmployee,
+    registrations,
     loading,
   } = useGlobal();
 
@@ -20,13 +26,13 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       key: "Overview",
       text: "Oversigt",
       iconProps: { iconName: "TimelineMatrixView" },
-      onClick: () => undefined,
+      onClick: () => setCurrentView(ViewMode.Overview),
     },
     {
-      key: "Overview",
+      key: "MyWeek",
       text: "Min uge",
       iconProps: { iconName: "CalendarDay" },
-      onClick: () => setShowMyWeekView(true),
+      onClick: () => setCurrentView(ViewMode.MyWeek),
     },
     {
       key: "CreateBooking",
@@ -38,7 +44,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       key: "Capacity",
       text: "Kapacitet - WIP",
       iconProps: { iconName: "FunctionalManagerDashboard" },
-      onClick: () => undefined,
+      onClick: () => setCurrentView(ViewMode.Capacity),
     },
     {
       key: "Burndown",
@@ -82,7 +88,27 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
   return (
     <Stack>
       <CommandBar farItems={_faritems} items={[]} />
-      <BookingOverviewComponent context={context} />
+
+      {currentView === ViewMode.Overview && (
+        <BookingOverviewComponent context={context} />
+      )}
+
+      {currentView === ViewMode.MyWeek && (
+        <WeeklyView
+          employeeId={currentEmployee?.email ?? ""}
+          employeeName={
+            `${currentEmployee?.givenName} ${currentEmployee?.surName}` ?? ""
+          }
+          weekNumber={getWeekNumber(new Date()).toString()}
+          weekBookings={registrations}
+          onBack={() => setCurrentView(ViewMode.Overview)}
+          onPreviousWeek={() => {}}
+          onNextWeek={() => {}}
+          projects={[]}
+          customers={[]}
+        />
+      )}
+
       <Panels context={context} />
     </Stack>
   );

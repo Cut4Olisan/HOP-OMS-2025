@@ -22,7 +22,7 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
 }) => {
   return (
     <div>
-      <GlobalContextProvider>
+      <GlobalContextProvider context={context}>
         <Overview context={context} />
       </GlobalContextProvider>
     </div>

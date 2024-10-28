@@ -112,7 +112,6 @@ const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
         allowFreeInput={false}
         onRenderOption={(option) => option?.data?.persona}
       />
-      {loading && <p>Henter medarbejdere...</p>}
     </Stack>
   );
 };

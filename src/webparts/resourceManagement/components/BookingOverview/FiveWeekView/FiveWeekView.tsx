@@ -4,10 +4,10 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   Text,
-  DefaultButton,
   ComboBox,
   TooltipHost,
   IComboBoxOption,
+  PrimaryButton,
 } from "@fluentui/react";
 import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./FiveWeekView.module.scss";
@@ -35,8 +35,11 @@ interface IFiveWeekViewProps {
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const { projects, customers } = useGlobal();
   const [registrations, setRegistrations] = useState<RegistrationDTO[]>([]);
+  const [selectedEmployeeEmails, setSelectedEmployeeEmails] = useState<
+    string[]
+  >([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
-  const [, setSelectedEmployees] = useState<EmployeeDTO[]>([]);
+  const [selectedEmployees, setSelectedEmployees] = useState<EmployeeDTO[]>([]);
   const [clearSelection, setClearSelection] = useState<boolean>(false);
   const [selectedCustomer, setSelectedCustomer] = useState<
     CustomerDTO | undefined
@@ -89,6 +92,11 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7 * 5);
     setCurrentDate(newDate);
+  };
+
+  const handleEmployeeSelectionChange = (employees: EmployeeDTO[]) => {
+    setSelectedEmployees(employees);
+    setSelectedEmployeeEmails(employees.map((emp) => emp.email ?? ""));
   };
 
   const calculateNewDateForWeek = (
@@ -150,8 +158,8 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     const project = projects.find((p) => Number(p.id) === booking.projectId);
     return (
       booking.registrationType === 2 &&
-      (selectedEmployee.length === 0 ||
-        selectedEmployee.includes(booking.employee ?? "")) &&
+      (selectedEmployeeEmails.length === 0 ||
+        selectedEmployeeEmails.includes(booking.employee ?? "")) &&
       (!selectedCustomer || project?.customerId === selectedCustomer?.id) &&
       (!selectedProject || booking.projectId === Number(selectedProject))
     );
@@ -159,7 +167,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
 
   const filteredProjects = selectedCustomer
     ? projects.filter((p) => p.customerId === selectedCustomer.id)
-    : projects;
+    : [];
 
   if (selectedBooking) {
     const selectedWeekNumber = getWeekNumber(new Date(selectedBooking.date!));
@@ -192,10 +200,8 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
           <div className={styles.controlsContainer}>
             <div className={styles.filterContainer}>
               <PeoplePickerComboBox
-                onSelectionChange={(selectedEmployees) => {
-                  setSelectedEmployees(selectedEmployees);
-                }}
-                selectedEmployees={[]}
+                onSelectionChange={handleEmployeeSelectionChange}
+                selectedEmployees={selectedEmployees}
                 context={context}
                 clearSelection={clearSelection}
               />
@@ -225,30 +231,32 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
                 autoComplete="on"
               />
 
-              <ComboBox
-                placeholder="Vælg et projekt"
-                options={
-                  filteredProjects.map((project: ProjectDTO) => ({
-                    key: project.id?.toString(),
-                    text: project.name,
-                  })) as IComboBoxOption[]
-                }
-                selectedKey={selectedProject || ""}
-                onChange={(e, option) =>
-                  setSelectedProject(option?.key as string)
-                }
-                calloutProps={{
-                  doNotLayer: true,
-                  className: styles.limitCalloutSize,
-                }}
-                allowFreeInput
-                autoComplete="on"
-              />
+              {selectedCustomer && (
+                <ComboBox
+                  placeholder="Vælg et projekt"
+                  options={
+                    filteredProjects.map((project: ProjectDTO) => ({
+                      key: project.id?.toString(),
+                      text: project.name,
+                    })) as IComboBoxOption[]
+                  }
+                  selectedKey={selectedProject || ""}
+                  onChange={(e, option) =>
+                    setSelectedProject(option?.key as string)
+                  }
+                  calloutProps={{
+                    doNotLayer: true,
+                    className: styles.limitCalloutSize,
+                  }}
+                  allowFreeInput
+                  autoComplete="on"
+                />
+              )}
 
-              {(selectedEmployee.length > 0 ||
+              {(selectedEmployeeEmails.length > 0 ||
                 selectedCustomer ||
                 selectedProject) && (
-                <DefaultButton text="Ryd filter" onClick={clearFilters} />
+                <PrimaryButton text="Ryd filter" onClick={clearFilters} />
               )}
             </div>
 

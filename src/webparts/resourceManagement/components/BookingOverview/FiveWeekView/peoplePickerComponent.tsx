@@ -11,6 +11,7 @@ export interface IPeoplePickerComponentProps {
   context: WebPartContext;
   clearSelection: boolean;
 }
+
 const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
   onSelectionChange,
   selectedEmployees,
@@ -29,9 +30,14 @@ const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
       try {
         const response = await BackEndService.Api.employeeList();
         const fetchedEmployees: EmployeeDTO[] = response.data;
+
+        // Current logged-in user email
+        const currentUserEmail = context.pageContext.user.email;
+
         const options = fetchedEmployees.map((employee) => {
           const email = employee.email || "";
-          const personaImageUrl = `${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${email}`; //sharepoint aspx bruges her
+          const personaImageUrl = `${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${email}`;
+
           return {
             key: email,
             text: `${employee.givenName} ${employee.surName}`,
@@ -49,6 +55,15 @@ const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
         });
 
         setEmployeeOptions(options);
+
+        // Set default selected employee as the current signed in user
+        const defaultOption = options.find(
+          (option) => option.key === currentUserEmail
+        );
+        if (defaultOption) {
+          setSelectedKeys([defaultOption.key as string]);
+          onSelectionChange([defaultOption.data.employee]);
+        }
       } catch (error) {
         console.error("Error fetching employees:", error);
       } finally {
@@ -57,7 +72,14 @@ const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
     };
 
     fetchEmployees().catch(console.error);
-  }, [onSelectionChange]);
+  }, [onSelectionChange, context]);
+
+  React.useEffect(() => {
+    if (clearSelection) {
+      setSelectedKeys([]);
+      onSelectionChange([]);
+    }
+  }, [clearSelection, onSelectionChange]);
 
   const handleComboBoxChange = (
     event: React.FormEvent<IComboBox>,
@@ -68,6 +90,7 @@ const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
     const newSelectedKeys = option.selected
       ? [...selectedKeys, option.key as string]
       : selectedKeys.filter((key) => key !== option.key);
+
     setSelectedKeys(newSelectedKeys);
 
     const selectedEmployeeData = employeeOptions
@@ -75,6 +98,7 @@ const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
       .map((opt) => opt.data.employee);
     onSelectionChange(selectedEmployeeData);
   };
+
   return (
     <Stack tokens={{ childrenGap: 10 }}>
       <ComboBox
@@ -92,4 +116,5 @@ const PeoplePickerComponent: React.FC<IPeoplePickerComponentProps> = ({
     </Stack>
   );
 };
+
 export default PeoplePickerComponent;

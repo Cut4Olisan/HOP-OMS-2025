@@ -15,13 +15,7 @@ import {} from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import DateTimePickerComponent from "../BookingCreation/DateTimePicker";
 import { FormMode } from "./interfaces/IRequestComponentProps";
 import BackEndService from "../../services/BackEnd";
-import {
-  dateOnly,
-  extractTime,
-  // extractTime,
-  formatDateForApi,
-  formatTime,
-} from "../dateUtils";
+import { dateOnly, formatDateForApi, formatTime } from "../dateUtils";
 import { IRegistrationData } from "../interfaces/IRegistrationProps";
 import {
   AcceptRequestRequestDTO,
@@ -31,19 +25,17 @@ import {
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 import OurPeoplePicker from "../PeoplePicker";
 import useGlobal from "../../hooks/useGlobal";
-// import useGlobal from "../../hooks/useGlobal";
 
 export interface IRequestComponentFormData {
   title: string;
   info: string;
   estimatedHours?: number;
   selectedCoworkers: string[];
-  startDateTime?: Date;
-  endDateTime?: Date;
+  date: Date;
+  startTime: string;
+  endTime: string;
   selectedCustomer?: CustomerDTO;
-  customers: CustomerDTO[];
   selectedProject?: ProjectDTO;
-  projects: ProjectDTO[];
 }
 
 const RequestComponent: React.FC<IRequestProps> = ({
@@ -53,63 +45,47 @@ const RequestComponent: React.FC<IRequestProps> = ({
   onDismiss,
   request,
 }) => {
-  const { employees } = useGlobal();
+  const { employees, customers, projects, setGlobalSuccess } = useGlobal();
   const [formData, setFormData] = React.useState<IRequestComponentFormData>({
     title: "",
     info: "",
     selectedCoworkers: [],
-    customers: [],
-    projects: [],
+    date: new Date(),
+    startTime: "",
+    endTime: "",
   });
-  // const { customers, projects } = useGlobal();
   const [error, setError] = React.useState<string | undefined>();
   const [warning, setWarning] = React.useState<string | undefined>();
-  const [success, setSuccess] = React.useState<string | undefined>();
   const [hasChanges, setHasChanges] = React.useState<boolean>(false);
   const [initialState, setInitialState] = React.useState<string>(
     JSON.stringify(formData)
   );
-  // const _getPeoplePickerItems = (items: EmployeeDTO[]): void => {
-  //   const emails = items.map((item) => item.email);
-  //   setFormData({
-  //     ...formData,
-  //     selectedCoworkers: emails.filter((e) => !!e) as string[],
-  //   });
-  // };
 
   const isConfirmMode = mode === FormMode.ConfirmRequest;
   const isCreationMode = mode === FormMode.CreateRequest;
-  const startTime = extractTime(formData.startDateTime);
-  const endTime = extractTime(formData.endDateTime);
   const requiredInformation = formData.title && formData.selectedCustomer;
   const hasSufficientInformation =
     requiredInformation &&
     formData.selectedCoworkers.length > 0 &&
-    formData.startDateTime &&
-    formData.endDateTime;
+    formData.date;
 
-  /*   const updateChangedRequest = (key: keyof IRequestCreateDTO, value: any) => {
-    setChangedRequest((prev) => ({ ...prev, [key]: value }));
-    setHasChanges(true);
-  }; */
-
+  React.useEffect(() => {
+    console.log(formData);
+  }, [formData]);
   React.useEffect(() => {
     if (JSON.stringify(formData) !== initialState) {
       return setHasChanges(true);
     }
-
     return setHasChanges(false);
   }, [formData, initialState]);
 
   const completeBooking: IRegistrationData = {
     projectId: formData.selectedProject?.id,
     shortDescription: formData.title,
-    date: formData.startDateTime
-      ? formatDateForApi(formData.startDateTime)
-      : "",
+    date: formData.date ? formatDateForApi(formData.date) : "",
     description: formData.info || undefined,
-    start: startTime,
-    end: endTime,
+    start: formData.startTime,
+    end: formData.endTime,
     time: formData.estimatedHours ? formData.estimatedHours : undefined,
     employee: formData.selectedCoworkers[0],
     registrationType: 5, // Template
@@ -123,7 +99,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
 
   const clearMessageBar = (): void => {
     setError(undefined);
-    setSuccess(undefined);
+    setGlobalSuccess(undefined);
     setWarning(undefined);
   };
 
@@ -142,9 +118,9 @@ const RequestComponent: React.FC<IRequestProps> = ({
       });
       setWarning(undefined);
       if (hasSufficientInformation) {
-        setSuccess("Booking oprettet!");
+        setGlobalSuccess("Anmodning oprettet!");
       } else {
-        setSuccess(
+        setGlobalSuccess(
           "Anmodning oprettet med manglende information. En kladde er gemt."
         );
       }
@@ -173,12 +149,10 @@ const RequestComponent: React.FC<IRequestProps> = ({
           )
         : undefined;
 
-      const project = formData.projects.find(
-        (p) => p.id === registration?.projectId
-      );
-      const customer = formData.customers.find(
-        (c) => c.id === project?.customerId
-      );
+      const project = !!projects.length
+        ? projects.find((p) => p.id === registration?.projectId)
+        : undefined;
+      const customer = customers.find((c) => c.id === project?.customerId);
       const data: IRequestComponentFormData = {
         ...formData,
         title: request.title,
@@ -187,47 +161,38 @@ const RequestComponent: React.FC<IRequestProps> = ({
         selectedCoworkers: registration?.employee
           ? [registration.employee]
           : [],
-        startDateTime: registration
-          ? new Date(
-              `${dateOnly(registration.date as string)}${formatTime(
-                registration.start as string
-              )}`
-            )
-          : undefined,
+        date: new Date(`${dateOnly(registration?.date as string)}`),
+        startTime: registration?.start ? registration.start : "",
+        endTime: registration?.end ? registration.end : "",
         selectedProject: project ? project : undefined,
         selectedCustomer: customer ? customer : undefined,
       };
       setFormData(data);
       setInitialState(JSON.stringify(data));
     })().catch((e) => console.log(e));
-  }, [request, formData.customers, formData.projects]);
+  }, [request]);
 
   const onAccept = async (): Promise<void> => {
     if (!request || !request.id) {
       setError("Ingen anmodning valgt at bekræfte.");
       return;
     }
-    if (!formData.startDateTime) {
-      setError("Kan ikke bekræfte en anmodning uden datoer.");
+    if (!formData.date) {
+      setError("Kan ikke bekræfte en anmodning uden dato.");
       return;
     }
 
     const acceptRequestData: AcceptRequestRequestDTO = {
-      start: `${formatDateForApi(formData.startDateTime)}${formatTime(startTime)}`,
-      end: String(formData.endDateTime),
+      start: `${formatDateForApi(formData.date)}${formatTime(formData.startTime)}`,
+      end: `${formatDateForApi(formData.date)}${formatTime(formData.endTime)}`,
     };
-
-    console.log(
-      `${formatDateForApi(formData.startDateTime)}${formatTime(startTime)}`,
-      formData.endDateTime
-    );
 
     try {
       await BackEndService.Api.requestsAcceptPartialUpdate(
         request.id,
         acceptRequestData
       );
-      setSuccess("Anmodning bekræftet!");
+      setGlobalSuccess("Anmodning bekræftet!");
       console.warn("Anmodning bekræftet:", acceptRequestData);
     } catch (error) {
       console.error("Fejl ved bekræftelse af anmodning:", error);
@@ -243,7 +208,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
     if (confirm("Er du sikker på du vil afvise denne anmodning?")) {
       try {
         await BackEndService.Api.requestsRejectPartialUpdate(request.id);
-        setSuccess("Anmodning afvist!");
+        setGlobalSuccess("Anmodning afvist!");
         console.warn("Anmodning afvist", request);
       } catch (error) {
         console.error("Fejl ved afvisning af anmodning:", error);
@@ -268,7 +233,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
       });
 
       setWarning(undefined);
-      setSuccess("Anmodning opdateret!");
+      setGlobalSuccess("Anmodning opdateret!");
       const updatedRequest = await result.json();
       onFinish(updatedRequest as IRequestCreateDTO);
     } catch (error) {
@@ -283,33 +248,10 @@ const RequestComponent: React.FC<IRequestProps> = ({
         ? undefined
         : "Kan ikke oprette en færdig booking med den angivne information - en kladde gemmes i stedet"
     );
-  }, [
-    formData.title,
-    formData.selectedCoworkers,
-    formData.startDateTime,
-    formData.endDateTime,
-  ]);
-
-  React.useEffect(() => {
-    const fetchRequests = async (): Promise<void> => {
-      try {
-        const data = (await BackEndService.Api.requestsList()).data;
-        //const data = await BackEndService.Instance.getRequests();
-        console.log(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchRequests().catch((e) => console.error(e));
-  }, []);
+  }, [formData.title, formData.selectedCoworkers, formData.date]);
 
   return (
     <Stack tokens={{ childrenGap: 15 }}>
-      {success && (
-        <MessageBar messageBarType={MessageBarType.success}>
-          {success}
-        </MessageBar>
-      )}
       {/* Warning bruges kun i creation mode til at informere om manglende information */}
       {warning && isCreationMode && (
         <MessageBar messageBarType={MessageBarType.warning}>
@@ -343,67 +285,49 @@ const RequestComponent: React.FC<IRequestProps> = ({
         onUpdateSelectedProject={(project) =>
           setFormData({ ...formData, selectedProject: project })
         }
-        required={isCreationMode}
+        customerRequired={true}
+        projectRequired={false}
       />
       <TextField
         label="Antal timer"
         placeholder="Antal timer"
         value={formData.estimatedHours ? String(formData.estimatedHours) : ""}
         onChange={(e) => {
-          if (!new RegExp(/^[0-9]/g).test(e.currentTarget.value)) {
-            return;
+          const value = e.currentTarget.value;
+          if ((value === "" || /^[0-9]*$/.test(value)) && value.length <= 6) {
+            setFormData({
+              ...formData,
+              estimatedHours: value === "" ? undefined : Number(value),
+            });
           }
-
-          return setFormData({
-            ...formData,
-            estimatedHours: Number(e.currentTarget.value),
-          });
         }}
         disabled={false}
       />
       {/* Viser dato/tid-vælgeren i creationMode, eller hvis det
       er read-only og datoer er angivet */}
-      {(isCreationMode ||
-        (isConfirmMode && formData.startDateTime && formData.endDateTime)) && (
+      {(isCreationMode || (isConfirmMode && formData.date)) && (
         <>
           <DateTimePickerComponent
-            label="Starttid"
-            value={formData.startDateTime}
-            onChange={(d) => setFormData({ ...formData, startDateTime: d })}
-            disabled={false}
-          />
-          <DateTimePickerComponent
-            label="Sluttid"
-            value={formData.endDateTime}
-            onChange={(d) => setFormData({ ...formData, endDateTime: d })}
+            label="Dato"
+            value={{
+              date: formData.date,
+              endTime: formData.endTime,
+              startTime: formData.startTime,
+            }}
+            onChange={(d) =>
+              setFormData({
+                ...formData,
+                date: d.date,
+                startTime: d.startTime,
+                endTime: d.endTime,
+              })
+            }
             disabled={false}
           />
         </>
       )}
-      {isConfirmMode && formData.startDateTime && (
-        <DateTimePickerComponent
-          label="Starttid"
-          value={formData.startDateTime}
-          onChange={(d) => setFormData({ ...formData, startDateTime: d })}
-          disabled={false}
-        />
-      )}
       {/* Viser people picker i creation mode */}
       {isCreationMode && (
-        // <PeoplePicker
-        //   placeholder="Vælg medarbejder"
-        //   context={{
-        //     absoluteUrl: context.pageContext.web.absoluteUrl,
-        //     msGraphClientFactory: context.msGraphClientFactory,
-        //     spHttpClient: context.spHttpClient,
-        //   }}
-        //   titleText="Vælg medarbejder"
-        //   personSelectionLimit={3}
-        //   groupName={""}
-        //   onChange={_getPeoplePickerItems}
-        //   principalTypes={[PrincipalType.User]}
-        //   resolveDelay={1000}
-        // />
         <OurPeoplePicker
           employees={employees}
           onChange={(employee) => {
@@ -416,6 +340,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
           }}
           label="Vælg medarbejder"
           placeholder="Vælg medarbejder"
+          context={context}
         />
       )}
       {/* Viser valgte medarbejdere i et disabled textfield i readOnly */}

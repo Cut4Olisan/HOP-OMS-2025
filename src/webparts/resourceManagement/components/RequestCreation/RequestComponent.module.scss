@@ -1,0 +1,23 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+.requestCard {
+  cursor: pointer;
+  background-color: "[theme: neutralLighterAlt, default: #f8f8f8]";
+  border-left: 5px solid transparent;
+  border-radius: 5px;
+  padding: 1em 2em;
+}
+.requestCard:hover {
+  border-left: 5px solid; // <--- Temafarver virker ikke hvis defineret i border shorthand
+  border-color: "[theme: themePrimary]"; // <--- Derfor denne deklaration (Ingen default value, ellers bruges den)
+}
+
+.cardTitle {
+  font-weight: bold;
+}
+
+/* Top og bund afstand - smides på det midterste element <Persona>
+Gap på requestCard skubbede ikke billedet i <Persona> ordenligt, så derfor dette approach */
+.blockSpacing {
+    margin-block: 8px;
+}

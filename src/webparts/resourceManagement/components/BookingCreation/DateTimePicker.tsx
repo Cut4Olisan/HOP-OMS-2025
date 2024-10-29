@@ -1,22 +1,25 @@
 import * as React from "react";
-import {
-  DateTimePicker,
-  DateConvention,
-  TimeConvention,
-  TimeDisplayControlType,
-} from "@pnp/spfx-controls-react";
-import { DayOfWeek } from "@fluentui/react";
-import {
-  formatDateForDisplay,
-  getFormattedDateTimeOfToday,
-  getFormattedDateTimeOfTomorrow,
-} from "../dateUtils";
+import { DatePicker, DayOfWeek, Stack } from "@fluentui/react";
+import { DanishDatePickerStrings, formatDateForDisplay } from "../dateUtils";
+import TimeField from "./TimeField/TimeField";
+import styles from "./BookingComponent.module.scss";
+
+export interface IDateTimePickerValue {
+  date: Date;
+  startTime: string;
+  endTime: string;
+}
 
 export interface IDateTimeProps {
   label: string;
-  value: Date | undefined;
-  onChange: (date: Date | undefined) => void;
+  value: IDateTimePickerValue;
+  onChange: (value: IDateTimePickerValue) => void;
   disabled?: boolean;
+}
+
+enum ChosenTime {
+  StartTime = "startTime",
+  EndTime = "endTime",
 }
 
 const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
@@ -25,28 +28,60 @@ const DateTimePickerComponent: React.FC<IDateTimeProps> = ({
   onChange,
   disabled = false,
 }) => {
-  const defaultDate =
-    label === "Sluttid"
-      ? getFormattedDateTimeOfTomorrow()
-      : getFormattedDateTimeOfToday();
+  const handleDateChange = (newDate: Date | null | undefined): void => {
+    if (newDate) {
+      onChange({
+        ...value,
+        date: newDate,
+      });
+    }
+  };
+
+  const handleTimeChange = (newTime: string, timeType: ChosenTime): void => {
+    onChange({
+      ...value,
+      [timeType]: newTime,
+    });
+  };
+
+  if (!value) return <></>;
   return (
-    <DateTimePicker
-      label={label}
-      placeholder="Vælg en dato"
-      dateConvention={DateConvention.DateTime}
-      timeConvention={TimeConvention.Hours24}
-      firstDayOfWeek={DayOfWeek.Monday}
-      timeDisplayControlType={TimeDisplayControlType.Dropdown}
-      minutesIncrementStep={5}
-      showMonthPickerAsOverlay
-      showSeconds={false}
-      value={value || defaultDate}
-      formatDate={(date) =>
-        date ? formatDateForDisplay(date.toISOString()) : ""
-      }
-      onChange={disabled ? undefined : onChange}
-      disabled={disabled}
-    />
+    <Stack>
+      <DatePicker
+        label={label}
+        placeholder="Vælg en dato"
+        firstDayOfWeek={DayOfWeek.Monday}
+        value={value.date}
+        strings={DanishDatePickerStrings}
+        formatDate={(date) =>
+          date ? formatDateForDisplay(date.toISOString()) : ""
+        }
+        onSelectDate={disabled ? undefined : handleDateChange}
+        disabled={disabled}
+      />
+      <Stack
+        horizontal
+        tokens={{ childrenGap: 10 }}
+        className={styles.fullWidth}
+      >
+        <TimeField
+          label="Start"
+          name={!!value.startTime ? value.startTime : ""}
+          selectedName={(newTime) =>
+            handleTimeChange(newTime, ChosenTime.StartTime)
+          }
+          isMobile={true}
+        />
+        <TimeField
+          label="Slut"
+          name={!!value.endTime ? value.endTime : ""}
+          selectedName={(newTime) =>
+            handleTimeChange(newTime, ChosenTime.EndTime)
+          }
+          isMobile={true}
+        />
+      </Stack>
+    </Stack>
   );
 };
 

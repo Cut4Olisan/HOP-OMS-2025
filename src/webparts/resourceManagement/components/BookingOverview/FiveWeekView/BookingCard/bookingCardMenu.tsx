@@ -21,10 +21,7 @@ const BookingCardMenu: React.FC<IBookingCardMenuProps> = ({
   } = useGlobal();
 
   const handleDelete = async (): Promise<void> => {
-    const confirmation = window.confirm(
-      "Er du sikker på du vil slette denne booking?"
-    );
-    if (confirmation) {
+    if (window.confirm("Er du sikker på du vil slette denne booking?")) {
       try {
         await BackEndService.Api.registrationsDelete(registration.id ?? 0);
         onBookingDeleted(registration.id ?? 0);

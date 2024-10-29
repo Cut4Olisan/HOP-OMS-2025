@@ -11,7 +11,8 @@ export interface ICustomerProjectsProps {
   onUpdateSelectedCustomer: (customer: CustomerDTO) => void;
   selectedProject: ProjectDTO | undefined;
   onUpdateSelectedProject: (project: ProjectDTO) => void;
-  required: boolean;
+  customerRequired: boolean;
+  projectRequired: boolean;
 }
 
 const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
@@ -21,7 +22,8 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
   onUpdateSelectedCustomer,
   selectedProject,
   onUpdateSelectedProject,
-  required,
+  customerRequired,
+  projectRequired
 }) => {
   const { customers, projects } = useGlobal();
 
@@ -48,7 +50,7 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
         calloutProps={{ doNotLayer: true, className: styles.limitCalloutSize }}
         allowFreeInput
         autoComplete="on"
-        required={required}
+        required={customerRequired}
       />
 
       {selectedCustomer && (
@@ -76,7 +78,7 @@ const CustomerProjects: React.FC<ICustomerProjectsProps> = ({
           }}
           allowFreeInput
           autoComplete="on"
-          required={required}
+          required={projectRequired}
         />
       )}
     </Stack>

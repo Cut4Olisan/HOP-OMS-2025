@@ -1,4 +1,4 @@
-import { DayOfWeek } from "@fluentui/react";
+import { DayOfWeek, IDatePickerStrings } from "@fluentui/react";
 
 export const formatDateForApi = (date: Date): string => {
   const year = date.getFullYear();
@@ -31,18 +31,16 @@ export const formatTime = (time: string): string => {
 };
 
 export const calculateEstimatedHours = (
-  start: Date | undefined,
-  end: Date | undefined
+  start: string | undefined,
+  end: string | undefined
 ): number | undefined | Error => {
   if (!start || !end) return 0;
 
-  // Extract hours and minutes from start and end times
-  const startHours = start.getHours();
-  const startMinutes = start.getMinutes();
-  const endHours = end.getHours();
-  const endMinutes = end.getMinutes();
+  // Split the start and end times into hours and minutes
+  const [startHours, startMinutes] = start.split(":").map(Number);
+  const [endHours, endMinutes] = end.split(":").map(Number);
 
-  // Convert the times to minutes
+  // Convert the times to total minutes
   const startTotalMinutes = startHours * 60 + startMinutes;
   const endTotalMinutes = endHours * 60 + endMinutes;
 
@@ -89,13 +87,15 @@ export const calculateRecurrenceDates = (
   for (let week = 0; week < weeks; week++) {
     selectedDays.forEach((day) => {
       const date = new Date(currentDate);
-      date.setDate(
-        currentDate.getDate() + ((day - currentDate.getDay() + 7) % 7)
-      );
+      const dayOffset = (day - currentDate.getDay() + 7) % 7;
+      date.setDate(currentDate.getDate() + dayOffset);
+
       recurrenceDates.push(new Date(date));
     });
+
     currentDate.setDate(currentDate.getDate() + 7);
   }
+
   return recurrenceDates;
 };
 
@@ -154,4 +154,53 @@ export const getFormattedDateTimeOfTomorrow = (): Date => {
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setMinutes(0, 0, 0);
   return tomorrow;
+};
+
+export const DanishDatePickerStrings: IDatePickerStrings = {
+  months: [
+    "Januar",
+    "Februar",
+    "Marts",
+    "April",
+    "Maj",
+    "Juni",
+    "Juli",
+    "August",
+    "September",
+    "Oktober",
+    "November",
+    "December",
+  ],
+  shortMonths: [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Maj",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Okt",
+    "Nov",
+    "Dec",
+  ],
+  days: [
+    "Søndag",
+    "Mandag",
+    "Tirsdag",
+    "Onsdag",
+    "Torsdag",
+    "Fredag",
+    "Lørdag",
+  ],
+  shortDays: ["S", "M", "T", "O", "T", "F", "L"],
+  goToToday: "Gå til i dag",
+  prevMonthAriaLabel: "Gå til forrige måned",
+  nextMonthAriaLabel: "Gå til næste måned",
+  prevYearAriaLabel: "Gå til forrige år",
+  nextYearAriaLabel: "Gå til næste år",
+  closeButtonAriaLabel: "Luk datovælger",
+  isRequiredErrorMessage: "Dato er påkrævet.",
+  invalidInputErrorMessage: "Ugyldigt datoformat.",
 };

@@ -27,6 +27,7 @@ import {
 import BackEndService from "../../../services/BackEnd";
 import WeekColumn from "./WeekColumn/WeekColumn";
 import { calculateWeeklyHours } from "../HelperFunctions/helperFunctions";
+import GlobalMessageBar from "../../GlobalMessageBar";
 
 interface IFiveWeekViewProps {
   context: WebPartContext;
@@ -34,7 +35,6 @@ interface IFiveWeekViewProps {
 
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const { projects, customers } = useGlobal();
-  const [registrations, setRegistrations] = useState<RegistrationDTO[]>([]);
   const [selectedEmployeeEmails, setSelectedEmployeeEmails] = useState<
     string[]
   >([]);
@@ -51,7 +51,10 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     RegistrationDTO | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const {} = useGlobal();
+  const {
+    registrations,
+    setRegistrations,
+  } = useGlobal();
 
   useEffect(() => {
     const fetchData = async (): Promise<void> => {
@@ -282,6 +285,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               </TooltipHost>
             </div>
           </div>
+          <GlobalMessageBar duration={4}></GlobalMessageBar>
           <div className={styles.gridHeader}>
             {weeksToDisplay.map((week, index) => (
               <div key={index} className={styles.weekHeader}>

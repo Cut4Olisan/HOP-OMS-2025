@@ -1,7 +1,6 @@
 import * as React from "react";
 import styles from "./BookingComponent.module.scss";
 import {
-  Text,
   TextField,
   DefaultButton,
   PrimaryButton,
@@ -9,12 +8,15 @@ import {
   Toggle,
   MessageBar,
   MessageBarType,
+  Persona,
+  PersonaSize,
+  Label,
+  /*   Persona,
+  PersonaSize, */
 } from "@fluentui/react";
 import {
   formatDateForApi,
-  extractTime,
   calculateEstimatedHours,
-  getDatesBetween,
   calculateRecurrenceDates,
 } from "../dateUtils";
 import RecursionPanel from "./RecursionDate";
@@ -31,7 +33,7 @@ import {
   RegistrationDTO,
 } from "../interfaces";
 import useGlobal from "../../hooks/useGlobal";
-import { parseTime } from "../dateUtils";
+// import { parseTime } from "../dateUtils";
 import OurPeoplePicker from "../PeoplePicker";
 
 export interface IComponentFormData {
@@ -39,16 +41,17 @@ export interface IComponentFormData {
   info: string;
   selectedCustomer?: CustomerDTO;
   selectedProject?: ProjectDTO;
-  startDateTime?: Date;
-  endDateTime?: Date;
-  selectedCoworkers: string[];
+  date: Date;
+  startTime: string;
+  endTime: string;
+  selectedCoworker: string;
   isRecurring: boolean;
   recursionData?: IRecursionData;
 }
 
 export interface IBookingComponentProps {
   context: WebPartContext;
-  onFinish: (bookings: unknown[]) => void;
+  onFinish: () => void;
   dismissPanel: () => void;
   registration?: RegistrationDTO;
 }
@@ -59,18 +62,29 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   dismissPanel,
   registration,
 }) => {
-  const { employees } = useGlobal();
+  const { employees, setGlobalSuccess } = useGlobal();
   const { customers, projects, isEditMode } = useGlobal();
   const [formData, setFormData] = React.useState<IComponentFormData>({
     title: "",
     info: "",
     isRecurring: false,
-    selectedCoworkers: [],
+    selectedCoworker: "",
+    date: new Date(),
+    startTime: "",
+    endTime: "",
   });
-
   const [error, setError] = React.useState<string | undefined>();
-  const [success, setSuccess] = React.useState<string | undefined>();
 
+  React.useEffect(() => {
+    if (!registration) return;
+
+    setFormData({
+      ...formData,
+      date: new Date(registration.date || ""),
+      startTime: registration.start || "",
+      endTime: registration.end || "",
+    });
+  }, []);
   React.useEffect(() => {
     if (!registration) return;
 
@@ -80,44 +94,43 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     if (!project || !customer) return;
 
     const datePart = registration.date ?? "".split("T")[0];
-    const { hour: startHour, minute: startMinute } = parseTime(
-      registration.start ?? ""
-    );
-    const { hour: endHour, minute: endMinute } = parseTime(
-      registration.end ?? ""
-    );
+    // const { hour: startHour, minute: startMinute } = parseTime(
+    //   registration.start ?? ""
+    // );
+    // const { hour: endHour, minute: endMinute } = parseTime(
+    //   registration.end ?? ""
+    // );
 
-    const startDateTime = new Date(datePart);
-    startDateTime.setHours(startHour, startMinute, 0, 0);
+    // const startDateTime = new Date(datePart);
+    // startDateTime.setHours(startHour, startMinute, 0, 0);
 
-    const endDateTime = new Date(datePart);
-    endDateTime.setHours(endHour, endMinute, 0, 0);
+    // const endDateTime = new Date(datePart);
+    // endDateTime.setHours(endHour, endMinute, 0, 0);
 
-    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
-      console.error("Invalid date format in registration:", {
-        startDateTimeString: registration.start,
-        endDateTimeString: registration.end,
-      });
-      return; //Exit if we have invalid dates
-    }
+    // if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+    //   console.error("Invalid date format in registration:", {
+    //     startDateTimeString: registration.start,
+    //     endDateTimeString: registration.end,
+    //   });
+    //   return; //Exit if we have invalid dates
+    // }
 
     setFormData({
       title: registration.shortDescription || "",
       info: registration.description || "",
       isRecurring: false,
-      selectedCoworkers: [registration.employee ?? ""],
+      selectedCoworker: registration.employee ?? "",
       selectedCustomer: customer,
       selectedProject: project,
-      startDateTime: startDateTime,
-      endDateTime: endDateTime,
+      date: new Date(datePart),
+      startTime: registration.start || "",
+      endTime: registration.end || "",
     });
   }, [registration, projects, customers]);
 
   React.useEffect(() => {
-    setTimeout(() => setSuccess(undefined), 5000);
-  }, [success]);
-  React.useEffect(() => {
-    setTimeout(() => setError(undefined), 5000);
+    const timer = setTimeout(() => setError(undefined), 5000);
+    return () => clearTimeout(timer);
   }, [error]);
 
   const onSave = async (): Promise<void> => {
@@ -125,23 +138,12 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       return setError("Kunne ikke oprette booking - Titel er påkrævet");
     if (!formData.selectedCustomer)
       return setError("Kunne ikke oprette booking - Manglende kunde");
-    if (!formData.selectedProject)
-      return setError("Kunne ikke oprette booking - Manglende projekt");
-    if (!formData.startDateTime || !formData.endDateTime)
-      return setError("Kunne ikke oprette booking - Manglende datoer");
-    if (!formData.selectedCoworkers || formData.selectedCoworkers.length === 0)
+    if (!formData.date)
+      return setError("Kunne ikke oprette booking - Manglende dato");
+    if (!formData.selectedCoworker || formData.selectedCoworker.length === 0)
       return setError("Kunne ikke oprette booking - Manglende medarbejdere");
 
     let dates: Date[] = [];
-    const dateResult = getDatesBetween(
-      formData.startDateTime,
-      formData.endDateTime
-    );
-    if (dateResult instanceof Error) {
-      console.log(dateResult.message);
-    } else {
-      dates = dateResult;
-    }
 
     if (
       formData.isRecurring &&
@@ -149,84 +151,85 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       formData.recursionData.weeks > 0
     ) {
       const recurrenceDates = calculateRecurrenceDates(
-        formData.startDateTime,
+        formData.date,
         formData.recursionData.days,
         formData.recursionData.weeks
       );
-      dates = [...dates, ...recurrenceDates];
+      dates = [ ...recurrenceDates];
     }
 
-    const startTime = extractTime(formData.startDateTime);
-    const endTime = extractTime(formData.endDateTime);
     const estimatedHours = calculateEstimatedHours(
-      formData.startDateTime,
-      formData.endDateTime
+      formData.startTime,
+      formData.endTime
     );
 
     if (dates === undefined || estimatedHours === undefined) {
-      return setError("Kunne ikke oprette booking - Ugyldige datoer");
+      return setError("Kunne ikke oprette booking - Ugyldig dato");
     }
 
     if (estimatedHours instanceof Error) {
       return setError(estimatedHours.message);
     }
 
-    const registrations = formData.selectedCoworkers.flatMap((coworker) =>
-      dates.map((date) => {
-        const registrationData: IRegistrationData = {
-          projectId: formData.selectedProject?.id,
-          shortDescription: formData.title,
-          description: formData.info,
-          date: formatDateForApi(date),
-          start: startTime,
-          end: endTime,
-          time: estimatedHours,
-          employee: coworker,
-          registrationType: 2, // Booking
-        };
+    const recurring = dates.map((date) => {
+      const registrationData: IRegistrationData = {
+        projectId: formData.selectedProject?.id,
+        shortDescription: formData.title,
+        description: formData.info,
+        date: formatDateForApi(date),
+        start: formData.startTime,
+        end: formData.endTime,
+        time: estimatedHours,
+        employee: formData.selectedCoworker,
+        registrationType: 2, // Booking
+      };
 
-        return registrationData;
-      })
-    );
+      return registrationData;
+    });
+    const single: IRegistrationData = {
+      projectId: formData.selectedProject?.id,
+      shortDescription: formData.title,
+      description: formData.info,
+      date: formatDateForApi(formData.date),
+      start: formData.startTime,
+      end: formData.endTime,
+      time: estimatedHours,
+      employee: formData.selectedCoworker,
+      registrationType: 2, // Booking
+    };
 
     //Check if we are in edit mode or create mode
     if (isEditMode && registration) {
       //Update existing booking
       try {
-        const updatePromises = registrations.map(async (r) => {
-          const updateData: EditRegistrationRequestDTO = {
-            shortDescription: r.shortDescription,
-            description: r.description,
-            projectId: r.projectId,
-            date: r.date,
-            start: r.start,
-            end: r.end,
-            time: r.time,
-            registrationType: r.registrationType,
-          };
+        const updateData: EditRegistrationRequestDTO = {
+          shortDescription: formData.title,
+          description: formData.info,
+          projectId: formData.selectedProject?.id,
+          date: formatDateForApi(formData.date),
+          start: formData.startTime,
+          end: formData.endTime,
+          registrationType: 2,
+        };
 
-          return await BackEndService.Api.registrationsUpdate(
-            registration.id ?? 0,
-            updateData
-          );
-        });
-
-        await Promise.all(updatePromises);
-        setSuccess("Booking opdateret!");
-        return onFinish([]);
+        await BackEndService.Api.registrationsUpdate(
+          registration.id ?? 0,
+          updateData
+        );
+        setGlobalSuccess("Booking opdateret!");
+        return onFinish();
       } catch (error) {
-        setError("Kunne ikke opdatere booking.");
+        return setError("Kunne ikke opdatere booking.");
       }
     } else {
       //Create new booking
       try {
-        const createPromises = registrations.map(async (r) => {
+        await Promise.all([...recurring, single].map(async (r) => {
           return await BackEndService.Api.registrationsCreate(r);
-        });
+        }));
 
-        await Promise.all(createPromises);
-        setSuccess("Booking oprettet!");
-        return onFinish([]);
+        setGlobalSuccess("Booking oprettet!");
+        return onFinish();
       } catch (error) {
         setError("Kunne ikke oprette booking.");
       }
@@ -236,19 +239,10 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   return (
     <>
       <Stack className={styles.componentBody}>
-        {success && (
-          <MessageBar messageBarType={MessageBarType.success}>
-            {success}
-          </MessageBar>
-        )}
         {error && (
           <MessageBar messageBarType={MessageBarType.error}>{error}</MessageBar>
         )}
         <Stack tokens={{ childrenGap: 15 }}>
-          <Text variant={"xxLargePlus"} className={styles.headingMargin}>
-            {isEditMode ? "Redigere booking" : "Opret booking"}
-          </Text>
-
           <TextField
             label="Titel"
             placeholder="Titel"
@@ -274,52 +268,86 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             onUpdateSelectedProject={(project) =>
               setFormData({ ...formData, selectedProject: project })
             }
-            required={true}
+            customerRequired={true}
+            projectRequired={false}
           />
 
           <DateTimePickerComponent
-            label="Starttid"
-            value={formData.startDateTime}
-            onChange={(d) => setFormData({ ...formData, startDateTime: d })}
-          />
-
-          <DateTimePickerComponent
-            label="Sluttid"
-            value={formData.endDateTime}
-            onChange={(d) => setFormData({ ...formData, endDateTime: d })}
-          />
-
-          <Toggle
-            label="Skal denne booking gentages ugentligt?"
-            checked={formData.isRecurring}
-            onChange={(e, checked) =>
-              setFormData({ ...formData, isRecurring: !!checked })
+            label="Dato"
+            value={{
+              date: formData.date,
+              endTime: formData.endTime,
+              startTime: formData.startTime,
+            }}
+            onChange={(d) =>
+              setFormData({
+                ...formData,
+                date: d.date,
+                startTime: d.startTime,
+                endTime: d.endTime,
+              })
             }
           />
-          {formData.isRecurring && (
-            <RecursionPanel
-              onRecursionChange={(d, w) =>
-                setFormData({
-                  ...formData,
-                  recursionData: { days: d, weeks: w },
-                })
-              }
-            />
+
+          {!isEditMode && (
+            <>
+              <Toggle
+                label="Gentag booking"
+                checked={formData.isRecurring}
+                onChange={(e, checked) =>
+                  setFormData({ ...formData, isRecurring: !!checked })
+                }
+              />
+              {formData.isRecurring && (
+                <RecursionPanel
+                  onRecursionChange={(d, w) =>
+                    setFormData({
+                      ...formData,
+                      recursionData: { days: d, weeks: w },
+                    })
+                  }
+                />
+              )}
+            </>
           )}
 
-          <OurPeoplePicker
-            employees={employees}
-            onChange={(employee) => {
-              employee
-                ? setFormData({
-                    ...formData,
-                    selectedCoworkers: employee.email ? [employee.email] : [],
-                  })
-                : setFormData({ ...formData, selectedCoworkers: [] });
-            }}
-            label="Vælg medarbejder"
-            placeholder="Vælg medarbejder"
-          />
+          {!isEditMode ? (
+            <OurPeoplePicker
+              employees={employees}
+              onChange={(employee) => {
+                employee
+                  ? setFormData({
+                      ...formData,
+                      selectedCoworker: employee.email ? employee.email : "",
+                    })
+                  : setFormData({ ...formData, selectedCoworker: "" });
+              }}
+              label="Vælg medarbejder"
+              placeholder="Vælg medarbejder"
+              context={context}
+            />
+          ) : (
+            (() => {
+              const employee = employees.find(
+                (e) =>
+                  e.email?.toLowerCase() ===
+                  registration?.employee?.toLowerCase()
+              );
+              console.log(employee);
+              if (!employee) return undefined;
+              return (
+                <>
+                  <Label style={{ fontWeight: 600 }}>Medarbejder</Label>
+                  <Persona
+                    text={`${employee.givenName} ${employee.surName}`}
+                    secondaryText={employee.email as string | undefined}
+                    size={PersonaSize.size32}
+                    imageUrl={`${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${employee.email}`}
+                  />
+                </>
+              );
+            })()
+          )}
 
           <TextField
             label="Booking information"

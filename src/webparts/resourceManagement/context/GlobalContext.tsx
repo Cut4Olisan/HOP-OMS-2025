@@ -43,6 +43,8 @@ export interface IGlobalContext {
   setIsDraggingGlobal: React.Dispatch<boolean>;
   employees: EmployeeDTO[];
   setEmployees: React.Dispatch<EmployeeDTO[]>;
+  registrations: RegistrationDTO[];
+  setRegistrations: React.Dispatch<RegistrationDTO[]>; 
 }
 
 export const GlobalContext = React.createContext<IGlobalContext | undefined>(
@@ -78,6 +80,7 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
     React.useState<boolean>(false);
   const [isDraggingGlobal, setIsDraggingGlobal] =
     React.useState<boolean>(false);
+  const [registrations, setRegistrations] = React.useState<RegistrationDTO[]>([]);
 
   React.useEffect(() => {
     (async () => {
@@ -126,6 +129,8 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setIsDraggingGlobal,
           employees,
           setEmployees,
+          registrations,
+          setRegistrations,
         }}
       >
         <>{children}</>

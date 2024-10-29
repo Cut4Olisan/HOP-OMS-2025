@@ -37,7 +37,7 @@ interface IFiveWeekViewProps {
 
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
   const { projects, customers } = useGlobal();
-  const [registrations, setRegistrations] = useState<RegistrationDTO[]>([]);
+  // const [registrations, setRegistrations] = useState<RegistrationDTO[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string[]>([]);
   const [clearSelection, setClearSelection] = useState<boolean>(false);
   const [selectedCustomer, setSelectedCustomer] = useState<
@@ -54,6 +54,8 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     setShowBookingComponentPanel,
     setSelectedRegistration,
     setIsEditMode,
+    registrations,
+    setRegistrations,
   } = useGlobal();
 
   useEffect(() => {

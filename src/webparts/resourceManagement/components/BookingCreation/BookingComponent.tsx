@@ -8,6 +8,11 @@ import {
   Toggle,
   MessageBar,
   MessageBarType,
+  Persona,
+  PersonaSize,
+  Label,
+  /*   Persona,
+  PersonaSize, */
 } from "@fluentui/react";
 import {
   formatDateForApi,
@@ -39,14 +44,14 @@ export interface IComponentFormData {
   date: Date;
   startTime: string;
   endTime: string;
-  selectedCoworkers: string[];
+  selectedCoworker: string;
   isRecurring: boolean;
   recursionData?: IRecursionData;
 }
 
 export interface IBookingComponentProps {
   context: WebPartContext;
-  onFinish: (bookings: unknown[]) => void;
+  onFinish: () => void;
   dismissPanel: () => void;
   registration?: RegistrationDTO;
 }
@@ -57,13 +62,13 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   dismissPanel,
   registration,
 }) => {
-  const { employees, setShowBookingComponentPanel } = useGlobal();
+  const { employees } = useGlobal();
   const { customers, projects, isEditMode } = useGlobal();
   const [formData, setFormData] = React.useState<IComponentFormData>({
     title: "",
     info: "",
     isRecurring: false,
-    selectedCoworkers: [],
+    selectedCoworker: "",
     date: new Date(),
     startTime: "",
     endTime: "",
@@ -115,7 +120,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       title: registration.shortDescription || "",
       info: registration.description || "",
       isRecurring: false,
-      selectedCoworkers: [registration.employee ?? ""],
+      selectedCoworker: registration.employee ?? "",
       selectedCustomer: customer,
       selectedProject: project,
       date: new Date(datePart),
@@ -151,19 +156,10 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       return setError("Kunne ikke oprette booking - Manglende kunde");
     if (!formData.date)
       return setError("Kunne ikke oprette booking - Manglende dato");
-    if (!formData.selectedCoworkers || formData.selectedCoworkers.length === 0)
+    if (!formData.selectedCoworker || formData.selectedCoworker.length === 0)
       return setError("Kunne ikke oprette booking - Manglende medarbejdere");
 
     let dates: Date[] = [];
-    // const dateResult = getDatesBetween(
-    //   formData.startDateTime,
-    //   formData.endDateTime
-    // );
-    // if (dateResult instanceof Error) {
-    //   console.log(dateResult.message);
-    // } else {
-    //   dates = dateResult;
-    // }
 
     if (
       formData.isRecurring &&
@@ -175,7 +171,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
         formData.recursionData.days,
         formData.recursionData.weeks
       );
-      dates = [...dates, ...recurrenceDates];
+      dates = [ ...recurrenceDates];
     }
 
     const estimatedHours = calculateEstimatedHours(
@@ -191,68 +187,65 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
       return setError(estimatedHours.message);
     }
 
-    const registrations = formData.selectedCoworkers.flatMap((coworker) =>
-      dates.map((date) => {
-        const registrationData: IRegistrationData = {
-          projectId: formData.selectedProject?.id,
-          shortDescription: formData.title,
-          description: formData.info,
-          date: formatDateForApi(date),
-          start: formData.startTime,
-          end: formData.endTime,
-          time: estimatedHours,
-          employee: coworker,
-          registrationType: 2, // Booking
-        };
+    const recurring = dates.map((date) => {
+      const registrationData: IRegistrationData = {
+        projectId: formData.selectedProject?.id,
+        shortDescription: formData.title,
+        description: formData.info,
+        date: formatDateForApi(date),
+        start: formData.startTime,
+        end: formData.endTime,
+        time: estimatedHours,
+        employee: formData.selectedCoworker,
+        registrationType: 2, // Booking
+      };
 
-        return registrationData;
-      })
-    );
+      return registrationData;
+    });
+    const single: IRegistrationData = {
+      projectId: formData.selectedProject?.id,
+      shortDescription: formData.title,
+      description: formData.info,
+      date: formatDateForApi(formData.date),
+      start: formData.startTime,
+      end: formData.endTime,
+      time: estimatedHours,
+      employee: formData.selectedCoworker,
+      registrationType: 2, // Booking
+    };
 
     //Check if we are in edit mode or create mode
     if (isEditMode && registration) {
       //Update existing booking
       try {
-        const updatePromises = registrations.map(async (r) => {
-          const updateData: EditRegistrationRequestDTO = {
-            shortDescription: r.shortDescription,
-            description: r.description,
-            projectId: r.projectId,
-            date: r.date,
-            start: r.start,
-            end: r.end,
-            time: r.time,
-            registrationType: r.registrationType,
-          };
+        const updateData: EditRegistrationRequestDTO = {
+          shortDescription: formData.title,
+          description: formData.info,
+          projectId: formData.selectedProject?.id,
+          date: formatDateForApi(formData.date),
+          start: formData.startTime,
+          end: formData.endTime,
+          registrationType: 2,
+        };
 
-          return await BackEndService.Api.registrationsUpdate(
-            registration.id ?? 0,
-            updateData
-          );
-        });
-
-        await Promise.all(updatePromises);
+        await BackEndService.Api.registrationsUpdate(
+          registration.id ?? 0,
+          updateData
+        );
         setSuccess("Booking opdateret!");
-        setTimeout(() => {
-          setShowBookingComponentPanel(false)
-        }, 2000);
-        return onFinish([]);
+        return onFinish();
       } catch (error) {
         return setError("Kunne ikke opdatere booking.");
       }
     } else {
       //Create new booking
       try {
-        const createPromises = registrations.map(async (r) => {
+        await Promise.all([...recurring, single].map(async (r) => {
           return await BackEndService.Api.registrationsCreate(r);
-        });
+        }));
 
-        await Promise.all(createPromises);
         setSuccess("Booking oprettet!");
-        setTimeout(() => {
-          setShowBookingComponentPanel(false)
-        }, 2000);
-        return onFinish([]);
+        return onFinish();
       } catch (error) {
         setError("Kunne ikke oprette booking.");
       }
@@ -317,38 +310,65 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
             }
           />
 
-          <Toggle
-            label="Gentag booking"
-            checked={formData.isRecurring}
-            onChange={(e, checked) =>
-              setFormData({ ...formData, isRecurring: !!checked })
-            }
-          />
-          {formData.isRecurring && (
-            <RecursionPanel
-              onRecursionChange={(d, w) =>
-                setFormData({
-                  ...formData,
-                  recursionData: { days: d, weeks: w },
-                })
-              }
-            />
+          {!isEditMode && (
+            <>
+              <Toggle
+                label="Gentag booking"
+                checked={formData.isRecurring}
+                onChange={(e, checked) =>
+                  setFormData({ ...formData, isRecurring: !!checked })
+                }
+              />
+              {formData.isRecurring && (
+                <RecursionPanel
+                  onRecursionChange={(d, w) =>
+                    setFormData({
+                      ...formData,
+                      recursionData: { days: d, weeks: w },
+                    })
+                  }
+                />
+              )}
+            </>
           )}
 
-          <OurPeoplePicker
-            employees={employees}
-            onChange={(employee) => {
-              employee
-                ? setFormData({
-                    ...formData,
-                    selectedCoworkers: employee.email ? [employee.email] : [],
-                  })
-                : setFormData({ ...formData, selectedCoworkers: [] });
-            }}
-            label="Vælg medarbejder"
-            placeholder="Vælg medarbejder"
-            context={context}
-          />
+          {!isEditMode ? (
+            <OurPeoplePicker
+              employees={employees}
+              onChange={(employee) => {
+                employee
+                  ? setFormData({
+                      ...formData,
+                      selectedCoworker: employee.email ? employee.email : "",
+                    })
+                  : setFormData({ ...formData, selectedCoworker: "" });
+              }}
+              label="Vælg medarbejder"
+              placeholder="Vælg medarbejder"
+              context={context}
+            />
+          ) : (
+            (() => {
+              const employee = employees.find(
+                (e) =>
+                  e.email?.toLowerCase() ===
+                  registration?.employee?.toLowerCase()
+              );
+              console.log(employee);
+              if (!employee) return undefined;
+              return (
+                <>
+                  <Label style={{ fontWeight: 600 }}>Medarbejder</Label>
+                  <Persona
+                    text={`${employee.givenName} ${employee.surName}`}
+                    secondaryText={employee.email as string | undefined}
+                    size={PersonaSize.size32}
+                    imageUrl={`${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${employee.email}`}
+                  />
+                </>
+              );
+            })()
+          )}
 
           <TextField
             label="Booking information"

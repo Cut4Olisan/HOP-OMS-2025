@@ -45,7 +45,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
   onDismiss,
   request,
 }) => {
-  const { employees, customers, projects } = useGlobal();
+  const { employees, customers, projects, setGlobalSuccess } = useGlobal();
   const [formData, setFormData] = React.useState<IRequestComponentFormData>({
     title: "",
     info: "",
@@ -56,7 +56,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
   });
   const [error, setError] = React.useState<string | undefined>();
   const [warning, setWarning] = React.useState<string | undefined>();
-  const [success, setSuccess] = React.useState<string | undefined>();
   const [hasChanges, setHasChanges] = React.useState<boolean>(false);
   const [initialState, setInitialState] = React.useState<string>(
     JSON.stringify(formData)
@@ -100,7 +99,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
 
   const clearMessageBar = (): void => {
     setError(undefined);
-    setSuccess(undefined);
+    setGlobalSuccess(undefined);
     setWarning(undefined);
   };
 
@@ -119,9 +118,9 @@ const RequestComponent: React.FC<IRequestProps> = ({
       });
       setWarning(undefined);
       if (hasSufficientInformation) {
-        setSuccess("Anmodning oprettet!");
+        setGlobalSuccess("Anmodning oprettet!");
       } else {
-        setSuccess(
+        setGlobalSuccess(
           "Anmodning oprettet med manglende information. En kladde er gemt."
         );
       }
@@ -193,7 +192,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
         request.id,
         acceptRequestData
       );
-      setSuccess("Anmodning bekræftet!");
+      setGlobalSuccess("Anmodning bekræftet!");
       console.warn("Anmodning bekræftet:", acceptRequestData);
     } catch (error) {
       console.error("Fejl ved bekræftelse af anmodning:", error);
@@ -209,7 +208,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
     if (confirm("Er du sikker på du vil afvise denne anmodning?")) {
       try {
         await BackEndService.Api.requestsRejectPartialUpdate(request.id);
-        setSuccess("Anmodning afvist!");
+        setGlobalSuccess("Anmodning afvist!");
         console.warn("Anmodning afvist", request);
       } catch (error) {
         console.error("Fejl ved afvisning af anmodning:", error);
@@ -234,7 +233,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
       });
 
       setWarning(undefined);
-      setSuccess("Anmodning opdateret!");
+      setGlobalSuccess("Anmodning opdateret!");
       const updatedRequest = await result.json();
       onFinish(updatedRequest as IRequestCreateDTO);
     } catch (error) {
@@ -253,11 +252,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
 
   return (
     <Stack tokens={{ childrenGap: 15 }}>
-      {success && (
-        <MessageBar messageBarType={MessageBarType.success}>
-          {success}
-        </MessageBar>
-      )}
       {/* Warning bruges kun i creation mode til at informere om manglende information */}
       {warning && isCreationMode && (
         <MessageBar messageBarType={MessageBarType.warning}>

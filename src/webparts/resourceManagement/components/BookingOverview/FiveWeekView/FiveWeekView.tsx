@@ -30,6 +30,7 @@ import {
 import BackEndService from "../../../services/BackEnd";
 import WeekColumn from "./WeekColumn/WeekColumn";
 import { calculateWeeklyHours } from "../HelperFunctions/helperFunctions";
+import GlobalMessageBar from "../../GlobalMessageBar";
 
 interface IFiveWeekViewProps {
   context: WebPartContext;
@@ -295,6 +296,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               </TooltipHost>
             </div>
           </div>
+          <GlobalMessageBar duration={4}></GlobalMessageBar>
           <div className={styles.gridHeader}>
             {weeksToDisplay.map((week, index) => (
               <div key={index} className={styles.weekHeader}>

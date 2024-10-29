@@ -62,7 +62,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   dismissPanel,
   registration,
 }) => {
-  const { employees } = useGlobal();
+  const { employees, setGlobalSuccess } = useGlobal();
   const { customers, projects, isEditMode } = useGlobal();
   const [formData, setFormData] = React.useState<IComponentFormData>({
     title: "",
@@ -74,7 +74,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     endTime: "",
   });
   const [error, setError] = React.useState<string | undefined>();
-  const [success, setSuccess] = React.useState<string | undefined>();
 
   React.useEffect(() => {
     if (!registration) return;
@@ -141,10 +140,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   }, [registration, projects, customers]);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setSuccess(undefined), 5000);
-    return () => clearTimeout(timer);
-  }, [success]);
-  React.useEffect(() => {
     const timer = setTimeout(() => setError(undefined), 5000);
     return () => clearTimeout(timer);
   }, [error]);
@@ -180,7 +175,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     );
 
     if (dates === undefined || estimatedHours === undefined) {
-      return setError("Kunne ikke oprette booking - Ugyldige datoer");
+      return setError("Kunne ikke oprette booking - Ugyldig dato");
     }
 
     if (estimatedHours instanceof Error) {
@@ -232,7 +227,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           registration.id ?? 0,
           updateData
         );
-        setSuccess("Booking opdateret!");
+        setGlobalSuccess("Booking opdateret!");
         return onFinish();
       } catch (error) {
         return setError("Kunne ikke opdatere booking.");
@@ -244,7 +239,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           return await BackEndService.Api.registrationsCreate(r);
         }));
 
-        setSuccess("Booking oprettet!");
+        setGlobalSuccess("Booking oprettet!");
         return onFinish();
       } catch (error) {
         setError("Kunne ikke oprette booking.");
@@ -255,11 +250,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   return (
     <>
       <Stack className={styles.componentBody}>
-        {success && (
-          <MessageBar messageBarType={MessageBarType.success}>
-            {success}
-          </MessageBar>
-        )}
         {error && (
           <MessageBar messageBarType={MessageBarType.error}>{error}</MessageBar>
         )}

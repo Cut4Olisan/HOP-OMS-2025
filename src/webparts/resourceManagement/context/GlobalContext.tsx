@@ -44,7 +44,17 @@ export interface IGlobalContext {
   employees: EmployeeDTO[];
   setEmployees: React.Dispatch<EmployeeDTO[]>;
   registrations: RegistrationDTO[];
-  setRegistrations: React.Dispatch<RegistrationDTO[]>; 
+  setRegistrations: React.Dispatch<RegistrationDTO[]>;
+
+  ///*** State for messagebar user feedback ***///
+  globalInfo: string | undefined;
+  setGlobalInfo: React.Dispatch<string | undefined>;
+  globalError: string | undefined;
+  setGlobalError: React.Dispatch<string | undefined>;
+  globalWarning: string | undefined;
+  setGlobalWarning: React.Dispatch<string | undefined>;
+  globalSuccess: string | undefined;
+  setGlobalSuccess: React.Dispatch<string | undefined>;
 }
 
 export const GlobalContext = React.createContext<IGlobalContext | undefined>(
@@ -80,7 +90,13 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
     React.useState<boolean>(false);
   const [isDraggingGlobal, setIsDraggingGlobal] =
     React.useState<boolean>(false);
-  const [registrations, setRegistrations] = React.useState<RegistrationDTO[]>([]);
+  const [registrations, setRegistrations] = React.useState<RegistrationDTO[]>(
+    []
+  );
+  const [globalInfo, setGlobalInfo] = React.useState<string | undefined>();
+  const [globalError, setGlobalError] = React.useState<string | undefined>();
+  const [globalWarning, setGlobalWarning] = React.useState<string | undefined>();
+  const [globalSuccess, setGlobalSuccess] = React.useState<string | undefined>();
 
   React.useEffect(() => {
     (async () => {
@@ -131,6 +147,14 @@ const GlobalContextProvider: React.FC<React.PropsWithChildren<{}>> = ({
           setEmployees,
           registrations,
           setRegistrations,
+          globalInfo,
+          setGlobalInfo,
+          globalError,
+          setGlobalError,
+          globalWarning,
+          setGlobalWarning,
+          globalSuccess,
+          setGlobalSuccess,
         }}
       >
         <>{children}</>

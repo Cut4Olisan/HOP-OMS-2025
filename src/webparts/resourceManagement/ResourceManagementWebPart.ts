@@ -13,6 +13,7 @@ import ResourceManagement, {
   IResourceManagementProps,
 } from "./components/ResourceManagement";
 import BackEndService from "./services/BackEnd";
+import ConfigService from "./services/ConfigService";
 
 export interface IResourceManagementWebPartProps {
   description: string;
@@ -23,20 +24,26 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
   private _environmentMessage: string = "";
 
   public render(): void {
-    const element: React.ReactElement<IResourceManagementProps> = React.createElement(
-      ResourceManagement,
-      {
+    const element: React.ReactElement<IResourceManagementProps> =
+      React.createElement(ResourceManagement, {
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
-        context: this.context
-      }
-    );
+        context: this.context,
+      });
 
     ReactDom.render(element, this.domElement);
   }
 
-  protected onInit(): Promise<void> {
-    BackEndService.Init("https://ngage-financial.azurewebsites.net/");
+  protected async onInit(): Promise<void> {
+    const config = await ConfigService.GetConfig(this.context);
+
+    const backendEndpoint = config.find(
+      (c) => c.key === "timemanagement_backend"
+    )?.value;
+    if (!backendEndpoint) throw new Error("Failed to fetch backend endpoint");
+
+    BackEndService.Init(backendEndpoint);
+    
     return this._getEnvironmentMessage().then((message) => {
       this._environmentMessage = message;
     });

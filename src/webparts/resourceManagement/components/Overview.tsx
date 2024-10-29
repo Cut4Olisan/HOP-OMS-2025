@@ -97,13 +97,13 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
         <WeeklyView
           employeeId={currentEmployee?.email ?? ""}
           employeeName={
-            `${currentEmployee?.givenName} ${currentEmployee?.surName}` ?? ""
+            `${currentEmployee?.givenName} ${currentEmployee?.surName}`
           }
           weekNumber={getWeekNumber(new Date()).toString()}
           weekBookings={registrations}
           onBack={() => setCurrentView(ViewMode.Overview)}
-          onPreviousWeek={() => {}}
-          onNextWeek={() => {}}
+          onPreviousWeek={() => undefined}
+          onNextWeek={() => undefined}
           projects={[]}
           customers={[]}
         />

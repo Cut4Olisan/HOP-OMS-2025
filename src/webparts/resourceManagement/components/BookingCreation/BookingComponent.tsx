@@ -35,6 +35,7 @@ import {
 import useGlobal from "../../hooks/useGlobal";
 // import { parseTime } from "../dateUtils";
 import OurPeoplePicker from "../PeoplePicker";
+import { NotificationType } from "../../context/GlobalContext";
 
 export interface IComponentFormData {
   title: string;
@@ -62,7 +63,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
   dismissPanel,
   registration,
 }) => {
-  const { employees, setGlobalSuccess } = useGlobal();
+  const { employees, notifications, setNotifications } = useGlobal();
   const { customers, projects, isEditMode } = useGlobal();
   const [formData, setFormData] = React.useState<IComponentFormData>({
     title: "",
@@ -155,7 +156,7 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
         formData.recursionData.days,
         formData.recursionData.weeks
       );
-      dates = [ ...recurrenceDates];
+      dates = [...recurrenceDates];
     }
 
     const estimatedHours = calculateEstimatedHours(
@@ -216,7 +217,13 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
           registration.id ?? 0,
           updateData
         );
-        setGlobalSuccess("Booking opdateret!");
+        setNotifications([
+          ...notifications,
+          {
+            type: NotificationType.Success,
+            message: "Booking opdateret!",
+          },
+        ]);
         return onFinish();
       } catch (error) {
         return setError("Kunne ikke opdatere booking.");
@@ -224,11 +231,18 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     } else {
       //Create new booking
       try {
-        await Promise.all([...recurring, single].map(async (r) => {
-          return await BackEndService.Api.registrationsCreate(r);
-        }));
-
-        setGlobalSuccess("Booking oprettet!");
+        await Promise.all(
+          [...recurring, single].map(async (r) => {
+            return await BackEndService.Api.registrationsCreate(r);
+          })
+        );
+        setNotifications([
+          ...notifications,
+          {
+            type: NotificationType.Success,
+            message: "Booking oprettet!",
+          },
+        ]);
         return onFinish();
       } catch (error) {
         setError("Kunne ikke oprette booking.");

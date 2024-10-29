@@ -47,7 +47,7 @@ const TimeSlot: React.FC<{
     }),
   });
 
-  const handleDragLeave = () => {
+  const handleDragLeave = (): void => {
     setIsHovered(false); // Reset hover state when the drag leaves
   };
 

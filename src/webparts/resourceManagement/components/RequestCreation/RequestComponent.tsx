@@ -25,6 +25,7 @@ import {
 import CustomerProjects from "../BookingCreation/CustomerAndProjects/CustomerProjects";
 import OurPeoplePicker from "../PeoplePicker";
 import useGlobal from "../../hooks/useGlobal";
+import { NotificationType } from "../../context/GlobalContext";
 
 export interface IRequestComponentFormData {
   title: string;
@@ -45,7 +46,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
   onDismiss,
   request,
 }) => {
-  const { employees, customers, projects, setGlobalSuccess } = useGlobal();
+  const { employees, customers, projects, notifications, setNotifications } =
+    useGlobal();
   const [formData, setFormData] = React.useState<IRequestComponentFormData>({
     title: "",
     info: "",
@@ -99,7 +101,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
 
   const clearMessageBar = (): void => {
     setError(undefined);
-    setGlobalSuccess(undefined);
+    setNotifications([]);
     setWarning(undefined);
   };
 
@@ -118,11 +120,22 @@ const RequestComponent: React.FC<IRequestProps> = ({
       });
       setWarning(undefined);
       if (hasSufficientInformation) {
-        setGlobalSuccess("Anmodning oprettet!");
+        setNotifications([
+          ...notifications,
+          {
+            type: NotificationType.Success,
+            message: "Anmodning oprettet",
+          },
+        ]);
       } else {
-        setGlobalSuccess(
-          "Anmodning oprettet med manglende information. En kladde er gemt."
-        );
+        setNotifications([
+          ...notifications,
+          {
+            type: NotificationType.Success,
+            message:
+              "Anmodning oprettet med manglende information. En kladde er gemt.",
+          },
+        ]);
       }
       const r = await result.json();
       console.log(r);
@@ -192,7 +205,13 @@ const RequestComponent: React.FC<IRequestProps> = ({
         request.id,
         acceptRequestData
       );
-      setGlobalSuccess("Anmodning bekræftet!");
+      setNotifications([
+        ...notifications,
+        {
+          type: NotificationType.Success,
+          message: "Anmodning bekræftet!",
+        },
+      ]);
       console.warn("Anmodning bekræftet:", acceptRequestData);
     } catch (error) {
       console.error("Fejl ved bekræftelse af anmodning:", error);
@@ -208,7 +227,14 @@ const RequestComponent: React.FC<IRequestProps> = ({
     if (confirm("Er du sikker på du vil afvise denne anmodning?")) {
       try {
         await BackEndService.Api.requestsRejectPartialUpdate(request.id);
-        setGlobalSuccess("Anmodning afvist!");
+
+        setNotifications([
+          ...notifications,
+          {
+            type: NotificationType.Success,
+            message: "Anmodning afvist",
+          },
+        ]);
         console.warn("Anmodning afvist", request);
       } catch (error) {
         console.error("Fejl ved afvisning af anmodning:", error);
@@ -233,7 +259,14 @@ const RequestComponent: React.FC<IRequestProps> = ({
       });
 
       setWarning(undefined);
-      setGlobalSuccess("Anmodning opdateret!");
+
+      setNotifications([
+        ...notifications,
+        {
+          type: NotificationType.Success,
+          message: "Anmodning opdateret",
+        },
+      ]);
       const updatedRequest = await result.json();
       onFinish(updatedRequest as IRequestCreateDTO);
     } catch (error) {

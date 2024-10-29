@@ -1,7 +1,7 @@
 import { Api } from "../components/interfaces";
 
 export default class BackEndService {
-  private static _instance: Api<any> | null = null;
+  private static _instance: Api<{}>;
 
   public static Init(baseUrl: string): void {
     if (!this._instance) {

@@ -15,6 +15,18 @@ export enum ViewMode {
   Capacity = "Capacity",
 }
 
+export enum NotificationType {
+  Success,
+  Info,
+  Warning,
+  Error,
+}
+
+export interface INotification {
+  type: NotificationType;
+  message: string;
+}
+
 export interface IGlobalContext {
   ///***      Panel controls      ***///
   showBookingComponentPanel: boolean;
@@ -63,14 +75,18 @@ export interface IGlobalContext {
   setRegistrations: React.Dispatch<RegistrationDTO[]>;
 
   ///*** State for messagebar user feedback ***///
-  globalInfo: string | undefined;
+/*   globalInfo: string | undefined;
   setGlobalInfo: React.Dispatch<string | undefined>;
   globalError: string | undefined;
   setGlobalError: React.Dispatch<string | undefined>;
   globalWarning: string | undefined;
   setGlobalWarning: React.Dispatch<string | undefined>;
   globalSuccess: string | undefined;
-  setGlobalSuccess: React.Dispatch<string | undefined>;
+  setGlobalSuccess: React.Dispatch<string | undefined>; */
+
+  // Erstat 4x state med dette
+  notifications: INotification[];
+  setNotifications: React.Dispatch<INotification[]>;
 }
 
 export const GlobalContext = React.createContext<IGlobalContext | undefined>(
@@ -115,29 +131,46 @@ const GlobalContextProvider: React.FC<
   const [registrations, setRegistrations] = React.useState<RegistrationDTO[]>(
     []
   );
-  const [globalInfo, setGlobalInfo] = React.useState<string | undefined>();
+
+  ///// erstat
+/*   const [globalInfo, setGlobalInfo] = React.useState<string | undefined>();
   const [globalError, setGlobalError] = React.useState<string | undefined>();
-  const [globalWarning, setGlobalWarning] = React.useState<string | undefined>();
-  const [globalSuccess, setGlobalSuccess] = React.useState<string | undefined>();
+  const [globalWarning, setGlobalWarning] = React.useState<
+    string | undefined
+  >();
+  const [globalSuccess, setGlobalSuccess] = React.useState<
+    string | undefined
+  >(); */
+
+  const [notifications, setNotifications] = React.useState<INotification[]>([]);
 
   React.useEffect(() => {
     (async () => {
       try {
         setLoading(true);
 
-        const [customersResponse, projectsResponse, employeesResponse] =
-          await Promise.all([
-            BackEndService.Api.customersList(),
-            BackEndService.Api.projectsList(),
-            BackEndService.Api.employeeList(),
-          ]);
+        const [
+          customersResponse,
+          projectsResponse,
+          employeesResponse,
+          registrationsResponse,
+        ] = await Promise.all([
+          BackEndService.Api.customersList(),
+          BackEndService.Api.projectsList(),
+          BackEndService.Api.employeeList(),
+          BackEndService.Api.registrationsTypeDetail(2),
+        ]);
         const customers = customersResponse.data;
         const projects = projectsResponse.data;
         const employees = employeesResponse.data;
+        const registrations = registrationsResponse.data;
 
         setCustomers(customers);
         setProjects(projects);
         setEmployees(employees);
+        setRegistrations(registrations);
+
+        setLoading(false)
 
         const currentUserEmail = context.pageContext.user.email;
 
@@ -164,10 +197,8 @@ const GlobalContextProvider: React.FC<
         setCurrentEmployee(foundEmployee);
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
       }
-    })();
+    })().catch((e) => console.log(e));
   }, [context]);
 
   /*    For actual use after testing
@@ -228,14 +259,17 @@ const GlobalContextProvider: React.FC<
           setCurrentEmployee,
           registrations,
           setRegistrations,
-          globalInfo,
+/*           globalInfo,
           setGlobalInfo,
           globalError,
           setGlobalError,
           globalWarning,
           setGlobalWarning,
           globalSuccess,
-          setGlobalSuccess,
+          setGlobalSuccess, */
+
+          notifications,
+          setNotifications,
         }}
       >
         <>{children}</>

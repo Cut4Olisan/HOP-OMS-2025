@@ -27,14 +27,14 @@ import {
 import BackEndService from "../../../services/BackEnd";
 import WeekColumn from "./WeekColumn/WeekColumn";
 import { calculateWeeklyHours } from "../HelperFunctions/helperFunctions";
-import GlobalMessageBar from "../../GlobalMessageBar";
+import Notifications from "../../Notifications";
 
 interface IFiveWeekViewProps {
   context: WebPartContext;
 }
 
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
-  const { projects, customers } = useGlobal();
+  const { projects, customers, notifications, setNotifications } = useGlobal();
   const [selectedEmployeeEmails, setSelectedEmployeeEmails] = useState<
     string[]
   >([]);
@@ -51,24 +51,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     RegistrationDTO | undefined
   >(undefined);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const {
-    registrations,
-    setRegistrations,
-  } = useGlobal();
-
-  useEffect(() => {
-    const fetchData = async (): Promise<void> => {
-      try {
-        const response = await BackEndService.Api.registrationsTypeDetail(2);
-        const fetchedRegistrations = response.data;
-        setRegistrations(fetchedRegistrations);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    void fetchData();
-  }, []);
+  const { registrations, setRegistrations } = useGlobal();
 
   useEffect(() => {
     if (clearSelection) {
@@ -97,7 +80,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
     setCurrentDate(newDate);
   };
 
-  const handleEmployeeSelectionChange = (employees: EmployeeDTO[]) => {
+  const handleEmployeeSelectionChange = (employees: EmployeeDTO[]): void => {
     setSelectedEmployees(employees);
     setSelectedEmployeeEmails(employees.map((emp) => emp.email ?? ""));
   };
@@ -285,7 +268,12 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               </TooltipHost>
             </div>
           </div>
-          <GlobalMessageBar duration={4}></GlobalMessageBar>
+          <Notifications
+            notifications={notifications}
+            onDismiss={(notif) =>
+              setNotifications(notifications.filter((n) => n !== notif))
+            }
+          />
           <div className={styles.gridHeader}>
             {weeksToDisplay.map((week, index) => (
               <div key={index} className={styles.weekHeader}>

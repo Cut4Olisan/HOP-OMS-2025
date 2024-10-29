@@ -1,4 +1,4 @@
-import * as React from "react";
+/* import * as React from "react";
 import { Stack, MessageBar, MessageBarType } from "@fluentui/react";
 import useGlobal from "../hooks/useGlobal";
 
@@ -57,7 +57,7 @@ const GlobalMessageBar: React.FC<IGlobalMessageBar> = ({
   ];
 
   //we convert property values to milliseconds for the timeout duration
-  const getDuration = (specificDuration?: number) =>
+  const getDuration = (specificDuration?: number): number =>
     (specificDuration || duration) * 1000;
 
   React.useEffect(() => {
@@ -99,3 +99,4 @@ const GlobalMessageBar: React.FC<IGlobalMessageBar> = ({
 };
 
 export default GlobalMessageBar;
+ */

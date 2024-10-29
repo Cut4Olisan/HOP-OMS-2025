@@ -6,7 +6,7 @@ import { Divider } from "@fluentui/react-components";
 import { Persona, PersonaSize } from "@fluentui/react/lib/Persona";
 import { RegistrationDTO } from "../../../interfaces";
 import styles from "./BookingCard.module.scss";
-import BookingCardMenu from "./BookingCardMenu";
+import BookingCardMenu from "./bookingCardMenu";
 import useGlobal from "../../../../hooks/useGlobal";
 
 const ItemType = "BOOKING"; // For drag and drop functionality

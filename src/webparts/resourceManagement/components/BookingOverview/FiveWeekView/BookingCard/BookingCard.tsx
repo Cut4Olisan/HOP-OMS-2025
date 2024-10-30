@@ -64,14 +64,22 @@ const BookingCard: React.FC<{
         />
       </div>
       <Divider />
-      <div>
-        <Persona
-          text={`${employee?.givenName ?? ""} ${employee?.surName ?? ""}`}
-          secondaryText={`${employee?.givenName ?? ""} ${employee?.surName ?? ""}`}
-          imageUrl={personaImageUrl}
-          size={PersonaSize.size32}
-          onClick={() => onEmployeeClick(booking)}
-        />
+      <div className={styles.employeeInfo}>
+        {employee ? (
+          <Persona
+            text={`${employee.givenName ?? ""} ${employee.surName ?? ""}`}
+            imageUrl={personaImageUrl}
+            size={PersonaSize.size32}
+            onClick={() => onEmployeeClick(booking)}
+          />
+        ) : (
+          <Persona
+            text="Ingen medarbejder tilkoblet"
+            showUnknownPersonaCoin
+            size={PersonaSize.size32}
+            onClick={() => onEmployeeClick(booking)}
+          />
+        )}
       </div>
 
       <div className={styles.customerAndProjectName}>

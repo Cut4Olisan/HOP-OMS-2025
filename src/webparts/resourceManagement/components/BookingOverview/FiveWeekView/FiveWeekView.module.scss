@@ -10,7 +10,14 @@
   font-weight: bold;
   border-right: 1px solid;
   border-bottom: 1px solid;
-  background-color: "[theme: themeLight, default: #c7e0f4]";
+  border-color: $ms-color-themeLight;
+  &:first-child {
+    border-left: none;
+  }
+
+  &:last-child {
+    border-right: none;
+  }
 }
 
 .teamsContext {
@@ -27,7 +34,6 @@
   display: flex;
   padding: 20px;
   flex-direction: column;
-  //border-bottom: 1px solid;
 }
 
 .controlsContainer {
@@ -52,19 +58,26 @@
 .gridHeader {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  //background-color: var(--colorBrandBackground2);
   padding-top: 10px;
   text-align: center;
   font-weight: bold;
   position: sticky;
   top: 0;
+
+  & > .weekHeader:first-child {
+    border-left: none;
+  }
+
+  & > .weekHeader:last-child {
+    border-right: none;
+  }
 }
 
 .weekGrid {
   display: grid;
   grid-template-columns: repeat(5, 1fr); /* 5 equal columns for weeks */
-  gap: 0; /* No gap between weeks */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  gap: 0;
+  overflow-x: hidden;
 }
 
 .limitCalloutSize {
@@ -75,7 +88,7 @@
 
 .iconWrapper {
   display: inline-block;
-  cursor: pointer; /* Change cursor to pointer */
+  cursor: pointer;
   transition:
     transform 0.3s ease,
     color 0.3s ease;
@@ -83,11 +96,10 @@
   width: 32px;
 
   &:hover {
-    /* Hover effect */
-    transform: scale(1.1); /* Slightly scale up the icon */
+    transform: scale(1.1);
   }
 }
-//styles for bookingCardMenu
+
 .TitelAndEditIcon {
   display: flex;
   justify-content: space-between;
@@ -98,8 +110,6 @@
   display: flex;
   justify-content: flex-end;
 }
-
-//style for peoplepickercomponent
 
 .peoplePickerContainer {
   display: flex;

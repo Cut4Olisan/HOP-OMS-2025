@@ -86,3 +86,21 @@ export const calculateWeeklyHours = (
   }, 0);
   return totalHours;
 };
+
+///***       Helper for burndownrate        ***///
+
+export const calculateBurndownRate = (
+  registrations: RegistrationDTO[]
+): number => {
+  // Sample calculation logic for burndown rate
+  const totalPlannedHours = 100; // Placeholder value
+  const actualSpentHours = registrations.reduce(
+    (sum, reg) => sum + (reg.time ?? 0),
+    0
+  );
+  const percentageRemaining =
+    ((totalPlannedHours - actualSpentHours) / totalPlannedHours) * 100;
+  return Math.max(0, Math.min(100, percentageRemaining));
+};
+
+///***       Helper for burndownrate         ***///

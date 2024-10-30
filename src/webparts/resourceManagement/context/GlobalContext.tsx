@@ -13,6 +13,7 @@ export enum ViewMode {
   Overview = "Overview",
   MyWeek = "MyWeek",
   Capacity = "Capacity",
+  BurnDown = "BurnDown",
 }
 
 export enum NotificationType {
@@ -75,7 +76,7 @@ export interface IGlobalContext {
   setRegistrations: React.Dispatch<RegistrationDTO[]>;
 
   ///*** State for messagebar user feedback ***///
-/*   globalInfo: string | undefined;
+  /*   globalInfo: string | undefined;
   setGlobalInfo: React.Dispatch<string | undefined>;
   globalError: string | undefined;
   setGlobalError: React.Dispatch<string | undefined>;
@@ -133,7 +134,7 @@ const GlobalContextProvider: React.FC<
   );
 
   ///// erstat
-/*   const [globalInfo, setGlobalInfo] = React.useState<string | undefined>();
+  /*   const [globalInfo, setGlobalInfo] = React.useState<string | undefined>();
   const [globalError, setGlobalError] = React.useState<string | undefined>();
   const [globalWarning, setGlobalWarning] = React.useState<
     string | undefined
@@ -170,7 +171,7 @@ const GlobalContextProvider: React.FC<
         setEmployees(employees);
         setRegistrations(registrations);
 
-        setLoading(false)
+        setLoading(false);
 
         const currentUserEmail = context.pageContext.user.email;
 
@@ -259,7 +260,7 @@ const GlobalContextProvider: React.FC<
           setCurrentEmployee,
           registrations,
           setRegistrations,
-/*           globalInfo,
+          /*           globalInfo,
           setGlobalInfo,
           globalError,
           setGlobalError,

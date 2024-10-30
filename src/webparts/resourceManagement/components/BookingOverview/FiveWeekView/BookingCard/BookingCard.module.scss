@@ -1,3 +1,5 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
 .bookingCard {
   display: flex;
   flex-direction: column;
@@ -6,8 +8,9 @@
   border-radius: 4px;
   margin-bottom: 10px;
   border: 1px solid;
+  border-color: $ms-color-neutralLight;
   gap: 10px;
-  background-color: "[theme: themeLighter, default: #deecf9]";
+  //background-color: "[theme: neutralLighter, default: #f3f2f1]";
 }
 
 .TitelAndEditIcon {
@@ -37,6 +40,7 @@
 }
 
 .employeeInfo {
+  cursor: pointer;
   display: flex;
   align-items: center;
   margin-top: 8px;

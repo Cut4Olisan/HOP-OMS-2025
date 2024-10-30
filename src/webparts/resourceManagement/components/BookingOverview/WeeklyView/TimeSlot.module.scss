@@ -4,8 +4,6 @@
   display: flex;
   height: 15px; /* Each time slot is 15 minutes */
   position: relative;
-  //background-color: #f9f9f9;
-  border-right: 1px solid;
   overflow: visible;
 }
 
@@ -13,7 +11,6 @@
   position: absolute;
   left: 0;
   right: 0;
-  background-color: "[theme: themeLighter, default: #deecf9]";
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -23,11 +20,13 @@
   overflow: hidden;
   z-index: 1;
   border: 1px solid;
+  border-color: $ms-color-neutralQuaternary;
+  background-color: $ms-color-neutralLighter;
 }
 
 .bookingContent {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: flex-start;
   flex-direction: column;
   margin: 5px;
@@ -36,26 +35,38 @@
 
 .bookingTitle {
   font-weight: bold;
-  font-size: 1.4em;
-  margin-bottom: 4px;
+  overflow-wrap: anywhere;
 }
 
-.bookingEmployee,
-.bookingProject,
-.bookingDescription,
-.bookingDate,
 .bookingTime {
-  font-size: 0.9em;
-  margin-bottom: 2px;
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  margin: 2px;
 }
 
 .TitelAndEditIcon {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+}
+
+.employeeInfo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.customerAndProjectName {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  width: 100%;
+  overflow-wrap: break-word;
 }
 
 .hoveredTimeSlot {
-  background-color: #e0f7fa; /* Light blue background for hover effect */
-  border: 1px solid #0288d1; /* Blue border to indicate hover */
+  border: 1px solid;
+  border-color: $ms-color-themeLight;
 }

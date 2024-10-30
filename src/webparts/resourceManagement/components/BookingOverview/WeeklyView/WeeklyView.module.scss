@@ -41,19 +41,19 @@
 .gridHeader {
   display: grid;
   grid-template-columns: 100px repeat(5, 1fr);
-  border-left: 1px solid;
-  border-right: 1px solid;
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: "[theme: themeLight, default: #c7e0f4]";
+  //border-right: 1px solid;
+  border-bottom: 1px solid;
+  border-color: $ms-color-themeLight;
 }
 
 .timeHeader {
   position: sticky;
   top: 0;
   z-index: 1;
-  border-right: 1px solid;
+  //border-right: 1px solid;
 }
 
 .dayHeader {
@@ -65,8 +65,15 @@
   padding: 10px;
   font-weight: bold;
   z-index: 2;
-  border-right: 1px solid;
-  border-bottom: 1px solid;
+  border-left: 1px solid;
+  border-color: $ms-color-themeLight;
+  &:first-child {
+    border-left: none;
+  }
+
+  &:last-child {
+    border-right: none;
+  }
 }
 
 .gridRow {
@@ -74,25 +81,32 @@
 }
 
 .timeColumn {
+  max-height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 60px; /* 4 time slots (15px each) = 1 hour */
+  height: 56px; /* 4 time slots (15px each) = 1 hour - 14px when accounting borders */
   border-bottom: 1px solid;
+  border-color: $ms-color-neutralLight;
 }
-
 .dayColumn {
   display: flex;
   flex-direction: column;
-  border-right: 1px solid;
+  max-height: 56px;
+  border-left: 1px solid $ms-color-neutralLighterAlt;
   position: relative;
-  background-color: "[theme: themeLighterAlt, default: #eff6fc]";
+
+  & > div {
+    height: 14px;
+    border-bottom: 1px solid $ms-color-neutralLight;
+  }
 }
 
 .hourRow {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid;
+  border-color: $ms-color-neutralLight;
   height: 60px; /* 4 time slots (15px each) = 1 hour */
 }
 

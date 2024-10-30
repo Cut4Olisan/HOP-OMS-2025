@@ -3,9 +3,9 @@ import { useDrop, useDrag } from "react-dnd";
 import { parseTime } from "../../dateUtils";
 import BookingCardMenu from "../FiveWeekView/BookingCard/bookingCardMenu";
 import { getBookingDate } from "../HelperFunctions/helperFunctions";
+import { Divider } from "@fluentui/react-components";
 import styles from "./TimeSlot.module.scss";
 import { Text, TooltipHost } from "@fluentui/react";
-import { formatEmployeeName } from "../HelperFunctions/helperFunctions";
 import useGlobal from "../../../hooks/useGlobal";
 import { RegistrationDTO } from "../../interfaces";
 
@@ -102,8 +102,8 @@ const TimeSlot: React.FC<{
             ref={drag}
             className={styles.booking}
             style={{
-              top: `${minutePercentage}%`, // Using minute percentage to position the booking
-              height: `${span * 15}px`, // Booking spans based on its duration
+              top: `${minutePercentage}%`,
+              height: `${span * 15}px`,
               left: 0,
               right: 0,
               position: "absolute",
@@ -111,9 +111,11 @@ const TimeSlot: React.FC<{
           >
             <div className={styles.bookingContent}>
               <div className={styles.TitelAndEditIcon}>
-                <Text className={styles.bookingTitle}>
-                  {booking.shortDescription}
-                </Text>
+                <div>
+                  <Text className={styles.bookingTitle}>
+                    {booking.shortDescription}
+                  </Text>
+                </div>
                 <BookingCardMenu
                   registration={booking}
                   onBookingDeleted={(deletedBookingId) => {
@@ -125,15 +127,21 @@ const TimeSlot: React.FC<{
                   }}
                 />
               </div>
-              <Text className={styles.bookingEmployee}>
-                {formatEmployeeName}
-              </Text>
-              <Text
-                className={styles.bookingProject}
-              >{`Customer: ${customerName}`}</Text>
-              <Text
-                className={styles.bookingProject}
-              >{`Project: ${projectName}`}</Text>
+              <Divider></Divider>
+              <div className={styles.employeeInfo}>
+                {/* Implement employee info component or text */}
+              </div>
+              <div className={styles.customerAndProjectName}>
+                <Text variant="large">
+                  <strong>Kunde: </strong> {customerName}
+                </Text>
+                <Text variant="large">
+                  <strong>Projekt: </strong> {projectName}
+                </Text>
+                <Text variant="large">
+                  <strong>Beskrivelse: </strong> {booking.description}
+                </Text>
+              </div>
               <Text className={styles.bookingTime}>{bookingTime}</Text>
             </div>
           </div>

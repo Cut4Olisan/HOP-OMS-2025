@@ -4,7 +4,7 @@ import useGlobal from "../hooks/useGlobal";
 import BookingComponent from "./BookingCreation/BookingComponent";
 import RequestComponent from "./RequestCreation/RequestComponent";
 import RequestList from "./RequestCreation/RequestList";
-import BurnDownRate from "./BookingOverview/ProjectBurnDownRate/BurnDownRate/BurnDownRate";
+//import BurnDownRate from "./BookingOverview/ProjectBurnDownRate/BurnDownRate/BurnDownRate";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { FormMode } from "./RequestCreation/interfaces/IRequestComponentProps";
 import BackEndService from "../services/BackEnd";
@@ -17,8 +17,8 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
     setShowRequestPanel,
     showRequestListPanel,
     setShowRequestListPanel,
-    showBurnDownPanel,
-    setShowBurnDownPanel,
+    //showBurnDownPanel,
+    //setShowBurnDownPanel,
     selectedRegistration,
     setShowRequestComponentPanel,
     showRequestComponentPanel,
@@ -76,13 +76,6 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
         <RequestList context={context} />
       </Panel>
 
-      <Panel
-        type={PanelType.medium}
-        isOpen={showBurnDownPanel}
-        onDismiss={() => setShowBurnDownPanel(false)}
-      >
-        <BurnDownRate />
-      </Panel>
       <Panel
         type={PanelType.medium}
         isOpen={showRequestComponentPanel}

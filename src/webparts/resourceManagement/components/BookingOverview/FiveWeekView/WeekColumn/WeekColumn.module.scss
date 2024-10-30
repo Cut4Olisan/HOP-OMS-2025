@@ -1,7 +1,8 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
 .weekColumn {
   display: flex;
   flex-direction: column;
-  background-color: "[theme: themeLighterAlt, default: #eff6fc]";
   padding: 10px;
   max-height: 800px;
   overflow-y: auto;

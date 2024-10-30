@@ -7,12 +7,12 @@ import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent
 import Panels from "./PanelsComponent";
 import WeeklyView from "./BookingOverview/WeeklyView/WeeklyView";
 import { getWeekNumber } from "./dateUtils";
+import BurnDownRate from "./BookingOverview/ProjectBurnDownRate/BurnDownRate/BurnDownRate";
 
 const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
   const {
     setShowRequestPanel,
     setShowRequestListPanel,
-    setShowBurnDownPanel,
     setShowBookingComponentPanel,
     setCurrentView,
     currentView,
@@ -50,7 +50,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       key: "Burndown",
       text: "Burndown-rate - WIP",
       iconProps: { iconName: "AreaChart" },
-      onClick: () => setShowBurnDownPanel(true),
+      onClick: () => setCurrentView(ViewMode.BurnDown),
     },
     {
       key: "Requests",
@@ -96,9 +96,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       {currentView === ViewMode.MyWeek && (
         <WeeklyView
           employeeId={currentEmployee?.email ?? ""}
-          employeeName={
-            `${currentEmployee?.givenName} ${currentEmployee?.surName}`
-          }
+          employeeName={`${currentEmployee?.givenName} ${currentEmployee?.surName}`}
           weekNumber={getWeekNumber(new Date()).toString()}
           weekBookings={registrations}
           onBack={() => setCurrentView(ViewMode.Overview)}
@@ -106,6 +104,13 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
           onNextWeek={() => undefined}
           projects={[]}
           customers={[]}
+        />
+      )}
+
+      {currentView === ViewMode.BurnDown && (
+        <BurnDownRate
+          context={context}
+          onBack={() => setCurrentView(ViewMode.Overview)}
         />
       )}
 

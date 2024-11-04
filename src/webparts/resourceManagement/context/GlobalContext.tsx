@@ -66,10 +66,6 @@ export interface IGlobalContext {
   setProjects: React.Dispatch<ProjectDTO[]>;
   loading: boolean;
   setLoading: React.Dispatch<boolean>;
-  isDraggingBooking: boolean;
-  setIsDraggingBooking: React.Dispatch<boolean>;
-  isDraggingGlobal: boolean;
-  setIsDraggingGlobal: React.Dispatch<boolean>;
   employees: EmployeeDTO[];
   setEmployees: React.Dispatch<EmployeeDTO[]>;
   registrations: RegistrationDTO[];
@@ -125,10 +121,6 @@ const GlobalContextProvider: React.FC<
   const [isEditMode, setIsEditMode] = React.useState<boolean>(false);
   const [employees, setEmployees] = React.useState<EmployeeDTO[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
-  const [isDraggingBooking, setIsDraggingBooking] =
-    React.useState<boolean>(false);
-  const [isDraggingGlobal, setIsDraggingGlobal] =
-    React.useState<boolean>(false);
   const [registrations, setRegistrations] = React.useState<RegistrationDTO[]>(
     []
   );
@@ -250,10 +242,6 @@ const GlobalContextProvider: React.FC<
           setIsEditMode,
           loading,
           setLoading,
-          isDraggingBooking,
-          setIsDraggingBooking,
-          isDraggingGlobal,
-          setIsDraggingGlobal,
           employees,
           setEmployees,
           currentEmployee,

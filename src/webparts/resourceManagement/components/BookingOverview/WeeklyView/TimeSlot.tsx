@@ -6,7 +6,6 @@ import { getBookingDate } from "../HelperFunctions/helperFunctions";
 import { Divider } from "@fluentui/react-components";
 import styles from "./TimeSlot.module.scss";
 import { Text, TooltipHost } from "@fluentui/react";
-import useGlobal from "../../../hooks/useGlobal";
 import { CustomerDTO, ProjectDTO, RegistrationDTO } from "../../interfaces";
 
 const ItemType = "BOOKING"; // Draggable item type
@@ -31,7 +30,8 @@ const TimeSlot: React.FC<{
   customers,
 }) => {
   const [isHovered, setIsHovered] = React.useState(false);
-  const { setIsDraggingBooking, isDraggingGlobal } = useGlobal();
+  const [, setIsDraggingBooking] = React.useState<boolean>(false);
+  const [isDragging] = React.useState<boolean>(false);
 
   const [, drop] = useDrop({
     accept: ItemType,
@@ -86,7 +86,7 @@ const TimeSlot: React.FC<{
     <TooltipHost
       content={`Start time: ${timeSlotId}, Date: ${new Date(date).toLocaleDateString("da-DK")}`}
       delay={0}
-      hidden={!isDraggingGlobal}
+      hidden={!isDragging}
     >
       <div
         ref={drop}

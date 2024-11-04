@@ -7,7 +7,7 @@ import { Divider } from "@fluentui/react-components";
 import styles from "./TimeSlot.module.scss";
 import { Text, TooltipHost } from "@fluentui/react";
 import useGlobal from "../../../hooks/useGlobal";
-import { RegistrationDTO } from "../../interfaces";
+import { CustomerDTO, ProjectDTO, RegistrationDTO } from "../../interfaces";
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -18,8 +18,8 @@ const TimeSlot: React.FC<{
   onDrop: (booking: RegistrationDTO, newDate: string, newStart: string) => void;
   span: number;
   topOffset: number;
-  projects: any[];
-  customers: any[];
+  projects: ProjectDTO[];
+  customers: CustomerDTO[];
 }> = ({
   timeSlotId,
   date,

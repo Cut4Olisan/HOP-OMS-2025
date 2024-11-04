@@ -4,7 +4,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { Text, PrimaryButton } from "@fluentui/react";
 import { ArrowLeftRegular, ArrowRightRegular } from "@fluentui/react-icons";
 import styles from "./WeeklyView.module.scss";
-import { RegistrationDTO } from "../../interfaces";
+import { CustomerDTO, ProjectDTO, RegistrationDTO } from "../../interfaces";
 import BackEndService from "../../../services/BackEnd";
 import { getWeekNumber } from "../../dateUtils";
 import { Button } from "@fluentui/react-components";
@@ -25,8 +25,8 @@ interface WeeklyViewProps {
   onBack: () => void;
   onPreviousWeek: () => void;
   onNextWeek: () => void;
-  projects: any[];
-  customers: any[];
+  projects: ProjectDTO[];
+  customers: CustomerDTO[];
 }
 
 const WeeklyView: React.FC<WeeklyViewProps> = ({

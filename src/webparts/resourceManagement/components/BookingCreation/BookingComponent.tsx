@@ -95,26 +95,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
     if (!project || !customer) return;
 
     const datePart = registration.date ?? "".split("T")[0];
-    // const { hour: startHour, minute: startMinute } = parseTime(
-    //   registration.start ?? ""
-    // );
-    // const { hour: endHour, minute: endMinute } = parseTime(
-    //   registration.end ?? ""
-    // );
-
-    // const startDateTime = new Date(datePart);
-    // startDateTime.setHours(startHour, startMinute, 0, 0);
-
-    // const endDateTime = new Date(datePart);
-    // endDateTime.setHours(endHour, endMinute, 0, 0);
-
-    // if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
-    //   console.error("Invalid date format in registration:", {
-    //     startDateTimeString: registration.start,
-    //     endDateTimeString: registration.end,
-    //   });
-    //   return; //Exit if we have invalid dates
-    // }
 
     setFormData({
       title: registration.shortDescription || "",
@@ -347,7 +327,6 @@ const BookingComponent: React.FC<IBookingComponentProps> = ({
                   e.email?.toLowerCase() ===
                   registration?.employee?.toLowerCase()
               );
-              console.log(employee);
               if (!employee) return undefined;
               return (
                 <>

@@ -37,7 +37,10 @@ const BookingCard: React.FC<{
     return null;
   }
 
-  const employee = employees.find((emp) => emp.email === booking.employee);
+  const employee = employees.find(
+    (emp) => emp.email?.toLowerCase() === booking.employee?.toLowerCase()
+  );
+  
   const personaImageUrl = `${window.location.origin}/_layouts/15/userphoto.aspx?size=M&accountname=${employee?.email}`;
 
   const [, setRegistrations] = useState<RegistrationDTO[]>([]);
@@ -72,14 +75,7 @@ const BookingCard: React.FC<{
             size={PersonaSize.size32}
             onClick={() => onEmployeeClick(booking)}
           />
-        ) : (
-          <Persona
-            text="Ingen medarbejder tilkoblet"
-            showUnknownPersonaCoin
-            size={PersonaSize.size32}
-            onClick={() => onEmployeeClick(booking)}
-          />
-        )}
+        ) : undefined}
       </div>
 
       <div className={styles.customerAndProjectName}>

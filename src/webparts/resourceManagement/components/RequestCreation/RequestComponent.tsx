@@ -72,9 +72,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
     formData.date;
 
   React.useEffect(() => {
-    console.log(formData);
-  }, [formData]);
-  React.useEffect(() => {
     if (JSON.stringify(formData) !== initialState) {
       return setHasChanges(true);
     }
@@ -109,8 +106,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
     if (!formData.title) return setError("Titel er påkrævet");
     if (!formData.selectedCustomer) return setError("Kunde er påkrævet");
 
-    console.log("registration", completeBooking);
-    console.log("requestDTO:", requestDTO);
     try {
       const result = await BackEndService.Api.requestsCreate({
         createRegistrationRequestDTO: { ...completeBooking },

@@ -6,7 +6,7 @@ export interface IRecursionProps {
   onRecursionChange: (days: DayOfWeek[], weeks: number) => void;
 }
 
-const SUFFIX = ' uger';
+const SUFFIX = " uger";
 const MIN = 0;
 const MAX = 52;
 
@@ -48,7 +48,6 @@ const RecursionPanel: React.FC<IRecursionProps> = ({ onRecursionChange }) => {
   React.useEffect(() => {
     if (!weeks || !selectedDays.length) return;
     onRecursionChange(selectedDays, weeks);
-    console.log(selectedDays, weeks)
   }, [weeks, selectedDays]);
 
   return (

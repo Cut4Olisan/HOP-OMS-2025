@@ -19,7 +19,9 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
   );
 
   React.useEffect(() => {
-    const fetchRegistrationDetail = async (registrationId: number):Promise<void> => {
+    const fetchRegistrationDetail = async (
+      registrationId: number
+    ): Promise<void> => {
       try {
         const response = await BackEndService.Api.registrationsTypeDetail(5);
         const registration = response.data.find(
@@ -52,8 +54,7 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
       }
     };
 
-
-    fetchRequests().catch((e) => console.error(e))
+    fetchRequests().catch((e) => console.error(e));
   }, []);
 
   return (
@@ -68,7 +69,9 @@ const RequestList: React.FC<IRequestListProps> = ({ context }) => {
           }}
           className={styles.requestCard}
         >
-          <Text block className={styles.cardTitle}>{req.title}</Text>
+          <Text block className={styles.cardTitle}>
+            {req.title}
+          </Text>
           {/* Finder "employee" og viser dem i en Persona komponent */}
           {req.registrationId && registrations[req.registrationId] ? (
             <Persona

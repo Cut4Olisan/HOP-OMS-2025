@@ -61,27 +61,13 @@ export interface IGlobalContext {
   selectedRequest: RequestsDTO | undefined;
   setSelectedRequest: React.Dispatch<RequestsDTO | undefined>;
   customers: CustomerDTO[];
-  setCustomers: React.Dispatch<CustomerDTO[]>;
   projects: ProjectDTO[];
-  setProjects: React.Dispatch<ProjectDTO[]>;
   loading: boolean;
   setLoading: React.Dispatch<boolean>;
   employees: EmployeeDTO[];
-  setEmployees: React.Dispatch<EmployeeDTO[]>;
   registrations: RegistrationDTO[];
   setRegistrations: React.Dispatch<RegistrationDTO[]>;
 
-  ///*** State for messagebar user feedback ***///
-  /*   globalInfo: string | undefined;
-  setGlobalInfo: React.Dispatch<string | undefined>;
-  globalError: string | undefined;
-  setGlobalError: React.Dispatch<string | undefined>;
-  globalWarning: string | undefined;
-  setGlobalWarning: React.Dispatch<string | undefined>;
-  globalSuccess: string | undefined;
-  setGlobalSuccess: React.Dispatch<string | undefined>; */
-
-  // Erstat 4x state med dette
   notifications: INotification[];
   setNotifications: React.Dispatch<INotification[]>;
 }
@@ -125,16 +111,6 @@ const GlobalContextProvider: React.FC<
     []
   );
 
-  ///// erstat
-  /*   const [globalInfo, setGlobalInfo] = React.useState<string | undefined>();
-  const [globalError, setGlobalError] = React.useState<string | undefined>();
-  const [globalWarning, setGlobalWarning] = React.useState<
-    string | undefined
-  >();
-  const [globalSuccess, setGlobalSuccess] = React.useState<
-    string | undefined
-  >(); */
-
   const [notifications, setNotifications] = React.useState<INotification[]>([]);
 
   React.useEffect(() => {
@@ -171,36 +147,6 @@ const GlobalContextProvider: React.FC<
           (emp) => emp.email === currentUserEmail
         );
 
-        // Fallback mechanism for dev account - temporary for testing
-        if (
-          !foundEmployee &&
-          currentUserEmail === "oliver.sund@dev4ngage.onmicrosoft.com"
-        ) {
-          foundEmployee = {
-            id: -1,
-            email: "oliver.sund@dev4ngage.onmicrosoft.com",
-            givenName: "Oliver",
-            surName: "Sund",
-            allocatable: true,
-          } as EmployeeDTO;
-
-          setEmployees([]);
-        }
-
-        setCurrentEmployee(foundEmployee);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    })().catch((e) => console.log(e));
-  }, [context]);
-
-  /*    For actual use after testing
-       
-       const foundEmployee = employees.find(
-          (emp) => emp.email === currentUserEmail
-        );
-
-        
         if (foundEmployee) {
           setCurrentEmployee(foundEmployee);
         }
@@ -210,7 +156,7 @@ const GlobalContextProvider: React.FC<
         setLoading(false);
       }
     })();
-  }, [context]);*/
+  }, [context]);
 
   if (loading) return <>Loading</>;
 
@@ -235,27 +181,16 @@ const GlobalContextProvider: React.FC<
           selectedRequest,
           setSelectedRequest,
           customers,
-          setCustomers,
           projects,
-          setProjects,
           isEditMode,
           setIsEditMode,
           loading,
           setLoading,
           employees,
-          setEmployees,
           currentEmployee,
           setCurrentEmployee,
           registrations,
           setRegistrations,
-          /*           globalInfo,
-          setGlobalInfo,
-          globalError,
-          setGlobalError,
-          globalWarning,
-          setGlobalWarning,
-          globalSuccess,
-          setGlobalSuccess, */
 
           notifications,
           setNotifications,

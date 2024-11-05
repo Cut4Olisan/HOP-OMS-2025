@@ -168,7 +168,6 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     };
 
     try {
-      console.log("Sending booking update to backend:", updatedBooking);
       await BackEndService.Api.registrationsUpdate(
         movedBooking.id ?? 0,
         updatedBooking
@@ -182,8 +181,6 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
             : b
         )
       );
-
-      console.log("Booking updated!");
     } catch (error) {
       console.error("Error updating booking:", error);
     }

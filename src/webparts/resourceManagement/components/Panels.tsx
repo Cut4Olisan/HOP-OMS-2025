@@ -8,8 +8,7 @@ import {
   RegistrationPanelState,
   RequestsPanelState,
 } from "../context/GlobalContext";
-import { FormMode } from "./interfaces/IRequestComponentProps";
-import RequestForm from "./forms/RequestForm";
+import RequestForm, { FormMode } from "./forms/RequestForm";
 import BackEndService from "../services/BackEnd";
 
 const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
@@ -23,12 +22,15 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
     showRequestListPanel,
     setShowRequestListPanel,
 
+    setRequests,
+
     setRegistrations,
   } = useGlobal();
 
   return (
     <Stack>
       <Panel
+        isLightDismiss
         type={PanelType.medium}
         isOpen={bookingPanelState.state !== RegistrationPanelState.Hidden}
         onDismiss={() =>
@@ -66,6 +68,7 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
       </Panel>
 
       <Panel
+        isLightDismiss
         type={PanelType.medium}
         isOpen={requestsPanelState.state !== RequestsPanelState.Hidden}
         onDismiss={() =>
@@ -85,8 +88,21 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
           <RequestForm
             context={context}
             mode={FormMode.CreateRequest}
-            onFinish={() => undefined}
+            onFinish={async () =>
+              setRequests((await BackEndService.Api.requestsList()).data)
+            }
+            onAccept={async () =>
+              setRegistrations(
+                (await BackEndService.Api.registrationsTypeDetail(2)).data
+              )
+            }
             onDismiss={() =>
+              setRequestsPanelState({
+                state: RequestsPanelState.Hidden,
+                data: undefined,
+              })
+            }
+            onReject={() =>
               setRequestsPanelState({
                 state: RequestsPanelState.Hidden,
                 data: undefined,
@@ -98,8 +114,21 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
           <RequestForm
             context={context}
             mode={FormMode.ConfirmRequest}
-            onFinish={() => undefined}
             onDismiss={() =>
+              setRequestsPanelState({
+                state: RequestsPanelState.Hidden,
+                data: undefined,
+              })
+            }
+            onFinish={async () =>
+              setRequests((await BackEndService.Api.requestsList()).data)
+            }
+            onAccept={async () =>
+              setRegistrations(
+                (await BackEndService.Api.registrationsTypeDetail(2)).data
+              )
+            }
+            onReject={() =>
               setRequestsPanelState({
                 state: RequestsPanelState.Hidden,
                 data: undefined,
@@ -111,6 +140,7 @@ const Panels: React.FC<{ context: WebPartContext }> = ({ context }) => {
       </Panel>
 
       <Panel
+        isLightDismiss
         type={PanelType.medium}
         isOpen={showRequestListPanel}
         onDismiss={() => setShowRequestListPanel(false)}

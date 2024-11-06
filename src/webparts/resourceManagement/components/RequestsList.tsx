@@ -2,7 +2,7 @@ import * as React from "react";
 import { Stack, Text, Separator, Persona, PersonaSize } from "@fluentui/react";
 import BackEndService from "../services/BackEnd";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { RequestsDTO } from "./interfaces";
+import { RegistrationDTO, RequestsDTO } from "./interfaces";
 import useGlobal from "../hooks/useGlobal";
 import { formatDateForDisplay } from "../utilities/DateUtilities";
 import { RequestsPanelState } from "../context/GlobalContext";
@@ -12,15 +12,34 @@ interface IRequestListProps {
   context: WebPartContext;
 }
 
+export interface IRequestListItem {
+  request: RequestsDTO;
+  templateRegistration?: RegistrationDTO;
+}
+
 const RequestsList: React.FC<IRequestListProps> = ({ context }) => {
-  const { setRequestsPanelState } = useGlobal();
-  const [requests, setRequests] = React.useState<RequestsDTO[]>([]);
-  const [registrations, setRegistrations] = React.useState<Record<number, any>>(
-    {}
-  );
+  const { setRequestsPanelState, requests } = useGlobal();
+
+  const [listItems, setListItems] = React.useState<IRequestListItem[]>([]);
 
   React.useEffect(() => {
-    const fetchRegistrationDetail = async (
+    (async () => {
+      const templates = (await BackEndService.Api.registrationsTypeDetail(5))
+        .data;
+
+      setListItems(
+        await Promise.all(
+          requests.map<Promise<IRequestListItem>>(async (req) => {
+            if (!req.registrationId) return { request: req };
+
+            const template = templates.find((r) => r.id === req.registrationId);
+
+            return { request: req, templateRegistration: template };
+          })
+        )
+      );
+    })();
+    /*     const fetchRegistrationDetail = async (
       registrationId: number
     ): Promise<void> => {
       try {
@@ -55,33 +74,34 @@ const RequestsList: React.FC<IRequestListProps> = ({ context }) => {
       }
     };
 
-    fetchRequests().catch((e) => console.error(e));
-  }, []);
+    fetchRequests().catch((e) => console.error(e)); */
+  }, [requests]);
 
   return (
     <Stack tokens={{ childrenGap: 15 }}>
       <Separator />
-      {requests.map((req, index) => (
+      {listItems.map((item, index) => (
         <div
-          key={req.id}
+          key={item.request.id}
           onClick={() => {
             setRequestsPanelState({
               state: RequestsPanelState.Confirm,
-              data: req,
+              data: item.request,
             });
           }}
           className={globalStyles.requestCard}
         >
           <Text block className={globalStyles.bold}>
-            {req.title}
+            {item.request.title}
           </Text>
           {/* Finder "employee" og viser dem i en Persona komponent */}
-          {req.registrationId && registrations[req.registrationId] ? (
+          {item.request.registrationId &&
+          item.templateRegistration?.employee ? (
             <Persona
               size={PersonaSize.size24}
               style={{ marginBlock: 8 }}
-              imageUrl={`${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${registrations[req.registrationId].employee}`}
-              text={registrations[req.registrationId].employee
+              imageUrl={`${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${item.templateRegistration.employee}`}
+              text={item.templateRegistration?.employee
                 .split("@")[0]
                 .split(".")
                 .map(
@@ -97,12 +117,16 @@ const RequestsList: React.FC<IRequestListProps> = ({ context }) => {
               text="Ingen medarbejder tilkoblet"
             />
           )}
-          {req.registrationId && registrations[req.registrationId] ? (
-            <Text>{`${formatDateForDisplay(registrations[req.registrationId].date.split("T")[0])} ${registrations[req.registrationId].start}-${registrations[req.registrationId].end}`}</Text>
+          {item.request.registrationId &&
+          item.templateRegistration &&
+          item.templateRegistration?.date &&
+          item.templateRegistration?.start &&
+          item.templateRegistration?.end ? (
+            <Text>{`${formatDateForDisplay(item.templateRegistration?.date.split("T")[0])} ${item.templateRegistration.start}-${item.templateRegistration.end}`}</Text>
           ) : (
             <Text>Ingen dato valgt</Text>
           )}
-          <Text>{req.accepted}</Text>
+          <Text>{item.request.accepted}</Text>
           {/* {!!requests[index + 1] ? <Separator /> : undefined} */}
         </div>
       ))}

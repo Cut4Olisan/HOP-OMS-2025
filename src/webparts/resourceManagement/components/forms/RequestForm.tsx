@@ -1,10 +1,5 @@
 import * as React from "react";
 import {
-  IRequestCreateDTO,
-  IRequestProps,
-  FormMode,
-} from "../interfaces/IRequestComponentProps";
-import {
   DefaultButton,
   PrimaryButton,
   Stack,
@@ -22,13 +17,31 @@ import {
 import { IRegistrationData } from "../interfaces/IRegistrationProps";
 import {
   AcceptRequestRequestDTO,
+  CreateRequestRequstDTO,
   CustomerDTO,
   ProjectDTO,
+  RequestsDTO,
 } from "../interfaces";
 import CustomerProjects from "../generic/CustomerProjects";
 import PeoplePicker from "../PeoplePicker";
 import useGlobal from "../../hooks/useGlobal";
 import { NotificationType } from "../../context/GlobalContext";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
+
+export enum FormMode {
+  CreateRequest = "CreateRequest",
+  ConfirmRequest = "ConfirmRequest",
+}
+
+export interface IRequestFormProps {
+  context: WebPartContext;
+  mode: FormMode;
+  onFinish: () => void;
+  onAccept: () => void;
+  onReject: () => void;
+  onDismiss?: () => void;
+  request?: RequestsDTO;
+}
 
 export interface IRequestComponentFormData {
   title: string;
@@ -42,7 +55,7 @@ export interface IRequestComponentFormData {
   selectedProject?: ProjectDTO;
 }
 
-const RequestComponent: React.FC<IRequestProps> = ({
+const RequestComponent: React.FC<IRequestFormProps> = ({
   context,
   mode,
   onFinish,
@@ -69,6 +82,7 @@ const RequestComponent: React.FC<IRequestProps> = ({
 
   const isConfirmMode = mode === FormMode.ConfirmRequest;
   const isCreationMode = mode === FormMode.CreateRequest;
+
   const requiredInformation = formData.title && formData.selectedCustomer;
   const hasSufficientInformation =
     requiredInformation &&
@@ -93,11 +107,11 @@ const RequestComponent: React.FC<IRequestProps> = ({
     employee: formData.selectedCoworkers[0],
     registrationType: 5, // Template
   };
-  const requestDTO: IRequestCreateDTO = {
+  const requestDTO: CreateRequestRequstDTO = {
     title: formData.title,
     shortDescription: formData.info,
     estimatedHours: formData.estimatedHours || undefined,
-    registration: completeBooking,
+    createRegistrationRequestDTO: completeBooking,
   };
 
   const clearMessageBar = (): void => {
@@ -115,7 +129,6 @@ const RequestComponent: React.FC<IRequestProps> = ({
         createRegistrationRequestDTO: { ...completeBooking },
         title: requestDTO.title,
         shortDescription: requestDTO.shortDescription,
-        estimatedHours: requestDTO.estimatedHours,
       });
       setWarning(undefined);
 
@@ -139,7 +152,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
           },
         ]);
       }
-      return onFinish(r as IRequestCreateDTO);
+
+      return onFinish();
     } catch (error) {
       console.error("Kunne ikke oprette anmodning:", error);
       setError("Anmodning kunne ikke oprettes. Server fejl.");
@@ -267,8 +281,8 @@ const RequestComponent: React.FC<IRequestProps> = ({
           message: "Anmodning opdateret",
         },
       ]);
-      const updatedRequest = await result.json();
-      onFinish(updatedRequest as IRequestCreateDTO);
+      await result.json();
+      onFinish();
     } catch (error) {
       console.error("Kunne ikke opdatere anmodning:", error);
       setError("Anmodning kunne ikke opdateres. Server fejl.");
@@ -303,7 +317,16 @@ const RequestComponent: React.FC<IRequestProps> = ({
           setFormData({ ...formData, title: e.currentTarget.value });
         }}
         required={isCreationMode}
-        disabled={false}
+      />
+      <TextField
+        multiline
+        label="Beskrivelse"
+        placeholder="Beskrivelse"
+        value={formData.info}
+        onChange={(e) =>
+          setFormData({ ...formData, info: e.currentTarget.value })
+        }
+        required={isCreationMode}
       />
       <CustomerProjects
         customerLabel={isCreationMode ? "Vælg kunde" : "Valgt kunde"}
@@ -321,96 +344,46 @@ const RequestComponent: React.FC<IRequestProps> = ({
         customerRequired={true}
         projectRequired={false}
       />
-      <TextField
-        label="Antal timer"
-        placeholder="Antal timer"
-        value={formData.estimatedHours ? String(formData.estimatedHours) : ""}
-        onChange={(e) => {
-          const value = e.currentTarget.value;
-          if ((value === "" || /^[0-9]*$/.test(value)) && value.length <= 6) {
-            setFormData({
-              ...formData,
-              estimatedHours: value === "" ? undefined : Number(value),
-            });
-          }
+
+      <DateTimePickerComponent
+        label="Dato"
+        value={{
+          date: formData.date,
+          endTime: formData.endTime.length ? formData.endTime : "16:00",
+          startTime: formData.startTime.length ? formData.startTime : "08:00",
         }}
+        onChange={(d) =>
+          setFormData({
+            ...formData,
+            date: d.date,
+            startTime: d.startTime,
+            endTime: d.endTime,
+          })
+        }
         disabled={false}
       />
-      {/* Viser dato/tid-vælgeren i creationMode, eller hvis det
-      er read-only og datoer er angivet */}
-      {(isCreationMode || (isConfirmMode && formData.date)) && (
-        <>
-          <DateTimePickerComponent
-            label="Dato"
-            value={{
-              date: formData.date,
-              endTime: formData.endTime.length ? formData.endTime : "16:00",
-              startTime: formData.startTime.length
-                ? formData.startTime
-                : "08:00",
-            }}
-            onChange={(d) =>
-              setFormData({
-                ...formData,
-                date: d.date,
-                startTime: d.startTime,
-                endTime: d.endTime,
-              })
-            }
-            disabled={false}
-          />
-        </>
-      )}
-      {/* Viser people picker i creation mode */}
-      {isCreationMode && (
-        <PeoplePicker
-          employees={employees}
-          onChange={(employee) => {
-            if (!employee)
-              return setFormData({ ...formData, selectedCoworkers: [] });
+      <PeoplePicker
+        selectedEmployee={employees.find(
+          (e) =>
+            e.email?.toLowerCase() ===
+            formData.selectedCoworkers.find(
+              (c) => c.toLowerCase() === e.email?.toLowerCase()
+            )
+        )}
+        employees={employees}
+        onChange={(employee) => {
+          if (!employee)
+            return setFormData({ ...formData, selectedCoworkers: [] });
 
-            return setFormData({
-              ...formData,
-              selectedCoworkers: employee.email ? [employee.email] : [],
-            });
-          }}
-          label="Vælg medarbejder"
-          placeholder="Vælg medarbejder"
-          context={context}
-        />
-      )}
-      {/* Viser valgte medarbejdere i et disabled textfield i readOnly */}
-      {isConfirmMode && formData.selectedCoworkers.length > 0 && (
-        <TextField
-          label="Valgt medarbejdere"
-          placeholder="Medarbejder"
-          value={formData.selectedCoworkers
-            .map((email) => {
-              const [name] = email.split("@");
-              const formattedName = name
-                .split(".")
-                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                .join(" ");
-              return formattedName;
-            })
-            .join(", ")}
-          required={!isConfirmMode}
-          disabled={false}
-        />
-      )}
-      {(isCreationMode || (isConfirmMode && formData.info)) && (
-        <TextField
-          label="Booking information"
-          placeholder="Skriv information om booking"
-          value={formData.info}
-          onChange={(e) =>
-            setFormData({ ...formData, info: e.currentTarget.value })
-          }
-          multiline
-          rows={5}
-          disabled={false}
-        />
-      )}
+          return setFormData({
+            ...formData,
+            selectedCoworkers: employee.email ? [employee.email] : [],
+          });
+        }}
+        label="Vælg medarbejder"
+        placeholder="Vælg medarbejder"
+        context={context}
+      />
       <Stack horizontal tokens={{ childrenGap: 10 }}>
         {isCreationMode ? (
           <>

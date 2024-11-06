@@ -1,3 +1,13 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
 .bold {
     font-weight: 600;
+}
+
+.requestCard {
+  cursor: pointer;
+  background-color: "[theme: neutralLighterAlt, default: #f8f8f8]";
+  border-left: 5px solid transparent;
+  border-radius: 5px;
+  padding: 1em 2em;
 }

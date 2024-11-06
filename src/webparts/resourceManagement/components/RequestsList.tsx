@@ -4,9 +4,9 @@ import BackEndService from "../services/BackEnd";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { RequestsDTO } from "./interfaces";
 import useGlobal from "../hooks/useGlobal";
-import styles from "./RequestsList.module.scss";
 import { formatDateForDisplay } from "../utilities/DateUtilities";
 import { RequestsPanelState } from "../context/GlobalContext";
+import globalStyles from "./styles.module.scss";
 
 interface IRequestListProps {
   context: WebPartContext;
@@ -70,16 +70,16 @@ const RequestsList: React.FC<IRequestListProps> = ({ context }) => {
               data: req,
             });
           }}
-          className={styles.requestCard}
+          className={globalStyles.requestCard}
         >
-          <Text block className={styles.cardTitle}>
+          <Text block className={globalStyles.bold}>
             {req.title}
           </Text>
           {/* Finder "employee" og viser dem i en Persona komponent */}
           {req.registrationId && registrations[req.registrationId] ? (
             <Persona
               size={PersonaSize.size24}
-              className={styles.blockSpacing}
+              style={{ marginBlock: 8 }}
               imageUrl={`${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${registrations[req.registrationId].employee}`}
               text={registrations[req.registrationId].employee
                 .split("@")[0]
@@ -92,7 +92,7 @@ const RequestsList: React.FC<IRequestListProps> = ({ context }) => {
           ) : (
             <Persona
               size={PersonaSize.size24}
-              className={styles.blockSpacing}
+              style={{ marginBlock: 8 }}
               showUnknownPersonaCoin={true}
               text="Ingen medarbejder tilkoblet"
             />

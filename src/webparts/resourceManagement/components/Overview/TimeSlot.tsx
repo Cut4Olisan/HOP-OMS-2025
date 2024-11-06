@@ -13,8 +13,12 @@ import {
 } from "@fluentui/react";
 import { RegistrationDTO } from "../interfaces";
 import BackEndService from "../../services/BackEnd";
-import { NotificationType, RegistrationPanelState } from "../../context/GlobalContext";
+import {
+  NotificationType,
+  RegistrationPanelState,
+} from "../../context/GlobalContext";
 import useGlobal from "../../hooks/useGlobal";
+import globalStyles from "../styles.module.scss";
 
 const ItemType = "BOOKING"; // Draggable item type
 
@@ -143,7 +147,7 @@ const TimeSlot: React.FC<{
                   alignItems: "center",
                 }}
               >
-                <Text block style={{ fontWeight: 600 }} variant="large">
+                <Text block className={globalStyles.bold} variant="large">
                   {booking.shortDescription}
                 </Text>
                 <div>
@@ -171,15 +175,15 @@ const TimeSlot: React.FC<{
                 style={{ display: "flex", flexDirection: "column", gap: 8 }}
               >
                 <Text variant="medium" block>
-                  <span style={{ fontWeight: 600 }}>Kunde: </span>{" "}
+                  <span className={globalStyles.bold}>Kunde: </span>{" "}
                   {customerName}
                 </Text>
                 <Text variant="medium" block>
-                  <span style={{ fontWeight: 600 }}>Projekt: </span>{" "}
+                  <span className={globalStyles.bold}>Projekt: </span>{" "}
                   {projectName}
                 </Text>
                 <Text variant="medium" block>
-                  <span style={{ fontWeight: 600 }}>Beskrivelse: </span>{" "}
+                  <span className={globalStyles.bold}>Beskrivelse: </span>{" "}
                   {booking.description}
                 </Text>
               </Stack>

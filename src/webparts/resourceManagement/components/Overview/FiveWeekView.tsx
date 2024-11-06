@@ -27,6 +27,7 @@ import BackEndService from "../../services/BackEnd";
 import WeekColumn from "./WeekColumn";
 import Notifications from "../Notifications";
 import PeopleFilterDropdown from "../generic/PeopleFilterDropdown";
+import globalStyles from "../styles.module.scss";
 
 interface IFiveWeekViewProps {
   context: WebPartContext;
@@ -276,7 +277,7 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
             {weeksToDisplay.map((week, index) => (
               <div key={index} className={styles.weekHeader}>
                 <Text variant="large">
-                  <strong>Uge {week.weekNumber} </strong>
+                  <span className={globalStyles.bold}>Uge {week.weekNumber} </span>
                 </Text>
                 <Text>
                   {week.start.toLocaleDateString("da-DK")} -{" "}

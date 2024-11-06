@@ -13,6 +13,7 @@ import {
   RegistrationPanelState,
 } from "../../context/GlobalContext";
 import BackEndService from "../../services/BackEnd";
+import globalStyles from "../styles.module.scss";
 
 const ItemType = "BOOKING"; // For drag and drop functionality
 
@@ -94,8 +95,8 @@ const BookingCard: React.FC<{
       >
         <Text
           block
+          className={globalStyles.bold}
           style={{
-            fontWeight: 600,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -129,10 +130,10 @@ const BookingCard: React.FC<{
 
       <Stack style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <Text variant="medium" block>
-          <span style={{ fontWeight: 600 }}>Kunde: </span> {customerName}
+          <span className={globalStyles.bold}>Kunde: </span> {customerName}
         </Text>
         <Text variant="medium" block>
-          <span style={{ fontWeight: 600 }}>Projekt: </span> {projectName}
+          <span className={globalStyles.bold}>Projekt: </span> {projectName}
         </Text>
       </Stack>
     </div>

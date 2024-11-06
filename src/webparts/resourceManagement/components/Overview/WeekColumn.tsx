@@ -4,6 +4,7 @@ import { Text } from "@fluentui/react";
 import { RegistrationDTO } from "../interfaces";
 import styles from "./WeekColumn.module.scss";
 import BookingCard from "./BookingCard";
+import globalStyles from "../styles.module.scss"
 
 const ItemType = "BOOKING"; //Til drag n' drop WIP
 
@@ -35,7 +36,7 @@ const WeekColumn: React.FC<{
         ))
       ) : (
         <Text className={styles.centered}>
-          <strong>Ingen bookinger</strong>
+          <span className={globalStyles.bold}>Ingen bookinger</span>
         </Text>
       )}
     </div>

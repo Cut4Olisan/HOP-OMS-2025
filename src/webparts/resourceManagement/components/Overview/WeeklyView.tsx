@@ -16,6 +16,7 @@ import { getWeekStartDate, getWeekNumber } from "../../utilities/DateUtilities";
 import TimeSlot from "./TimeSlot";
 import { EditRegistrationRequestDTO } from "../interfaces";
 import useGlobal from "../../hooks/useGlobal";
+import globalStyles from "../styles.module.scss";
 
 interface WeeklyViewProps {
   employee: EmployeeDTO;
@@ -208,12 +209,12 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           <PrimaryButton onClick={onBack}>Tilbage</PrimaryButton>
           <div className={styles.weekInfo}>
             <Text variant="large">
-              <strong>
+              <span className={globalStyles.bold}>
                 Uge {currentWeekNumber}{" "}
                 {formattedEmployeeName && (
                   <span>- Bookinger for {formattedEmployeeName}</span>
                 )}
-              </strong>
+              </span>
             </Text>
           </div>
           <div className={styles.navigationContainer}>
@@ -239,7 +240,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
           {days.map((day, i) => (
             <div key={day} className={styles.dayHeader}>
               <Text variant="large">
-                <strong>{day}</strong>
+                <span className={globalStyles.bold}>{day}</span>
                 <Text> ({calculateDailyHours(weekDays[i])} timer)</Text>
               </Text>
               <Text>{weekDays[i].toLocaleDateString("da-DK")}</Text>

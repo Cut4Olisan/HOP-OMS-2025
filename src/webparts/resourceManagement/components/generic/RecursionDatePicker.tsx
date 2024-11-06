@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Text, Checkbox, Stack, DayOfWeek, SpinButton } from "@fluentui/react";
-
+import globalStyles from "../styles.module.scss";
 export interface IRecursionDatePickerProps {
   onRecursionChange: (days: DayOfWeek[], weeks: number) => void;
 }
@@ -53,7 +53,7 @@ const RecursionDatePicker: React.FC<IRecursionDatePickerProps> = ({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <Text style={{ fontWeight: 600 }}>Gentag booking hver:</Text>
+      <Text className={globalStyles.bold}>Gentag booking hver:</Text>
       <Stack
         tokens={{ childrenGap: 5 }}
         style={{

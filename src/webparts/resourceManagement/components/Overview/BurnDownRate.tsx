@@ -14,6 +14,7 @@ import styles from "./BurnDownRate.module.scss";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import useGlobal from "../../hooks/useGlobal";
 import ProjectCard from "./ProjectCard";
+import globalStyles from "../styles.module.scss";
 
 interface IBurnDownRateProps {
   context: WebPartContext;
@@ -158,7 +159,7 @@ const BurnDownRate: React.FC<IBurnDownRateProps> = ({ context, onBack }) => {
 
         <div className={styles.centeredHeader}>
           <Text variant="xLarge" className={styles.headerTitle}>
-            <strong>Burndown rates for aktive projekter</strong>
+            <span className={globalStyles.bold}>Burndown rates for aktive projekter</span>
           </Text>
         </div>
       </div>

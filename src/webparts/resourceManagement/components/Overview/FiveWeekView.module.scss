@@ -1,0 +1,145 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+.weekHeader {
+  display: flex;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 5px;
+  padding: 10px;
+  font-weight: bold;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  border-color: $ms-color-neutralLight;
+  background-color: white;
+  &:first-child {
+    border-left: none;
+  }
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.teamsContext {
+  overflow: hidden;
+  color: var(--bodyText);
+
+  &.teams {
+    font-family: $ms-font-family-fallbacks;
+  }
+}
+
+.container {
+  position: relative;
+  display: flex;
+  padding: 20px;
+  flex-direction: column;
+}
+
+.controlsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.filterContainer {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.navigationContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.gridHeader {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding-top: 10px;
+  text-align: center;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+
+  & > .weekHeader:first-child {
+    border-left: none;
+  }
+
+  & > .weekHeader:last-child {
+    border-right: none;
+  }
+}
+
+.weekGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 equal columns for weeks */
+  gap: 0;
+  overflow-x: hidden;
+}
+
+.limitCalloutSize {
+  max-height: 300px !important;
+  height: auto;
+  overflow: auto;
+}
+
+.iconWrapper {
+  display: inline-block;
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
+  height: 32px;
+  width: 32px;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.TitelAndEditIcon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.EditIcon {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.peoplePickerContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selectedPeopleInline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.peoplePickerComboBox {
+  max-width: 300px;
+}
+
+.comboBoxTitle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.upIconScale {
+  transform: scale(1.25);
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+}

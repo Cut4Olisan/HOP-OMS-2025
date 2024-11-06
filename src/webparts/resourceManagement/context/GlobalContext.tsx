@@ -28,45 +28,50 @@ export interface INotification {
   message: string;
 }
 
+export enum RegistrationPanelState {
+  Hidden,
+  Create,
+  Edit,
+}
+
+export enum RequestsPanelState {
+  Hidden,
+  Create,
+  Confirm,
+}
+
+export interface PanelState<S, D> {
+  state: S;
+  data?: D;
+}
+
 export interface IGlobalContext {
-  ///***      Panel controls      ***///
-  showBookingComponentPanel: boolean;
-  setShowBookingComponentPanel: React.Dispatch<boolean>;
-  showRequestPanel: boolean;
-  setShowRequestPanel: React.Dispatch<boolean>;
+  bookingPanelState: PanelState<RegistrationPanelState, RegistrationDTO>;
+  setBookingPanelState: React.Dispatch<
+    PanelState<RegistrationPanelState, RegistrationDTO>
+  >;
+
+  requestsPanelState: PanelState<RequestsPanelState, RequestsDTO>;
+  setRequestsPanelState: React.Dispatch<
+    PanelState<RequestsPanelState, RequestsDTO>
+  >;
+
   showRequestListPanel: boolean;
   setShowRequestListPanel: React.Dispatch<boolean>;
   showBurnDownPanel: boolean;
   setShowBurnDownPanel: React.Dispatch<boolean>;
   currentView: ViewMode;
   setCurrentView: React.Dispatch<React.SetStateAction<ViewMode>>;
-  ///***      Panel controls      ***///
 
-  ///***      Controls for My week view in the commandbar      ***///
-  currentEmployee: EmployeeDTO | undefined;
-  setCurrentEmployee: React.Dispatch<
-    React.SetStateAction<EmployeeDTO | undefined>
-  >;
-  ///***      Controls for My week view in the commandbar      ***///
-
-  ///*** State to track edit/create for bookingcomponent ***///
-  isEditMode: boolean;
-  setIsEditMode: React.Dispatch<boolean>;
-  ///*** State to track edit/create for bookingcomponent ***///
-
-  selectedRegistration: RegistrationDTO | undefined;
-  setSelectedRegistration: React.Dispatch<RegistrationDTO | undefined>;
-  showRequestComponentPanel: boolean;
-  setShowRequestComponentPanel: React.Dispatch<boolean>;
-  selectedRequest: RequestsDTO | undefined;
-  setSelectedRequest: React.Dispatch<RequestsDTO | undefined>;
   customers: CustomerDTO[];
   projects: ProjectDTO[];
-  loading: boolean;
-  setLoading: React.Dispatch<boolean>;
   employees: EmployeeDTO[];
+
   registrations: RegistrationDTO[];
   setRegistrations: React.Dispatch<RegistrationDTO[]>;
+
+  requests: RequestsDTO[];
+  setRequests: React.Dispatch<RequestsDTO[]>;
 
   notifications: INotification[];
   setNotifications: React.Dispatch<INotification[]>;
@@ -82,34 +87,26 @@ const GlobalContextProvider: React.FC<
   const [currentView, setCurrentView] = React.useState<ViewMode>(
     ViewMode.Overview
   );
-  const [showBookingComponentPanel, setShowBookingComponentPanel] =
-    React.useState<boolean>(false);
-  const [showRequestPanel, setShowRequestPanel] =
-    React.useState<boolean>(false);
+  const [bookingPanelState, setBookingPanelState] = React.useState<
+    PanelState<RegistrationPanelState, RegistrationDTO>
+  >({ state: RegistrationPanelState.Hidden });
+  const [requestsPanelState, setRequestsPanelState] = React.useState<
+    PanelState<RequestsPanelState, RequestsDTO>
+  >({ state: RequestsPanelState.Hidden });
   const [showRequestListPanel, setShowRequestListPanel] =
     React.useState<boolean>(false);
   const [showBurnDownPanel, setShowBurnDownPanel] =
     React.useState<boolean>(false);
-  const [selectedRegistration, setSelectedRegistration] = React.useState<
-    RegistrationDTO | undefined
-  >();
-  const [showRequestComponentPanel, setShowRequestComponentPanel] =
-    React.useState<boolean>(false);
-  const [selectedRequest, setSelectedRequest] = React.useState<
-    RequestsDTO | undefined
-  >(undefined);
-  const [currentEmployee, setCurrentEmployee] = React.useState<
-    EmployeeDTO | undefined
-  >(undefined);
+
 
   const [customers, setCustomers] = React.useState<CustomerDTO[]>([]);
   const [projects, setProjects] = React.useState<ProjectDTO[]>([]);
-  const [isEditMode, setIsEditMode] = React.useState<boolean>(false);
   const [employees, setEmployees] = React.useState<EmployeeDTO[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [registrations, setRegistrations] = React.useState<RegistrationDTO[]>(
     []
   );
+  const [requests, setRequests] = React.useState<RequestsDTO[]>([]);
 
   const [notifications, setNotifications] = React.useState<INotification[]>([]);
 
@@ -140,22 +137,12 @@ const GlobalContextProvider: React.FC<
         setRegistrations(registrations);
 
         setLoading(false);
-
-        const currentUserEmail = context.pageContext.user.email;
-
-        let foundEmployee = employees.find(
-          (emp) => emp.email === currentUserEmail
-        );
-
-        if (foundEmployee) {
-          setCurrentEmployee(foundEmployee);
-        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
-    })();
+    })().catch((e) => console.log(e));
   }, [context]);
 
   if (loading) return <>Loading</>;
@@ -164,31 +151,26 @@ const GlobalContextProvider: React.FC<
     <>
       <GlobalContext.Provider
         value={{
+          bookingPanelState,
+          setBookingPanelState,
+          requestsPanelState,
+          setRequestsPanelState,
+
           currentView,
           setCurrentView,
-          showBookingComponentPanel,
-          setShowBookingComponentPanel,
-          showRequestPanel,
-          setShowRequestPanel,
+
           showRequestListPanel,
           setShowRequestListPanel,
+
           showBurnDownPanel,
           setShowBurnDownPanel,
-          selectedRegistration,
-          setSelectedRegistration,
-          showRequestComponentPanel,
-          setShowRequestComponentPanel,
-          selectedRequest,
-          setSelectedRequest,
+
           customers,
           projects,
-          isEditMode,
-          setIsEditMode,
-          loading,
-          setLoading,
           employees,
-          currentEmployee,
-          setCurrentEmployee,
+
+          requests,
+          setRequests,
           registrations,
           setRegistrations,
 

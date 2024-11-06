@@ -1,0 +1,48 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+.bookingCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  border: 1px solid;
+  border-color: $ms-color-neutralLight;
+  gap: 10px;
+  cursor: pointer;
+  //background-color: "[theme: neutralLighter, default: #f3f2f1]";
+}
+
+.TitelAndEditIcon {
+  display: flex;
+  justify-content: space-between;
+  top: 0;
+  max-width: 100%;
+}
+
+.projectName {
+  display: flex;
+  overflow-wrap: anywhere;
+  font-weight: bold;
+}
+
+.employeeName {
+  cursor: pointer;
+  overflow-wrap: break-word;
+}
+
+.customerAndProjectName {
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
+  width: 100%;
+  overflow-wrap: break-word;
+}
+
+.employeeInfo {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}

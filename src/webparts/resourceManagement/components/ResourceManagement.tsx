@@ -2,14 +2,7 @@ import * as React from "react";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import GlobalContextProvider from "../context/GlobalContext";
 import Overview from "./Overview";
-
-export enum DEV_WP_VIEW {
-  BookingComponent,
-  BookingOverview,
-  CreateRequestComponent,
-  ConfirmRequestComponent,
-  RequestList,
-}
+import Panels from "./Panels";
 
 export interface IResourceManagementProps {
   isDarkTheme: boolean;
@@ -24,6 +17,7 @@ const ResourceManagement: React.FC<IResourceManagementProps> = ({
     <div>
       <GlobalContextProvider context={context}>
         <Overview context={context} />
+        <Panels context={context}/>
       </GlobalContextProvider>
     </div>
   );

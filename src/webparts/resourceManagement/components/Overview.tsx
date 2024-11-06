@@ -1,24 +1,28 @@
 import * as React from "react";
 import { Stack, CommandBar, ICommandBarItemProps } from "@fluentui/react";
 import useGlobal from "../hooks/useGlobal";
-import { ViewMode } from "../context/GlobalContext"; //used for fullpages
+import {
+  RegistrationPanelState,
+  RequestsPanelState,
+  ViewMode,
+} from "../context/GlobalContext"; //used for fullpages
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import BookingOverviewComponent from "./BookingOverview/BookingOverviewComponent";
-import Panels from "./PanelsComponent";
-import WeeklyView from "./BookingOverview/WeeklyView/WeeklyView";
-import { getWeekNumber } from "./dateUtils";
-import BurnDownRate from "./BookingOverview/ProjectBurnDownRate/BurnDownRate/BurnDownRate";
+import WeeklyView from "./Overview/WeeklyView";
+import { getWeekNumber } from "../utilities/DateUtilities";
+import BurnDownRate from "./Overview/BurnDownRate";
+import { DndProvider } from "react-dnd";
+import FiveWeekView from "./Overview/FiveWeekView";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
   const {
-    setShowRequestPanel,
     setShowRequestListPanel,
-    setShowBookingComponentPanel,
     setCurrentView,
+    setRequestsPanelState,
+    setBookingPanelState,
     currentView,
-    currentEmployee,
     registrations,
-    loading,
+    employees,
   } = useGlobal();
 
   const _faritems: ICommandBarItemProps[] = [
@@ -38,7 +42,11 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
       key: "CreateBooking",
       text: "Opret booking",
       iconProps: { iconName: "OpenEnrollment" },
-      onClick: () => setShowBookingComponentPanel(true),
+      onClick: () =>
+        setBookingPanelState({
+          state: RegistrationPanelState.Create,
+          data: undefined,
+        }),
     },
     {
       key: "Capacity",
@@ -74,36 +82,38 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
             key: "createRequests",
             text: "Opret anmodning",
             iconProps: { iconName: "EditMail" },
-            onClick: () => setShowRequestPanel(true),
+            onClick: () =>
+              setRequestsPanelState({
+                state: RequestsPanelState.Create,
+                data: undefined,
+              }),
           },
         ],
       },
     },
   ];
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
+  const employee = employees.find(
+    (e) =>
+      e.email?.toLowerCase() === context.pageContext.user.email.toLowerCase()
+  );
   return (
     <Stack>
       <CommandBar farItems={_faritems} items={[]} />
 
       {currentView === ViewMode.Overview && (
-        <BookingOverviewComponent context={context} />
+        <DndProvider backend={HTML5Backend}>
+          <FiveWeekView context={context} />
+        </DndProvider>
       )}
 
-      {currentView === ViewMode.MyWeek && (
+      {currentView === ViewMode.MyWeek && employee && (
         <WeeklyView
-          employeeId={currentEmployee?.email ?? ""}
-          employeeName={`${currentEmployee?.givenName} ${currentEmployee?.surName}`}
+        employee={employee}
           weekNumber={getWeekNumber(new Date()).toString()}
           weekBookings={registrations}
           onBack={() => setCurrentView(ViewMode.Overview)}
           onPreviousWeek={() => undefined}
           onNextWeek={() => undefined}
-          projects={[]}
-          customers={[]}
         />
       )}
 
@@ -113,8 +123,6 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
           onBack={() => setCurrentView(ViewMode.Overview)}
         />
       )}
-
-      <Panels context={context} />
     </Stack>
   );
 };

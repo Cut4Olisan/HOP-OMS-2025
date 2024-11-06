@@ -10,20 +10,22 @@ import {
 import { EmployeeDTO } from "./interfaces";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 
-export interface IOurPeoplePicker {
+export interface IPeoplePickerProps {
   employees: EmployeeDTO[];
+  selectedEmployee?: EmployeeDTO;
   onChange: (people: EmployeeDTO | undefined) => void;
   placeholder?: string;
   label?: string;
   context: WebPartContext;
 }
 
-const OurPeoplePicker: React.FC<IOurPeoplePicker> = ({
+const PeoplePicker: React.FC<IPeoplePickerProps> = ({
   employees,
   onChange,
   placeholder,
   label,
   context,
+  selectedEmployee,
 }) => {
   const suggestionProps: IBasePickerSuggestionsProps = {
     suggestionsHeaderText: "Foreslag til søgning",
@@ -44,23 +46,37 @@ const OurPeoplePicker: React.FC<IOurPeoplePicker> = ({
       imageUrl: `${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${empl.email}`,
     };
   };
+
   return (
     <Stack>
-         {label && <Label>{label}</Label>}
+      {label && <Label>{label}</Label>}
       <NormalPeoplePicker
         itemLimit={1}
         pickerSuggestionsProps={suggestionProps}
         getTextFromItem={getTextFromItem}
-        onEmptyResolveSuggestions={() => employees.map((empl) => {
+        onEmptyResolveSuggestions={() =>
+          employees.map((empl) => {
             const persona: IPersonaProps = {
-                text: `${empl.givenName} ${empl.surName}`,
-                secondaryText: empl.email as string,
-                imageUrl: `${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${empl.email}`
+              text: `${empl.givenName} ${empl.surName}`,
+              secondaryText: empl.email as string,
+              imageUrl: `${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${empl.email}`,
             };
             return persona;
-          })}
+          })
+        }
+        selectedItems={
+          selectedEmployee
+            ? ([
+                {
+                  text: `${selectedEmployee.givenName} ${selectedEmployee.surName}`,
+                  secondaryText: selectedEmployee.email as string,
+                  imageUrl: `${context.pageContext.web.absoluteUrl}/_layouts/15/userphoto.aspx?size=M&accountname=${selectedEmployee.email}`,
+                },
+              ] as IPersonaProps[])
+            : undefined
+        }
         inputProps={{
-            placeholder: placeholder
+          placeholder: placeholder,
         }}
         onResolveSuggestions={(filter) => {
           const filteredEmployees = employees
@@ -72,20 +88,22 @@ const OurPeoplePicker: React.FC<IOurPeoplePicker> = ({
             .map((empl) => getEmployeePersona(empl));
           return filteredEmployees;
         }}
-        onRenderSuggestionsItem={(personaProps) => <Persona {...personaProps} />}
+        onRenderSuggestionsItem={(personaProps) => (
+          <Persona {...personaProps} />
+        )}
         onChange={(personas?: IPersonaProps[]): void => {
-            if (!personas || personas.length === 0) {
-              return onChange(undefined);
-            }
-            const selectedEmail = personas[0]?.secondaryText;
-            const selectedEmployee = employees.find(
-              (e) => e.email === selectedEmail
-            );
-            onChange(selectedEmployee);
+          if (!personas || personas.length === 0) {
+            return onChange(undefined);
+          }
+          const selectedEmail = personas[0]?.secondaryText;
+          const selectedEmployee = employees.find(
+            (e) => e.email === selectedEmail
+          );
+          onChange(selectedEmployee);
         }}
       />
     </Stack>
   );
 };
 
-export default OurPeoplePicker;
+export default PeoplePicker;

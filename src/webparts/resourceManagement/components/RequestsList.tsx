@@ -38,7 +38,7 @@ const RequestsList: React.FC<IRequestListProps> = ({ context }) => {
           })
         )
       );
-    })();
+    })().catch((e) => console.log(e));
     /*     const fetchRegistrationDetail = async (
       registrationId: number
     ): Promise<void> => {

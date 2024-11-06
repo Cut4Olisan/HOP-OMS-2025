@@ -48,7 +48,7 @@ export interface IRequestComponentFormData {
   info: string;
   estimatedHours?: number;
   selectedCoworkers: string[];
-  date: Date;
+  date?: Date;
   startTime: string;
   endTime: string;
   selectedCustomer?: CustomerDTO;
@@ -188,7 +188,9 @@ const RequestComponent: React.FC<IRequestFormProps> = ({
         selectedCoworkers: registration?.employee
           ? [registration.employee]
           : [],
-        date: new Date(`${dateOnly(registration?.date as string)}`),
+        date: !!registration?.date
+          ? new Date(`${dateOnly(registration?.date as string)}`)
+          : undefined,
         startTime: registration?.start ? registration.start : "08:00",
         endTime: registration?.end ? registration.end : "16:00",
         selectedProject: project ? project : undefined,
@@ -348,7 +350,7 @@ const RequestComponent: React.FC<IRequestFormProps> = ({
       <DateTimePickerComponent
         label="Dato"
         value={{
-          date: formData.date,
+          date: !!formData.date ? formData.date : new Date(),
           endTime: formData.endTime.length ? formData.endTime : "16:00",
           startTime: formData.startTime.length ? formData.startTime : "08:00",
         }}

@@ -98,7 +98,6 @@ const GlobalContextProvider: React.FC<
   const [showBurnDownPanel, setShowBurnDownPanel] =
     React.useState<boolean>(false);
 
-
   const [customers, setCustomers] = React.useState<CustomerDTO[]>([]);
   const [projects, setProjects] = React.useState<ProjectDTO[]>([]);
   const [employees, setEmployees] = React.useState<EmployeeDTO[]>([]);
@@ -120,21 +119,25 @@ const GlobalContextProvider: React.FC<
           projectsResponse,
           employeesResponse,
           registrationsResponse,
+          requestsResponse,
         ] = await Promise.all([
           BackEndService.Api.customersList(),
           BackEndService.Api.projectsList(),
           BackEndService.Api.employeeList(),
           BackEndService.Api.registrationsTypeDetail(2),
+          BackEndService.Api.requestsList(),
         ]);
         const customers = customersResponse.data;
         const projects = projectsResponse.data;
         const employees = employeesResponse.data;
         const registrations = registrationsResponse.data;
+        const requests = requestsResponse.data;
 
         setCustomers(customers);
         setProjects(projects);
         setEmployees(employees);
         setRegistrations(registrations);
+        setRequests(requests);
 
         setLoading(false);
       } catch (error) {

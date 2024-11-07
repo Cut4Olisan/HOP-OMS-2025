@@ -49,12 +49,14 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
   );
 
   const fetchWeekBookings = async (weekNum: number): Promise<void> => {
+    console.log(weekNum, employee, registrations);
     if (!employee) return;
 
+    
     setCurrentBookings(
       registrations.filter(
         (b) =>
-          b.employee === employee.id &&
+          b.employee?.toLowerCase() === employee.email?.toLowerCase() &&
           getWeekNumber(new Date(b.date ?? "")) === weekNum
       )
     );
@@ -65,7 +67,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     fetchWeekBookings(currentWeekNumber).catch((error) => {
       console.error("Error fetching bookings:", error);
     });
-  }, [currentWeekNumber, employee]);
+  }, [currentWeekNumber, employee, registrations]);
 
   // Helper function to calculate the difference in hours between two times
   const calculateHoursFromStartAndEnd = (

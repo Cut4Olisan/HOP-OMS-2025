@@ -25,7 +25,6 @@ import {
 } from "../interfaces";
 import BackEndService from "../../services/BackEnd";
 import WeekColumn from "./WeekColumn";
-import Notifications from "../Notifications";
 import PeopleFilterDropdown from "../generic/PeopleFilterDropdown";
 import globalStyles from "../styles.module.scss";
 
@@ -34,7 +33,7 @@ interface IFiveWeekViewProps {
 }
 
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
-  const { projects, customers, notifications, setNotifications, employees } =
+  const { projects, customers, employees } =
     useGlobal();
   const [selectedEmployeeEmails, setSelectedEmployeeEmails] = useState<
     string[]
@@ -267,12 +266,6 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
               </TooltipHost>
             </div>
           </div>
-          <Notifications
-            notifications={notifications}
-            onDismiss={(notif) =>
-              setNotifications(notifications.filter((n) => n !== notif))
-            }
-          />
           <div className={styles.gridHeader}>
             {weeksToDisplay.map((week, index) => (
               <div key={index} className={styles.weekHeader}>

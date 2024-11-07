@@ -83,7 +83,15 @@ const BookingCard: React.FC<{
   return (
     <div
       ref={drag}
-      onDoubleClick={() => onEmployeeClick(booking)}
+      onDoubleClick={() => {
+        console.log(booking.employee);
+        if (
+          !!employees.find(
+            (e) => e.email?.toLowerCase() === booking.employee?.toLowerCase()
+          )
+        )
+          onEmployeeClick(booking);
+      }}
       className={styles.bookingCard}
     >
       <div
@@ -135,6 +143,20 @@ const BookingCard: React.FC<{
         <Text variant="medium" block>
           <span className={globalStyles.bold}>Projekt: </span> {projectName}
         </Text>
+        {!!booking.date && (
+          <Text variant="medium" block>
+            <span className={globalStyles.bold}>Tidspunkt: </span>{" "}
+            {booking.date.split("T")[0]}
+            {!!booking.start && !!booking.end && (
+              <>
+                {" - "}
+                {booking.start}
+                {" - "}
+                {booking.end}
+              </>
+            )}
+          </Text>
+        )}
       </Stack>
     </div>
   );

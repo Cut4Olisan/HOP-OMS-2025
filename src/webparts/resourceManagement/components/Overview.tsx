@@ -13,6 +13,7 @@ import BurnDownRate from "./Overview/BurnDownRate";
 import { DndProvider } from "react-dnd";
 import FiveWeekView from "./Overview/FiveWeekView";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import Notifications from "./Notifications";
 
 const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
   const {
@@ -23,6 +24,8 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
     currentView,
     registrations,
     employees,
+    notifications,
+    setNotifications,
   } = useGlobal();
 
   const _faritems: ICommandBarItemProps[] = [
@@ -99,7 +102,12 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
   return (
     <Stack>
       <CommandBar farItems={_faritems} items={[]} />
-
+      <Notifications
+        notifications={notifications}
+        onDismiss={(notif) =>
+          setNotifications(notifications.filter((n) => n !== notif))
+        }
+      />
       {currentView === ViewMode.Overview && (
         <DndProvider backend={HTML5Backend}>
           <FiveWeekView context={context} />
@@ -108,7 +116,7 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
 
       {currentView === ViewMode.MyWeek && employee && (
         <WeeklyView
-        employee={employee}
+          employee={employee}
           weekNumber={getWeekNumber(new Date()).toString()}
           weekBookings={registrations}
           onBack={() => setCurrentView(ViewMode.Overview)}

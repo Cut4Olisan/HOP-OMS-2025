@@ -12,7 +12,7 @@ const Notifications: React.FC<INotificationProps> = ({
   onDismiss,
 }) => {
   return (
-    <Stack>
+    <Stack style={{ position: "absolute", left: 0, right: 0 }}>
       {notifications.map((notif, index) => (
         <React.Fragment key={index}>
           {notif.type === NotificationType.Info && (

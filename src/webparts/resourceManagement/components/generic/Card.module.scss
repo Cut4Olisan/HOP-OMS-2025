@@ -1,0 +1,21 @@
+@import "~@fluentui/react/dist/sass/References.scss";
+
+.card {
+  background-color: white;
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.card::-webkit-scrollbar {
+  border-radius: 999px;
+  width: 5px;
+}
+.card::-webkit-scrollbar-thumb {
+  background: #edebe9;
+}

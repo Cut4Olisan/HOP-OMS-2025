@@ -102,12 +102,14 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
   return (
     <Stack>
       <CommandBar farItems={_faritems} items={[]} />
-      <Notifications
-        notifications={notifications}
-        onDismiss={(notif) =>
-          setNotifications(notifications.filter((n) => n !== notif))
-        }
-      />
+      <Stack style={{ position: "relative" }}>
+        <Notifications
+          notifications={notifications}
+          onDismiss={(notif) =>
+            setNotifications(notifications.filter((n) => n !== notif))
+          }
+        />
+      </Stack>
       {currentView === ViewMode.Overview && (
         <DndProvider backend={HTML5Backend}>
           <FiveWeekView context={context} />

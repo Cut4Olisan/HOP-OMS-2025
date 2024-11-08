@@ -3,11 +3,12 @@
 .weekColumn {
   display: flex;
   flex-direction: column;
-  padding: 10px;
+  padding: 12px;
   max-height: 800px;
   overflow-y: auto;
   scrollbar-width: none;
   overflow-x: hidden;
+  gap: 16px;
 }
 
 .centered {

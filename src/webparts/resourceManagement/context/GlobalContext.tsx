@@ -61,7 +61,7 @@ export interface IGlobalContext {
   showBurnDownPanel: boolean;
   setShowBurnDownPanel: React.Dispatch<boolean>;
   currentView: ViewMode;
-  setCurrentView: React.Dispatch<React.SetStateAction<ViewMode>>;
+  setCurrentView: React.Dispatch<ViewMode>;
 
   customers: CustomerDTO[];
   projects: ProjectDTO[];

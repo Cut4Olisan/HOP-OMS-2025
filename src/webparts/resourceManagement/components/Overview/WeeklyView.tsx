@@ -52,7 +52,6 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
     console.log(weekNum, employee, registrations);
     if (!employee) return;
 
-    
     setCurrentBookings(
       registrations.filter(
         (b) =>
@@ -255,7 +254,7 @@ const WeeklyView: React.FC<WeeklyViewProps> = ({
             {hours.map((hour) => (
               <div key={hour} className={styles.gridRow}>
                 <div className={styles.timeColumn}>
-                  <Text variant="large">{`${hour}:00`}</Text>
+                  <Text className={globalStyles.bold}>{`${hour}:00`}</Text>
                 </div>
 
                 {days.map((day, i) => {

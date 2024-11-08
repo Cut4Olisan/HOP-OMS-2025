@@ -139,12 +139,12 @@ export const getWeekStartDate = (weekNumber: number): Date => {
   return startOfYear;
 };
 
-export const parseTime = (
+/* export const parseTime = (
   timeString: string
 ): { hour: number; minute: number } => {
   const [hour, minute] = timeString.split(":").map(Number);
   return { hour, minute };
-};
+}; */
 
 export const getFormattedDateTimeOfToday = (): Date => {
   const today = new Date();

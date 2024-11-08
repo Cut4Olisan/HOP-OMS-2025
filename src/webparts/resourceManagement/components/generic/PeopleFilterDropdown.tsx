@@ -24,7 +24,7 @@ const PeopleFilterDropdown: React.FC<IPeopleFilterDropdownProps> = ({
 
   React.useEffect(() => {
     // Current logged-in user email
-    const currentUserEmail = context.pageContext.user.email;
+    const currentUserEmail = context.pageContext.user.email.toLowerCase();
 
     const options = employees.map((employee) => {
       const email = employee.email || "";
@@ -56,14 +56,14 @@ const PeopleFilterDropdown: React.FC<IPeopleFilterDropdownProps> = ({
       setSelectedKeys([defaultOption.key as string]);
       onSelectionChange([defaultOption.data.employee]);
     }
-  }, [onSelectionChange, context]);
+  }, []);
 
   React.useEffect(() => {
     if (clearSelection) {
       setSelectedKeys([]);
       onSelectionChange([]);
     }
-  }, [clearSelection, onSelectionChange]);
+  }, []);
 
   const handleComboBoxChange = (
     event: React.FormEvent<IComboBox>,

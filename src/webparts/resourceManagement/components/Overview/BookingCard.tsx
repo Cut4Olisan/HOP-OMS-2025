@@ -45,7 +45,7 @@ const BookingCard: React.FC<{
       return;
 
     const r = await BackEndService.Api.registrationsCreate({
-      date: new Date(new Date(booking.date).getTime() + 604800000)
+      date: new Date(new Date(booking.date).getTime() + 604800000 + 3600000)
         .toISOString()
         .split("T")[0],
       end: booking.end,

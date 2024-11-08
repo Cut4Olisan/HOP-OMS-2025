@@ -33,8 +33,7 @@ interface IFiveWeekViewProps {
 }
 
 const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
-  const { projects, customers, employees } =
-    useGlobal();
+  const { projects, customers, employees } = useGlobal();
   const [selectedEmployeeEmails, setSelectedEmployeeEmails] = useState<
     string[]
   >([]);
@@ -93,7 +92,10 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
       current.setDate(current.getDate() + weekDifference * 7)
     );
 
-    return newDate.toISOString().split("T")[0] + "T00:00:00";
+    return (
+      new Date(newDate.getTime() + 3600000).toISOString().split("T")[0] +
+      "T00:00:00"
+    );
   };
 
   const handleDrop = async (
@@ -270,7 +272,9 @@ const FiveWeekView: React.FC<IFiveWeekViewProps> = ({ context }) => {
             {weeksToDisplay.map((week, index) => (
               <div key={index} className={styles.weekHeader}>
                 <Text variant="large">
-                  <span className={globalStyles.bold}>Uge {week.weekNumber} </span>
+                  <span className={globalStyles.bold}>
+                    Uge {week.weekNumber}{" "}
+                  </span>
                 </Text>
                 <Text>
                   {week.start.toLocaleDateString("da-DK")} -{" "}

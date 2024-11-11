@@ -24,6 +24,7 @@ export enum NotificationType {
 }
 
 export interface INotification {
+  timestamp: number;
   type: NotificationType;
   message: string;
 }
@@ -75,6 +76,7 @@ export interface IGlobalContext {
 
   notifications: INotification[];
   setNotifications: React.Dispatch<INotification[]>;
+  createNotification: (message: string, type: NotificationType) => void;
 }
 
 export const GlobalContext = React.createContext<IGlobalContext | undefined>(
@@ -148,6 +150,26 @@ const GlobalContextProvider: React.FC<
     })().catch((e) => console.log(e));
   }, [context]);
 
+  const createNotification = (
+    message: string,
+    type: NotificationType
+  ): void => {
+    const timestamp = new Date().getTime();
+
+    setNotifications([
+      ...notifications,
+      {
+        timestamp: timestamp,
+        message: message,
+        type: type,
+      },
+    ]);
+
+    setTimeout(() => {
+      setNotifications(notifications.filter((n) => n.timestamp !== timestamp));
+    }, 5000);
+  };
+
   if (loading) return <>Loading</>;
 
   return (
@@ -179,6 +201,7 @@ const GlobalContextProvider: React.FC<
 
           notifications,
           setNotifications,
+          createNotification,
         }}
       >
         <>{children}</>

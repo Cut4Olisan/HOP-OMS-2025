@@ -106,7 +106,9 @@ const Overview: React.FC<{ context: WebPartContext }> = ({ context }) => {
         <Notifications
           notifications={notifications}
           onDismiss={(notif) =>
-            setNotifications(notifications.filter((n) => n !== notif))
+            setNotifications(
+              notifications.filter((n) => n.timestamp !== notif.timestamp)
+            )
           }
         />
       </Stack>

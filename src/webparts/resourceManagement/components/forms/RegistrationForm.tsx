@@ -7,11 +7,6 @@ import {
   Toggle,
   MessageBar,
   MessageBarType,
-/*   Persona,
-  PersonaSize,
-  Label, */
-  /*   Persona,
-  PersonaSize, */
 } from "@fluentui/react";
 import {
   formatDateForApi,
@@ -65,7 +60,7 @@ const RegistrationForm: React.FC<IRegistrationFormProps> = ({
   dismissPanel,
   formState,
 }) => {
-  const { employees, notifications, setNotifications } = useGlobal();
+  const { employees, createNotification } = useGlobal();
   const { customers, projects } = useGlobal();
   const [formData, setFormData] = React.useState<IComponentFormData>({
     title: "",
@@ -193,20 +188,13 @@ const RegistrationForm: React.FC<IRegistrationFormProps> = ({
           start: formData.startTime,
           end: formData.endTime,
           registrationType: 2,
-
         };
 
         await BackEndService.Api.registrationsUpdate(
           formState.data.id ?? 0,
           updateData
         );
-        setNotifications([
-          ...notifications,
-          {
-            type: NotificationType.Success,
-            message: "Booking opdateret!",
-          },
-        ]);
+        createNotification("Booking opdateret!", NotificationType.Success);
         return onFinish();
       } catch (error) {
         return setError("Kunne ikke opdatere booking.");
@@ -219,13 +207,7 @@ const RegistrationForm: React.FC<IRegistrationFormProps> = ({
             return await BackEndService.Api.registrationsCreate(r);
           })
         );
-        setNotifications([
-          ...notifications,
-          {
-            type: NotificationType.Success,
-            message: "Booking oprettet!",
-          },
-        ]);
+        createNotification("Booking oprettet!", NotificationType.Success);
         return onFinish();
       } catch (error) {
         setError("Kunne ikke oprette booking.");

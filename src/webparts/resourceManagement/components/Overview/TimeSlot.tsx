@@ -24,7 +24,7 @@ const TimeSlot: React.FC<{
   const [isHovered, setIsHovered] = React.useState(false);
   const [, setIsDraggingBooking] = React.useState<boolean>(false);
   const [isDragging] = React.useState<boolean>(false);
-  const { notifications, setNotifications } = useGlobal();
+  const { createNotification } = useGlobal();
 
   const [, drop] = useDrop({
     accept: ItemType,
@@ -68,13 +68,11 @@ const TimeSlot: React.FC<{
   const handleDelete = async (): Promise<void> => {
     if (!booking || !booking.id) return;
     await BackEndService.Api.registrationsDelete(booking.id);
-    setNotifications([
-      ...notifications,
-      {
-        message: `Slettede booking ${booking.shortDescription} for ${employee?.givenName}`,
-        type: NotificationType.Info,
-      },
-    ]);
+
+    createNotification(
+      `Slettede booking ${booking.shortDescription} for ${employee?.givenName}`,
+      NotificationType.Info
+    );
     return setRegistrations(registrations.filter((r) => r.id !== booking.id));
   };
 
@@ -101,13 +99,10 @@ const TimeSlot: React.FC<{
       phaseId: booking.phaseId,
     }).then((r) => r.json());
 
-    setNotifications([
-      ...notifications,
-      {
-        message: `Kopi af "${booking.shortDescription}" er nu oprettet`,
-        type: NotificationType.Success,
-      },
-    ]);
+    createNotification(
+      `Kopi af "${booking.shortDescription}" er nu oprettet`,
+      NotificationType.Success
+    );
 
     return setRegistrations([...registrations, r as RegistrationDTO]);
   };

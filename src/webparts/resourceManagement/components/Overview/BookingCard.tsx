@@ -21,8 +21,7 @@ const BookingCard: React.FC<{
     setBookingPanelState,
     setRegistrations,
     registrations,
-    notifications,
-    setNotifications,
+    createNotification,
   } = useGlobal();
   const [, drag] = useDrag({
     type: ItemType,
@@ -58,13 +57,10 @@ const BookingCard: React.FC<{
       phaseId: booking.phaseId,
     }).then((r) => r.json());
 
-    setNotifications([
-      ...notifications,
-      {
-        message: `Kopi af "${booking.shortDescription}" er nu oprettet`,
-        type: NotificationType.Success,
-      },
-    ]);
+    createNotification(
+      `Kopi af "${booking.shortDescription}" er nu oprettet`,
+      NotificationType.Success
+    );
 
     return setRegistrations([...registrations, r as RegistrationDTO]);
   };
@@ -72,13 +68,10 @@ const BookingCard: React.FC<{
   const handleDelete = async (): Promise<void> => {
     if (!booking.id) return;
     await BackEndService.Api.registrationsDelete(booking.id);
-    setNotifications([
-      ...notifications,
-      {
-        message: `Slettede booking ${booking.shortDescription} for ${employee?.givenName}`,
-        type: NotificationType.Info,
-      },
-    ]);
+    createNotification(
+      `Slettede booking ${booking.shortDescription} for ${employee?.givenName}`,
+      NotificationType.Info
+    );
     return setRegistrations(registrations.filter((r) => r.id !== booking.id));
   };
 

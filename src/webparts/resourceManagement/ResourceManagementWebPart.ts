@@ -3,6 +3,7 @@ import * as ReactDom from "react-dom";
 import { Version } from "@microsoft/sp-core-library";
 import {
   IPropertyPaneConfiguration,
+  PropertyPaneLabel,
   PropertyPaneTextField,
 } from "@microsoft/sp-property-pane";
 import { BaseClientSideWebPart } from "@microsoft/sp-webpart-base";
@@ -14,6 +15,7 @@ import ResourceManagement, {
 } from "./components/ResourceManagement";
 import BackEndService from "./services/BackEnd";
 import ConfigService from "./services/ConfigService";
+import ngageInfo from "../../ngageInfo";
 
 export interface IResourceManagementWebPartProps {
   description: string;
@@ -43,7 +45,7 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
     if (!backendEndpoint) throw new Error("Failed to fetch backend endpoint");
 
     BackEndService.Init(backendEndpoint);
-    
+
     return this._getEnvironmentMessage().then((message) => {
       this._environmentMessage = message;
     });
@@ -129,6 +131,14 @@ export default class ResourceManagementWebPart extends BaseClientSideWebPart<IRe
               groupFields: [
                 PropertyPaneTextField("description", {
                   label: strings.DescriptionFieldLabel,
+                }),
+              ],
+            },
+            {
+              groupName: "Om",
+              groupFields: [
+                PropertyPaneLabel("version", {
+                  text: ngageInfo.version,
                 }),
               ],
             },

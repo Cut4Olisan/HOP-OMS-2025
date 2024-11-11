@@ -62,8 +62,7 @@ const RequestComponent: React.FC<IRequestFormProps> = ({
   onDismiss,
   request,
 }) => {
-  const { employees, customers, projects, notifications, setNotifications } =
-    useGlobal();
+  const { employees, customers, projects, createNotification } = useGlobal();
   const [formData, setFormData] = React.useState<IRequestComponentFormData>({
     title: "",
     info: "",
@@ -116,7 +115,6 @@ const RequestComponent: React.FC<IRequestFormProps> = ({
 
   const clearMessageBar = (): void => {
     setError(undefined);
-    setNotifications([]);
     setWarning(undefined);
   };
 
@@ -135,22 +133,12 @@ const RequestComponent: React.FC<IRequestFormProps> = ({
       const r = await result.json();
       console.log(r);
       if (hasSufficientInformation) {
-        setNotifications([
-          ...notifications,
-          {
-            type: NotificationType.Success,
-            message: "Anmodning oprettet",
-          },
-        ]);
+        createNotification("Anmodning oprettet", NotificationType.Success);
       } else {
-        setNotifications([
-          ...notifications,
-          {
-            type: NotificationType.Success,
-            message:
-              "Anmodning oprettet med manglende information. En kladde er gemt.",
-          },
-        ]);
+        createNotification(
+          "Anmodning oprettet med manglende information. En kladde er gemt.",
+          NotificationType.Success
+        );
       }
 
       return onFinish();
@@ -221,13 +209,8 @@ const RequestComponent: React.FC<IRequestFormProps> = ({
         request.id,
         acceptRequestData
       );
-      setNotifications([
-        ...notifications,
-        {
-          type: NotificationType.Success,
-          message: "Anmodning bekræftet!",
-        },
-      ]);
+
+      createNotification("Anmodning bekræftet", NotificationType.Success);
       console.warn("Anmodning bekræftet:", acceptRequestData);
     } catch (error) {
       console.error("Fejl ved bekræftelse af anmodning:", error);
@@ -244,13 +227,7 @@ const RequestComponent: React.FC<IRequestFormProps> = ({
       try {
         await BackEndService.Api.requestsRejectPartialUpdate(request.id);
 
-        setNotifications([
-          ...notifications,
-          {
-            type: NotificationType.Success,
-            message: "Anmodning afvist",
-          },
-        ]);
+        createNotification("Anmodning afvist", NotificationType.Success);
         console.warn("Anmodning afvist", request);
       } catch (error) {
         console.error("Fejl ved afvisning af anmodning:", error);
@@ -275,14 +252,7 @@ const RequestComponent: React.FC<IRequestFormProps> = ({
       });
 
       setWarning(undefined);
-
-      setNotifications([
-        ...notifications,
-        {
-          type: NotificationType.Success,
-          message: "Anmodning opdateret",
-        },
-      ]);
+      createNotification("Anmodning opdateret", NotificationType.Success);
       await result.json();
       onFinish();
     } catch (error) {

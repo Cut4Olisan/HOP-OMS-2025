@@ -3,7 +3,7 @@
   "solution": {
     "name": "ressourcestyring-client-side-solution",
     "id": "f6e55cf3-137c-4956-88c8-9ef0183bfc91",
-    "version": "1.1.0.2",
+    "version": "1.1.0.3",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,

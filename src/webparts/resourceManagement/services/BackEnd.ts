@@ -10,7 +10,7 @@ export default class BackEndService {
         baseApiParams: {
           headers: {
             "Content-Type": "application/json",
-            "api-key": "e67651b1-80a9-41c5-9f1e-acf409d5464b",
+            "api-key": "", //Api nøglen her er fjernet af sikkerhedsmæssige årsager - derfor der er linket til et demo miljø.
           },
         },
       });

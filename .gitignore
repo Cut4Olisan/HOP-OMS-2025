@@ -32,3 +32,7 @@ obj
 
 # Styles Generated Code
 *.scss.ts
+
+# Ignorer BackEnd.ts
+src/webparts/resourceManagement/services/BackEnd.ts
+
